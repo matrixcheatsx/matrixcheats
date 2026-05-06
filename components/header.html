@@ -1,0 +1,25 @@
+<header>
+  <div class="logo" onclick="showPage('home')">
+    <span class="m">MATRIX</span><span class="x">CHEATS</span>
+  </div>
+  <nav id="topNav">
+    <a onclick="showPage('home')">Ana Sayfa</a>
+    <a onclick="showPage('about')">Hakkında</a>
+    <a onclick="showPage('contact')">İletişim</a>
+    <button class="nav-btn" id="favNavBtn" onclick="toggleFavFilter()">Favorilerim</button>
+    <button class="nav-btn" id="profileNavBtn" onclick="showProfilePage()" style="display:none">Profilim</button>
+    <div id="userChipArea"></div>
+  </nav>
+  <button class="hamburger" id="hamburger" onclick="toggleMenu()">
+    <span></span><span></span><span></span>
+  </button>
+</header>
+
+<div class="mobile-menu" id="mobileMenu">
+  <a onclick="showPage('home');toggleMenu()">Ana Sayfa</a>
+  <a onclick="showPage('about');toggleMenu()">Hakkında</a>
+  <a onclick="showPage('contact');toggleMenu()">İletişim</a>
+  <button onclick="toggleFavFilter();toggleMenu()">Favorilerim</button>
+  <button id="mobileProfileBtn" onclick="showProfilePage();toggleMenu()" style="display:none">Profilim</button>
+  <button id="mobileAuthBtn" onclick="openAuth();toggleMenu()">Giriş / Kayıt</button>
+</div>
