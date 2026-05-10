@@ -1082,35 +1082,67 @@ function addNewProduct() {
 }
 
 async function saveAllProducts() {
-    products = products.map(p => ({
-        ...p,
-        title: sanitizeInput(document.getElementById('title_' + p.id)?.value || p.title),
-        image: validateImageUrl(document.getElementById('image_' + p.id)?.value || p.image || ''),
-        desc: sanitizeInput(document.getElementById('desc_' + p.id)?.value || p.desc),
-        prices: {
-            day: parseInt(document.getElementById('price_day_' + p.id)?.value) || p.prices.day,
-            week: parseInt(document.getElementById('price_week_' + p.id)?.value) || p.prices.week,
-            month: parseInt(document.getElementById('price_month_' + p.id)?.value) || p.prices.month
-        },
-        paymentLinks: {
-            day: document.getElementById('payment_day_' + p.id)?.value || '',
-            week: document.getElementById('payment_week_' + p.id)?.value || '',
-            month: document.getElementById('payment_month_' + p.id)?.value || ''
-        },
-        systemReq: p.systemReq || { os: 'Windows 10/11', processor: 'Intel Core i5', ram: '8GB', gpu: 'GTX 1050' }
-    }));
+    const updatedProducts = [];
     
+    for (const p of products) {
+        const titleEl = document.getElementById('title_' + p.id);
+        const descEl = document.getElementById('desc_' + p.id);
+        const imgEl = document.getElementById('image_' + p.id);
+        const dayEl = document.getElementById('price_day_' + p.id);
+        const weekEl = document.getElementById('price_week_' + p.id);
+        const monthEl = document.getElementById('price_month_' + p.id);
+        const payDayEl = document.getElementById('payment_day_' + p.id);
+        const payWeekEl = document.getElementById('payment_week_' + p.id);
+        const payMonthEl = document.getElementById('payment_month_' + p.id);
+        
+        if (!titleEl || !descEl) {
+            console.warn('Ürün input\'ları bulunamadı:', p.id);
+            continue;
+        }
+        
+        updatedProducts.push({
+            id: p.id,
+            icon: p.icon || '🎮',
+            title: sanitizeInput(titleEl.value) || p.title,
+            image: validateImageUrl(imgEl?.value || p.image || ''),
+            desc: sanitizeInput(descEl.value) || p.desc,
+            features: p.features || [],
+            prices: {
+                day: parseInt(dayEl?.value) || p.prices.day || 0,
+                week: parseInt(weekEl?.value) || p.prices.week || 0,
+                month: parseInt(monthEl?.value) || p.prices.month || 0
+            },
+            paymentLinks: {
+                day: payDayEl?.value || p.paymentLinks?.day || '',
+                week: payWeekEl?.value || p.paymentLinks?.week || '',
+                month: payMonthEl?.value || p.paymentLinks?.month || ''
+            },
+            systemReq: p.systemReq || { os: 'Windows 10/11', processor: 'Intel Core i5', ram: '8GB', gpu: 'GTX 1050' }
+        });
+    }
+    
+    if (updatedProducts.length === 0) {
+        showMessage('Kaydedilecek ürün bulunamadı!', 'warning');
+        return;
+    }
+    
+    products = updatedProducts;
     saveProductsToStorage();
     
-    if (window.firebaseReady && typeof window.saveProductsToFirebase === 'function') {
-        await window.saveProductsToFirebase(products);
-    } else if (window.firebaseReady && typeof saveProducts === 'function') {
-        await saveProducts(products);
+    if (window.firebaseReady && window.db) {
+        try {
+            await window.db.collection('products').doc('products_list').set({
+                products: products,
+                updatedAt: new Date()
+            });
+        } catch (e) {
+            console.error('Firebase save error:', e);
+        }
     }
     
     initProducts();
     renderAdminProducts();
-    showMessage('Ürünler kaydedildi!', 'success');
+    showMessage(updatedProducts.length + ' ürün kaydedildi!', 'success');
 }
 
 async function resetProducts() {
@@ -1118,8 +1150,11 @@ async function resetProducts() {
         localStorage.removeItem('matrixProducts');
         products = [...defaultProducts];
         
-        if (typeof saveProducts === 'function' && window.firebaseReady) {
-            await saveProducts(products);
+        if (window.firebaseReady && window.db) {
+            await window.db.collection('products').doc('products_list').set({
+                products: products,
+                updatedAt: new Date()
+            });
         }
         
         initProducts();
