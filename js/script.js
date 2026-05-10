@@ -87,22 +87,46 @@ const defaultProducts = [
 
 let products = [];
 
-function loadProductsFromStorage() {
+async function loadProductsFromStorage() {
     const stored = localStorage.getItem('matrixProducts');
+    
+    if (typeof getProductsFromDB === 'function' && window.firebaseReady) {
+        try {
+            const dbProducts = await getProductsFromDB();
+            if (dbProducts && Array.isArray(dbProducts) && dbProducts.length > 0) {
+                products = dbProducts;
+                localStorage.setItem('matrixProducts', JSON.stringify(products));
+                return;
+            }
+        } catch (e) {
+            console.log('Firebase\'den ürün çekilemedi, localStorage denenecek');
+        }
+    }
+    
     if (stored) {
         try {
             const parsed = JSON.parse(stored);
             if (Array.isArray(parsed) && parsed.length > 0) {
                 products = parsed;
-                console.log('LocalStorage\'den yüklendi:', products.length, 'ürün');
-            } else {
-                products = [...defaultProducts];
+                return;
             }
         } catch (e) {
             products = [...defaultProducts];
         }
-    } else {
-        products = [...defaultProducts];
+    }
+    products = [...defaultProducts];
+}
+
+async function syncProductsFromFirebase() {
+    if (typeof getProductsFromDB !== 'function' || !window.firebaseReady) return;
+    try {
+        const dbProducts = await getProductsFromDB();
+        if (dbProducts && Array.isArray(dbProducts) && dbProducts.length > 0) {
+            products = dbProducts;
+            localStorage.setItem('matrixProducts', JSON.stringify(products));
+        }
+    } catch (e) {
+        console.log('Firebase sync başarısız');
     }
 }
 
@@ -110,8 +134,8 @@ function saveProductsToStorage() {
     localStorage.setItem('matrixProducts', JSON.stringify(products));
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-    loadProductsFromStorage();
+document.addEventListener('DOMContentLoaded', async function() {
+    await loadProductsFromStorage();
     applySettings();
     initMatrixCanvas();
     initLoader();
@@ -122,6 +146,8 @@ document.addEventListener('DOMContentLoaded', function() {
     initActiveUsers();
     initAuth();
     checkRememberMe();
+    
+    setInterval(syncProductsFromFirebase, 300000);
 });
 
 let currentAuthTab = 'login';
@@ -1041,7 +1067,7 @@ function addNewProduct() {
     renderAdminProducts();
 }
 
-function saveAllProducts() {
+async function saveAllProducts() {
     products = products.map(p => ({
         ...p,
         title: sanitizeInput(document.getElementById('title_' + p.id)?.value || p.title),
@@ -1061,15 +1087,25 @@ function saveAllProducts() {
     }));
     
     saveProductsToStorage();
+    
+    if (typeof saveProducts === 'function' && window.firebaseReady) {
+        await saveProducts(products);
+    }
+    
     initProducts();
     renderAdminProducts();
     showMessage('Ürünler kaydedildi!', 'success');
 }
 
-function resetProducts() {
-    showConfirm('ÜRÜNLERİ SIFIRLA', 'Tüm ürünleri sıfırlamak istediğinize emin misiniz?', () => {
+async function resetProducts() {
+    showConfirm('ÜRÜNLERİ SIFIRLA', 'Tüm ürünleri sıfırlamak istediğinize emin misiniz?', async () => {
         localStorage.removeItem('matrixProducts');
         products = [...defaultProducts];
+        
+        if (typeof saveProducts === 'function' && window.firebaseReady) {
+            await saveProducts(products);
+        }
+        
         initProducts();
         renderAdminProducts();
         showMessage('Ürünler sıfırlandı!', 'success');

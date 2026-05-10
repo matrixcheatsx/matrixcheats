@@ -700,7 +700,7 @@
             });
         }
         
-        function saveAllProducts() {
+        async function saveAllProducts() {
             if (adminProducts.length === 0) {
                 showMessage('Kaydedilecek ürün yok!', 'warning');
                 return;
@@ -728,8 +728,20 @@
             localStorage.setItem('matrixProducts', JSON.stringify(updatedProducts));
             adminProducts = updatedProducts;
             
-            console.log('Kaydedilen ürünler:', adminProducts);
-            showMessage(`${adminProducts.length} ürün başarıyla kaydedildi! Ana sayfayı yenileyerek değişiklikleri görebilirsin.`, 'success');
+            if (firebaseReady && db) {
+                try {
+                    await db.collection('products').doc('products_list').set({
+                        products: updatedProducts,
+                        updatedAt: new Date()
+                    });
+                    showMessage(`${adminProducts.length} ürün başarıyla kaydedildi!`, 'success');
+                } catch (e) {
+                    console.error('Firebase save error:', e);
+                    showMessage('Ürünler kaydedildi ama Firebase\'e yüklenirken hata oldu.', 'warning');
+                }
+            } else {
+                showMessage(`${adminProducts.length} ürün başarıyla kaydedildi!`, 'success');
+            }
         }
         
         function updateOrder(orderId, status) {
