@@ -1206,7 +1206,8 @@ async function resetProducts() {
 function toggleChat() {
     const chatWindow = document.getElementById('chatWindow');
     if (chatWindow) {
-        chatWindow.style.display = chatWindow.style.display === 'none' ? 'block' : 'none';
+        const isHidden = chatWindow.style.display === 'none' || chatWindow.style.display === '';
+        chatWindow.style.display = isHidden ? 'block' : 'none';
     }
 }
 
