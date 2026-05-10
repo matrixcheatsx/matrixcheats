@@ -900,16 +900,20 @@ async function loadSupportRequests() {
 
 function loadSettings() {
     const settings = JSON.parse(localStorage.getItem('matrixSettings') || '{}');
-    document.getElementById('paymentLink').value = settings.paymentLink || '';
-    document.getElementById('supportLink').value = settings.supportLink || '';
-    document.getElementById('discordLinkInput').value = settings.discordLink || '';
+    const paymentLinkEl = document.getElementById('paymentLink');
+    const supportLinkEl = document.getElementById('supportLink');
+    const discordLinkEl = document.getElementById('discordLinkInput');
+    
+    if (paymentLinkEl) paymentLinkEl.value = settings.paymentLink || '';
+    if (supportLinkEl) supportLinkEl.value = settings.supportLink || '';
+    if (discordLinkEl) discordLinkEl.value = settings.discordLink || '';
 }
 
 function saveSettings() {
     const settings = {
-        paymentLink: document.getElementById('paymentLink').value,
-        supportLink: document.getElementById('supportLink').value,
-        discordLink: document.getElementById('discordLinkInput').value
+        paymentLink: document.getElementById('paymentLink')?.value || '',
+        supportLink: document.getElementById('supportLink')?.value || '',
+        discordLink: document.getElementById('discordLinkInput')?.value || ''
     };
     localStorage.setItem('matrixSettings', JSON.stringify(settings));
     applySettings();
@@ -917,8 +921,8 @@ function saveSettings() {
 }
 
 async function manageUserRole() {
-    const email = document.getElementById('adminUserEmail').value;
-    const isAdmin = document.getElementById('adminRoleSelect').value === 'admin';
+    const email = document.getElementById('adminUserEmail')?.value || '';
+    const isAdmin = document.getElementById('adminRoleSelect')?.value === 'admin';
     
     if (!email) {
         showMessage('Lütfen bir e-posta adresi girin!', 'warning');
