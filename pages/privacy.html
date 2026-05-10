@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gizlilik Politikası | MATRIXCHEATS</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🟢</text></svg>">
+    <style>
+        .privacy-page {
+            min-height: 100vh;
+            padding: 120px 20px 50px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .privacy-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 30px;
+            border-bottom: 2px solid #ff0040;
+        }
+        .privacy-header h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5rem;
+            color: #ff0040;
+            text-shadow: 0 0 20px rgba(255,0,64,0.5);
+            letter-spacing: 3px;
+        }
+        .privacy-header .date {
+            color: #808080;
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+        .privacy-section {
+            background: linear-gradient(180deg, rgba(20,20,20,0.9) 0%, rgba(10,10,10,0.95) 100%);
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+        .privacy-section h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+            color: #00ff41;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .privacy-section p {
+            color: #b0b0b0;
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+        .privacy-section ul {
+            padding-left: 20px;
+            color: #b0b0b0;
+            line-height: 1.8;
+        }
+        .privacy-section li {
+            margin-bottom: 8px;
+        }
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            color: #ff0040;
+            text-decoration: none;
+            margin-bottom: 30px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        .back-link:hover {
+            text-shadow: 0 0 15px rgba(255,0,64,0.5);
+        }
+        .highlight-box {
+            background: rgba(255,0,64,0.1);
+            border-left: 3px solid #ff0040;
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 0 5px 5px 0;
+        }
+        .highlight-box p {
+            margin: 0;
+            color: #ff0040;
+            font-weight: 500;
+        }
+        @media (max-width: 768px) {
+            .privacy-page {
+                padding: 100px 15px 30px;
+            }
+            .privacy-header h1 {
+                font-size: 1.8rem;
+            }
+            .privacy-section {
+                padding: 20px;
+            }
+            .privacy-section h2 {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="matrixCanvas"></canvas>
+    
+    <div class="loader" id="loader">
+        <div class="loader-text">YÜKLENİYOR...</div>
+        <div class="loader-bar">
+            <div class="loader-progress"></div>
+        </div>
+    </div>
+
+    <header class="header">
+        <div class="header-container">
+            <a href="../index.html" class="logo" style="text-decoration:none;">
+                <span class="logo-icon">◈</span>
+                <span class="logo-text">MATRIX<span class="logo-accent">CHEATS</span></span>
+            </a>
+            <nav class="nav">
+                <a href="../index.html#home" class="nav-link">ANA SAYFA</a>
+                <a href="../index.html#products" class="nav-link">ÜRÜNLER</a>
+                <a href="../index.html#about" class="nav-link">HAKKIMIZDA</a>
+                <a href="../index.html#contact" class="nav-link">İLETİŞİM</a>
+            </nav>
+            <div class="header-actions">
+                <div class="auth-box" onclick="handleAccountClick()">
+                    <div class="auth-box-icon">◈</div>
+                    <div class="auth-box-text">
+                        <span class="auth-box-title">GİRİŞ</span>
+                        <span class="auth-box-subtitle">/ KAYIT</span>
+                    </div>
+                </div>
+            </div>
+            <div class="mobile-toggle" onclick="toggleMobileMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </header>
+
+    <main class="privacy-page">
+        <a href="../index.html" class="back-link">← ANA SAYFA</a>
+        
+        <div class="privacy-header">
+            <h1>◈ GİZLİLİK POLİTİKASI ◈</h1>
+            <p class="date">Son Güncelleme: 08 Mayıs 2026</p>
+        </div>
+
+        <div class="privacy-section">
+            <h2>◈ 1. GİRİŞ</h2>
+            <p>
+                MATRIXCHEATS olarak ("biz", "bizim" veya "sitemiz") gizliliğinizi ciddiye alıyoruz. 
+                Bu Gizlilik Politikası, web sitemizi (matrixcheats.com) ziyaret ettiğinizde kişisel 
+                verilerinizin nasıl toplandığını, kullanıldığını, saklandığını ve korunduğunu açıklar.
+            </p>
+            <p>
+                Web sitemizi kullanarak bu politikada belirtilen koşulları kabul etmiş sayılırsınız.
+            </p>
+        </div>
+
+        <div class="privacy-section">
+            <h2>◈ 2. TOPLADIGIMIZ BİLGİLER</h2>
+            <p>Sitemizi kullanırken aşağıdaki bilgileri toplayabiliriz:</p>
+            <ul>
+                <li><strong>Kişisel Bilgiler:</strong> Ad, e-posta adresi, telefon numarası gibi kayıt formunda girdiğiniz bilgiler</li>
+                <li><strong>Ödeme Bilgileri:</strong> Ödeme işlemleri için gerekli olan bilgiler (kart numaraları işlenmez, güvenli ödeme sağlayıcıları ile çalışırız)</li>
+                <li><strong>Kullanım Verileri:</strong> Sitemizi nasıl kullandığınıza dair bilgiler, ziyaret ettiğiniz sayfalar</li>
+                <li><strong>Cihaz Bilgileri:</strong> IP adresi, tarayıcı türü, işletim sistemi gibi teknik bilgiler</li>
+            </ul>
+        </div>
+
+        <div class="privacy-section">
+            <h2>◈ 3. BİLGİLERİN KULLANIMI</h2>
+            <p>Topladığımız bilgileri şu amaçlarla kullanıyoruz:</p>
+            <ul>
+                <li>Hesabınızı oluşturmak ve yönetmek</li>
+                <li>Siparişlerinizi işlemek ve tamamlamak</li>
+                <li>Ürün ve hizmetlerimizi geliştirmek</li>
+                <li>Teknik destek sağlamak</li>
+                <li>Yasal bildirimler yapmak</li>
+                <li>Pazarlama ve promosyon faaliyetleri (onayınız varsa)</li>
+            </ul>
+        </div>
+
+        <div class="privacy-section">
+            <h2>◈ 4. ÇEREZ POLİTİKASI</h2>
+            <p>
+                Web sitemiz, deneyiminizi geliştirmek için çerezler (cookies) kullanmaktadır. 
+                Çerezler, tarayıcınızda saklanan küçük metin dosyalarıdır.
+            </p>
+            <p>Kullandığımız çerez türleri:</p>
+            <ul>
+                <li><strong>Zorunlu Çerezler:</strong> Sitemizin düzgün çalışması için gereklidir</li>
+                <li><strong>Analitik Çerezler:</strong> Sitemizi nasıl kullandığınızı anlamamıza yardımcı olur</li>
+                <li><strong>İşlevsel Çerezler:</strong> Tercihlerinizi hatırlamamızı sağlar</li>
+            </ul>
+            <p>
+                Çerezleri reddetmek tarayıcı ayarlarınızdan mümkündür, ancak bu durumda 
+                sitemizin bazı özelliklerini kullanamayabilirsiniz.
+            </p>
+        </div>
+
+        <div class="privacy-section">
+            <h2>◈ 5. VERİ GÜVENLİĞİ</h2>
+            <p>
+                Kişisel verilerinizin güvenliği bizim için önemlidir. Verilerinizi korumak için 
+                endüstri standardı güvenlik önlemleri kullanıyoruz:
+            </p>
+            <ul>
+                <li>SSL şifreleme ile veri aktarımı</li>
+                <li>Güvenli sunucularda veri depolama</li>
+                <li>Düzenli güvenlik kontrolleri</li>
+                <li>Erişim kontrolleri ve yetkilendirme</li>
+            </ul>
+            <div class="highlight-box">
+                <p>◈ Ödeme bilgileriniz hiçbir zaman sunucularımızda saklanmaz. Tüm ödeme işlemleri güvenli üçüncü taraf sağlayıcılar tarafından işlenir.</p>
+            </div>
+        </div>
+
+        <div class="privacy-section">
+            <h2>◈ 6. ÜÇÜNCÜ TARAF PAYLAŞIMI</h2>
+            <p>
+                Kişisel bilgilerinizi aşağıdaki durumlar dışında üçüncü taraflarla paylaşmayız:
+            </p>
+            <ul>
+                <li>Ödeme işlemleri için güvenli ödeme sağlayıcıları</li>
+                <li>Yasal zorunluluk durumunda (mahkeme kararı, yasal düzenleme)</li>
+                <li>Hizmet sağlayıcılarımız (hosting, e-posta gönderimi)</li>
+            </ul>
+            <p>
+                Verilerinizi satmıyor, ticaretini yapmıyor veya başka bir şekilde üçüncü 
+                taraflara aktarmıyoruz.
+            </p>
+        </div>
+
+        <div class="privacy-section">
+            <h2>◈ 7. HAKLARINIZ</h2>
+            <p>KVKK kapsamında aşağıdaki haklara sahipsiniz:</p>
+            <ul>
+                <li>Kişisel verilerinize erişim talep etme</li>
+                <li>Yanlış verilerin düzeltilmesini isteme</li>
+                <li>Verilerinizin silinmesini talep etme</li>
+                <li>Veri işleme itirazında bulunma</li>
+                <li>Veri taşınabilirliği hakkı</li>
+            </ul>
+            <p>
+                Bu haklarınızı kullanmak için bizimle iletişime geçebilirsiniz.
+            </p>
+        </div>
+
+        <div class="privacy-section">
+            <h2>◈ 8. İLETİŞİM</h2>
+            <p>
+                Bu Gizlilik Politikası hakkında herhangi bir sorunuz varsa veya haklarınızı 
+                kullanmak istiyorsanız, bizimle iletişime geçebilirsiniz:
+            </p>
+            <ul>
+                <li>E-posta: destek@matrixcheats.com</li>
+                <li>Discord: matrixcheats.com/discord</li>
+            </ul>
+        </div>
+
+        <div class="privacy-section">
+            <h2>◈ 9. DEĞİŞİKLİKLER</h2>
+            <p>
+                Bu Gizlilik Politikasını zaman zaman güncelleyebiliriz. Önemli değişiklikler 
+                olması durumunda, sizi bilgilendirmek için web sitemizde bir duyuru 
+                yayınlayacağız. Politikanın en güncel versiyonunu her zaman bu sayfada bulabilirsiniz.
+            </p>
+        </div>
+    </main>
+
+    <div class="modal" id="authModal">
+        <div class="auth-modal-wrapper">
+            <div class="auth-modal-frame">
+                <div class="auth-corner tl"></div>
+                <div class="auth-corner tr"></div>
+                <div class="auth-corner bl"></div>
+                <div class="auth-corner br"></div>
+                <button class="modal-close" onclick="closeAuth()">×</button>
+                <div class="auth-header">
+                    <span class="auth-logo">◈</span>
+                    <span class="auth-title">MATRIX<span>CHEATS</span></span>
+                </div>
+                <div class="auth-tabs">
+                    <button class="auth-tab active" onclick="switchAuthTab('login')">GİRİŞ</button>
+                    <button class="auth-tab" onclick="switchAuthTab('register')">KAYIT OL</button>
+                </div>
+                <form id="authForm">
+                    <div class="auth-input-group">
+                        <input type="email" id="authEmail" required placeholder="E-posta adresiniz">
+                        <div class="auth-input-line"></div>
+                    </div>
+                    <div class="auth-input-group">
+                        <input type="password" id="authPassword" required placeholder="Şifreniz">
+                        <div class="auth-input-line"></div>
+                    </div>
+                    <button type="submit" class="btn-auth">GİRİŞ YAP</button>
+                </form>
+                <div class="auth-footer">
+                    <span>◈ Güvenli Giriş</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/script.js"></script>
+    <script>
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                document.getElementById('loader').classList.add('hidden');
+            }, 1500);
+        });
+    </script>
+
+    <!-- Profile Modal -->
+    <div class="modal" id="profileModal">
+        <div class="profile-modal-wrapper">
+            <div class="profile-modal-frame">
+                <div class="auth-corner tl"></div>
+                <div class="auth-corner tr"></div>
+                <div class="auth-corner bl"></div>
+                <div class="auth-corner br"></div>
+                <button class="modal-close" onclick="closeProfileModal()">×</button>
+                <div class="profile-header">
+                    <div class="profile-avatar">◈</div>
+                    <h2 class="profile-title">HESABIM</h2>
+                    <p class="profile-email" id="profileEmail">kullanici@email.com</p>
+                </div>
+                <div class="profile-menu">
+                    <a href="orders.html" class="profile-menu-item">
+                        <span class="profile-icon">◈</span>
+                        <span>Siparislerim</span>
+                        <span class="profile-arrow">›</span>
+                    </a>
+<a href="#" class="profile-menu-item" onclick="openSupportModal(); return false;">
+                        <span class="profile-icon">🎫</span>
+                        <span>Sipariş Talebi Gönder</span>
+                        <span class="profile-arrow">›</span>
+                    </a>
+                    <div class="profile-menu-item" onclick="openAdminFromProfile()" id="adminMenuItem" style="display:none;">
+                        <span class="profile-icon">◈</span>
+                        <span>Admin Panel</span>
+                        <span class="profile-arrow">›</span>
+                    </div>
+                </div>
+                <div class="profile-footer">
+                    <button class="btn-logout" onclick="handleLogout()">
+                        <span>◈</span> CIKIS YAP
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

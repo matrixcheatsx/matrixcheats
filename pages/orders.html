@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sipariş Onaylat | MATRIXCHEATS</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🟢</text></svg>">
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <style>
+        .orders-page {
+            min-height: 100vh;
+            padding: 120px 20px 50px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .orders-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .orders-header h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2rem;
+            color: #ff0040;
+            text-shadow: 0 0 20px rgba(255,0,64,0.5);
+            letter-spacing: 2px;
+        }
+        .track-order-box {
+            background: linear-gradient(180deg, rgba(255,0,64,0.1) 0%, rgba(10,10,10,0.9) 100%);
+            border: 2px solid #ff0040;
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 40px;
+        }
+        .track-order-box h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.1rem;
+            color: #00ff41;
+            margin-bottom: 20px;
+            text-align: center;
+            letter-spacing: 1px;
+        }
+        .track-form {
+            display: flex;
+            gap: 15px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        .track-input {
+            flex: 1;
+            padding: 15px;
+            background: #050505;
+            border: 1px solid #333;
+            color: #e0e0e0;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.9rem;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+        .track-input:focus {
+            outline: none;
+            border-color: #ff0040;
+            box-shadow: 0 0 15px rgba(255,0,64,0.3);
+        }
+        .track-btn {
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #ff0040 0%, #b3002d 100%);
+            border: none;
+            color: #fff;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+        .track-btn:hover {
+            box-shadow: 0 0 25px rgba(255,0,64,0.5);
+            transform: translateY(-2px);
+        }
+        .order-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .order-card {
+            background: linear-gradient(180deg, rgba(20,20,20,0.9) 0%, rgba(10,10,10,0.95) 100%);
+            border: 1px solid #333;
+            border-radius: 10px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        .order-card:hover {
+            border-color: #ff0040;
+            box-shadow: 0 0 20px rgba(255,0,64,0.2);
+        }
+        .order-header {
+            background: linear-gradient(90deg, rgba(255,0,64,0.2) 0%, transparent 100%);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #1a1a1a;
+        }
+        .order-id {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.9rem;
+            color: #00ff41;
+            letter-spacing: 1px;
+        }
+        .order-status {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .status-completed {
+            background: rgba(0,255,65,0.2);
+            color: #00ff41;
+        }
+        .status-pending {
+            background: rgba(255,193,7,0.2);
+            color: #ffc107;
+        }
+        .status-processing {
+            background: rgba(255,0,64,0.2);
+            color: #ff0040;
+        }
+        .order-body {
+            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+        }
+        .order-detail {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .order-detail-label {
+            font-size: 0.75rem;
+            color: #808080;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .order-detail-value {
+            color: #e0e0e0;
+            font-size: 0.95rem;
+        }
+        .order-footer {
+            padding: 15px 20px;
+            border-top: 1px solid #1a1a1a;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .order-total {
+            font-family: 'Orbitron', sans-serif;
+            color: #ff0040;
+            font-size: 1.2rem;
+        }
+        .order-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .order-btn {
+            padding: 8px 20px;
+            background: transparent;
+            border: 1px solid #ff0040;
+            color: #ff0040;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.8rem;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+        .order-btn:hover {
+            background: #ff0040;
+            color: #fff;
+        }
+        .order-btn.primary {
+            background: #ff0040;
+            color: #fff;
+        }
+        .order-btn.primary:hover {
+            background: #cc0033;
+        }
+        .empty-orders {
+            text-align: center;
+            padding: 60px 20px;
+            color: #808080;
+        }
+        .empty-orders svg {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+        .empty-orders p {
+            font-size: 1.1rem;
+        }
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            color: #ff0040;
+            text-decoration: none;
+            margin-bottom: 30px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        .back-link:hover {
+            text-shadow: 0 0 15px rgba(255,0,64,0.5);
+        }
+        .tracking-result {
+            display: none;
+            margin-top: 30px;
+            padding: 25px;
+            background: linear-gradient(180deg, rgba(0,255,65,0.1) 0%, rgba(10,10,10,0.9) 100%);
+            border: 1px solid #00ff41;
+            border-radius: 10px;
+        }
+        .tracking-result.active {
+            display: block;
+        }
+        .tracking-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .tracking-step {
+            display: flex;
+            gap: 15px;
+            align-items: flex-start;
+        }
+        .step-icon {
+            width: 30px;
+            height: 30px;
+            background: #00ff41;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #000;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+        .step-content h4 {
+            color: #00ff41;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+        .step-content p {
+            color: #808080;
+            font-size: 0.85rem;
+        }
+        @media (max-width: 768px) {
+            .orders-page {
+                padding: 100px 15px 30px;
+            }
+            .orders-header h1 {
+                font-size: 1.5rem;
+            }
+            .track-form {
+                flex-direction: column;
+            }
+            .order-header {
+                flex-direction: column;
+                gap: 10px;
+                align-items: flex-start;
+            }
+            .order-body {
+                grid-template-columns: 1fr;
+            }
+            .order-footer {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="matrixCanvas"></canvas>
+    
+    <div class="loader" id="loader">
+        <div class="loader-text">YÜKLENİYOR...</div>
+        <div class="loader-bar">
+            <div class="loader-progress"></div>
+        </div>
+    </div>
+
+    <header class="header">
+        <div class="header-container">
+            <a href="../index.html" class="logo" style="text-decoration:none;">
+                <span class="logo-icon">◈</span>
+                <span class="logo-text">MATRIX<span class="logo-accent">CHEATS</span></span>
+            </a>
+            <nav class="nav">
+                <a href="../index.html#home" class="nav-link">ANA SAYFA</a>
+                <a href="../index.html#products" class="nav-link">ÜRÜNLER</a>
+                <a href="../index.html#about" class="nav-link">HAKKIMIZDA</a>
+                <a href="../index.html#contact" class="nav-link">İLETİŞİM</a>
+            </nav>
+            <div class="header-actions">
+                <div class="auth-box" onclick="handleAccountClick()">
+                    <div class="auth-box-icon">◈</div>
+                    <div class="auth-box-text">
+                        <span class="auth-box-title">GİRİŞ</span>
+                        <span class="auth-box-subtitle">/ KAYIT</span>
+                    </div>
+                </div>
+            </div>
+            <div class="mobile-toggle" onclick="toggleMobileMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </header>
+
+    <main class="orders-page">
+        <a href="index.html" class="back-link">← ANA SAYFA</a>
+        
+        <div class="orders-header">
+            <h1>◈ SİPARİŞ ONAYLAT ◈</h1>
+        </div>
+
+        <div class="track-order-box">
+            <h2>◈ SİPARİŞ ONAYLAT ◈</h2>
+            <div class="track-form">
+                <input type="text" class="track-input" id="orderSearchInput" placeholder="Sipariş Numarası (ORD-001)">
+                <button class="track-btn" onclick="trackOrder()"> TAKİP ET</button>
+            </div>
+            
+            <div class="tracking-result" id="trackingResult">
+                <h3 style="color:#00ff41;font-family:'Orbitron',sans-serif;margin-bottom:10px;">Sipariş Detayları</h3>
+                <div id="trackingDetails"></div>
+                <div class="tracking-steps">
+                    <div class="tracking-step">
+                        <div class="step-icon">✓</div>
+                        <div class="step-content">
+                            <h4>Sipariş Alındı</h4>
+                            <p>Siparişiniz sistemimize başarıyla kaydedildi.</p>
+                        </div>
+                    </div>
+                    <div class="tracking-step">
+                        <div class="step-icon">✓</div>
+                        <div class="step-content">
+                            <h4>Ödeme Onaylandı</h4>
+                            <p>Ödeme işleminiz başarıyla tamamlandı.</p>
+                        </div>
+                    </div>
+                    <div class="tracking-step">
+                        <div class="step-icon" id="deliveryIcon">2</div>
+                        <div class="step-content">
+                            <h4 id="deliveryTitle">Hazırlanıyor</h4>
+                            <p id="deliveryDesc">Ürününüz hazırlanıp teslim edilmek üzere.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="order-list" id="orderList">
+        </div>
+    </main>
+
+    <div class="modal" id="authModal">
+        <div class="auth-modal-wrapper">
+            <div class="auth-modal-frame">
+                <div class="auth-corner tl"></div>
+                <div class="auth-corner tr"></div>
+                <div class="auth-corner bl"></div>
+                <div class="auth-corner br"></div>
+                <button class="modal-close" onclick="closeAuth()">×</button>
+                <div class="auth-header">
+                    <span class="auth-logo">◈</span>
+                    <span class="auth-title">MATRIX<span>CHEATS</span></span>
+                </div>
+                <div class="auth-tabs">
+                    <button class="auth-tab active" onclick="switchAuthTab('login')">GİRİŞ</button>
+                    <button class="auth-tab" onclick="switchAuthTab('register')">KAYIT OL</button>
+                </div>
+                <form id="authForm">
+                    <div class="auth-input-group">
+                        <input type="email" id="authEmail" required placeholder="E-posta adresiniz">
+                        <div class="auth-input-line"></div>
+                    </div>
+                    <div class="auth-input-group">
+                        <input type="password" id="authPassword" required placeholder="Şifreniz">
+                        <div class="auth-input-line"></div>
+                    </div>
+                    <button type="submit" class="btn-auth">GİRİŞ YAP</button>
+                </form>
+                <div class="auth-footer">
+                    <span>◈ Güvenli Giriş</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/firebase.js"></script>
+    <script src="../js/script.js"></script>
+    <script>
+        let userOrders = [];
+
+        async function renderOrders() {
+            const container = document.getElementById('orderList');
+            
+            const storedUser = localStorage.getItem('matrixUser');
+            const user = storedUser ? JSON.parse(storedUser) : null;
+            
+            const userUid = user?.uid || user?._delegate?.uid || user?.user?.uid;
+            
+            if (!user || !userUid) {
+                showAuthRequired();
+                return;
+            }
+            
+            function showAuthRequired() {
+                container.innerHTML = `
+                    <div class="empty-orders">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                            <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                        </svg>
+                        <p>Siparişlerinizi görmek için giriş yapmalısınız.</p>
+                        <a href="index.html" class="error-btn" style="margin-top:20px;display:inline-block;">Giriş Yap</a>
+                    </div>
+                `;
+            }
+            
+            if (typeof getOrdersByUser === 'function') {
+                userOrders = await getOrdersByUser(userUid);
+            }
+            
+            if (userOrders.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-orders">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                            <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                        </svg>
+                        <p>Henüz bir siparişiniz bulunmuyor.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = userOrders.map(order => {
+                const statusClass = order.status === 'Tamamlandı' || order.status === 'completed' ? 'status-completed' : 
+                                  order.status === 'Beklemede' || order.status === 'pending' ? 'status-pending' : 'status-processing';
+                
+                const orderDate = order.createdAt ? new Date(order.createdAt).toLocaleDateString('tr-TR') : '-';
+                
+                return `
+                    <div class="order-card">
+                        <div class="order-header">
+                            <span class="order-id">${order.id}</span>
+                            <span class="order-status ${statusClass}">${order.status}</span>
+                        </div>
+                        <div class="order-body">
+                            <div class="order-detail">
+                                <span class="order-detail-label">Ürün</span>
+                                <span class="order-detail-value">${order.productName || order.product}</span>
+                            </div>
+                            <div class="order-detail">
+                                <span class="order-detail-label">Paket</span>
+                                <span class="order-detail-value">${order.duration}</span>
+                            </div>
+                            <div class="order-detail">
+                                <span class="order-detail-label">Tarih</span>
+                                <span class="order-detail-value">${orderDate}</span>
+                            </div>
+                            <div class="order-detail">
+                                <span class="order-detail-label">Lisans Anahtarı</span>
+                                <span class="order-detail-value" style="color:${order.licenseKey ? '#00ff41' : '#ffc107'}">${order.licenseKey || 'Hazırlanıyor'}</span>
+                            </div>
+                        </div>
+                        <div class="order-footer">
+                            <span class="order-total">₺${order.totalPrice || order.price}</span>
+                            <div class="order-actions">
+                                <button class="order-btn" onclick="viewOrder('${order.id}')">Detay</button>
+                                ${order.licenseKey ? `<button class="order-btn primary" onclick="downloadProduct('${order.id}')">İndir</button>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function trackOrder() {
+            const orderId = document.getElementById('orderSearchInput').value.trim().toUpperCase();
+            const resultDiv = document.getElementById('trackingResult');
+            const detailsDiv = document.getElementById('trackingDetails');
+            
+            const order = userOrders.find(o => o.id === orderId);
+            
+            if (!order) {
+                showMessage('Sipariş numarası bulunamadı!', 'error');
+                return;
+            }
+            
+            const statusClass = order.status === 'Tamamlandı' || order.status === 'completed' ? 'status-completed' : 
+                              order.status === 'Beklemede' || order.status === 'pending' ? 'status-pending' : 'status-processing';
+            
+            detailsDiv.innerHTML = `
+                <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:15px;margin-bottom:20px;">
+                    <div><span style="color:#808080;">Sipariş No:</span> <span style="color:#00ff41;">${order.id}</span></div>
+                    <div><span style="color:#808080;">Ürün:</span> ${order.productName || order.product}</div>
+                    <div><span style="color:#808080;">Paket:</span> ${order.duration}</div>
+                    <div><span style="color:#808080;">Tutar:</span> <span style="color:#ff0040;">₺${order.totalPrice || order.price}</span></div>
+                    <div><span style="color:#808080;">Durum:</span> <span class="order-status ${statusClass}">${order.status}</span></div>
+                </div>
+            `;
+            
+            const deliveryIcon = document.getElementById('deliveryIcon');
+            const deliveryTitle = document.getElementById('deliveryTitle');
+            const deliveryDesc = document.getElementById('deliveryDesc');
+            
+            if (order.status === 'Tamamlandı' || order.status === 'completed') {
+                deliveryIcon.textContent = '✓';
+                deliveryIcon.style.background = '#00ff41';
+                deliveryTitle.textContent = 'Teslim Edildi';
+                deliveryDesc.textContent = 'Ürününüz hesabınıza aktarıldı.';
+            } else if (order.status === 'İşleniyor' || order.status === 'processing') {
+                deliveryIcon.textContent = '3';
+                deliveryIcon.style.background = '#ff0040';
+                deliveryTitle.textContent = 'Hazırlanıyor';
+                deliveryDesc.textContent = 'Ürününüz en kısa sürede hazırlanacak.';
+            } else {
+                deliveryIcon.textContent = '3';
+                deliveryIcon.style.background = '#ffc107';
+                deliveryIcon.style.color = '#000';
+                deliveryTitle.textContent = 'Beklemede';
+                deliveryDesc.textContent = 'Ödeme onayı bekleniyor.';
+            }
+            
+            resultDiv.classList.add('active');
+        }
+
+        function viewOrder(orderId) {
+            const order = userOrders.find(o => o.id === orderId);
+            if (order) {
+                showMessage(`Sipariş No: ${order.id}<br>Ürün: ${order.productName || order.product}<br>Paket: ${order.duration}<br>Tarih: ${order.createdAt}<br>Durum: ${order.status}`, 'info', 6000);
+            }
+        }
+
+        function downloadProduct(orderId) {
+            showMessage('Ürün indirme sayfasına yönlendiriliyorsunuz...', 'info');
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            initAuth();
+            checkRememberMe();
+            renderOrders();
+            
+            setTimeout(function() {
+                document.getElementById('loader').classList.add('hidden');
+            }, 1500);
+        });
+
+        document.getElementById('orderSearchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                trackOrder();
+            }
+        });
+    </script>
+
+    <!-- Profile Modal -->
+    <div class="modal" id="profileModal">
+        <div class="profile-modal-wrapper">
+            <div class="profile-modal-frame">
+                <div class="auth-corner tl"></div>
+                <div class="auth-corner tr"></div>
+                <div class="auth-corner bl"></div>
+                <div class="auth-corner br"></div>
+                <button class="modal-close" onclick="closeProfileModal()">×</button>
+                <div class="profile-header">
+                    <div class="profile-avatar">◈</div>
+                    <h2 class="profile-title">HESABIM</h2>
+                    <p class="profile-email" id="profileEmail">kullanici@email.com</p>
+                </div>
+                <div class="profile-menu">
+                    <a href="orders.html" class="profile-menu-item">
+                        <span class="profile-icon">📦</span>
+                        <span>Siparişlerim</span>
+                        <span class="profile-arrow">›</span>
+                    </a>
+                    <a href="#" class="profile-menu-item" onclick="openSupportModal(); return false;">
+                        <span class="profile-icon">🎫</span>
+                        <span>Sipariş Talebi Gönder</span>
+                        <span class="profile-arrow">›</span>
+                    </a>
+                    <div class="profile-menu-item" onclick="openAdminFromProfile()" id="adminMenuItem" style="display:none;">
+                        <span class="profile-icon">⚙️</span>
+                        <span>Admin Panel</span>
+                        <span class="profile-arrow">›</span>
+                    </div>
+                </div>
+                <div class="profile-footer">
+                    <button class="btn-logout" onclick="handleLogout()">
+                        <span>◈</span> CIKIS YAP
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kullanım Şartları | MATRIXCHEATS</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🟢</text></svg>">
+    <style>
+        .terms-page {
+            min-height: 100vh;
+            padding: 120px 20px 50px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .terms-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 30px;
+            border-bottom: 2px solid #ff0040;
+        }
+        .terms-header h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5rem;
+            color: #ff0040;
+            text-shadow: 0 0 20px rgba(255,0,64,0.5);
+            letter-spacing: 3px;
+        }
+        .terms-header .date {
+            color: #808080;
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+        .terms-section {
+            background: linear-gradient(180deg, rgba(20,20,20,0.9) 0%, rgba(10,10,10,0.95) 100%);
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+        .terms-section h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+            color: #00ff41;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .terms-section p {
+            color: #b0b0b0;
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+        .terms-section ul {
+            padding-left: 20px;
+            color: #b0b0b0;
+            line-height: 1.8;
+        }
+        .terms-section li {
+            margin-bottom: 8px;
+        }
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            color: #ff0040;
+            text-decoration: none;
+            margin-bottom: 30px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        .back-link:hover {
+            text-shadow: 0 0 15px rgba(255,0,64,0.5);
+        }
+        .warning-box {
+            background: rgba(255,193,7,0.1);
+            border-left: 3px solid #ffc107;
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 0 5px 5px 0;
+        }
+        .warning-box p {
+            margin: 0;
+            color: #ffc107;
+        }
+        @media (max-width: 768px) {
+            .terms-page {
+                padding: 100px 15px 30px;
+            }
+            .terms-header h1 {
+                font-size: 1.8rem;
+            }
+            .terms-section {
+                padding: 20px;
+            }
+            .terms-section h2 {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="matrixCanvas"></canvas>
+    
+    <div class="loader" id="loader">
+        <div class="loader-text">YÜKLENİYOR...</div>
+        <div class="loader-bar">
+            <div class="loader-progress"></div>
+        </div>
+    </div>
+
+    <header class="header">
+        <div class="header-container">
+            <a href="../index.html" class="logo" style="text-decoration:none;">
+                <span class="logo-icon">◈</span>
+                <span class="logo-text">MATRIX<span class="logo-accent">CHEATS</span></span>
+            </a>
+            <nav class="nav">
+                <a href="../index.html#home" class="nav-link">ANA SAYFA</a>
+                <a href="../index.html#products" class="nav-link">ÜRÜNLER</a>
+                <a href="../index.html#about" class="nav-link">HAKKIMIZDA</a>
+                <a href="../index.html#contact" class="nav-link">İLETİŞİM</a>
+            </nav>
+            <div class="header-actions">
+                <div class="auth-box" onclick="handleAccountClick()">
+                    <div class="auth-box-icon">◈</div>
+                    <div class="auth-box-text">
+                        <span class="auth-box-title">GİRİŞ</span>
+                        <span class="auth-box-subtitle">/ KAYIT</span>
+                    </div>
+                </div>
+            </div>
+            <div class="mobile-toggle" onclick="toggleMobileMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </header>
+
+    <main class="terms-page">
+        <a href="../index.html" class="back-link">← ANA SAYFA</a>
+        
+        <div class="terms-header">
+            <h1>◈ KULLANIM ŞARTLARI ◈</h1>
+            <p class="date">Son Güncelleme: 08 Mayıs 2026</p>
+        </div>
+
+        <div class="terms-section">
+            <h2>◈ 1. KABUL ŞARTLARI</h2>
+            <p>
+                Bu web sitesini ("MATRIXCHEATS") kullanarak aşağıdaki kullanım şartlarını kabul etmiş 
+                sayılırsınız. Bu şartları kabul etmiyorsanız, lütfen web sitemizi kullanmayınız.
+            </p>
+            <p>
+                Web sitemizi kullanarak, bu şartların yanı sıra Gizlilik Politikamızı da kabul 
+                etmiş olursunuz.
+            </p>
+        </div>
+
+        <div class="terms-section">
+            <h2>◈ 2. LİSANS VE KULLANIM</h2>
+            <p>
+                MATRIXCHEATS'ten satın aldığınız ürünler, aşağıdaki koşullar altında kullanımınıza 
+                sunulmaktadır:
+            </p>
+            <ul>
+                <li>Satın aldığınız ürün, yalnızca kişisel kullanımınız için lisanslanmıştır</li>
+                <li>Ürünleri başkalarına satamaz, dağıtamaz veya ticari amaçla kullanamazsınız</li>
+                <li>Her lisans tek cihazda kullanım için geçerlidir (aksi belirtilmedikçe)</li>
+                <li>Yazılımın kaynak kodunu decompile edemez, reverse engineer yapamazsınız</li>
+                <li>Ürünlerin güncelleme desteği satın alma süresiyle sınırlıdır</li>
+            </ul>
+            <div class="warning-box">
+                <p>⚠️ Uyarı: Oyun hilelerinin profesyonel veya profesyonel olmayan ortamlarda kullanımı, oyun geliştiricilerinin hizmet şartlarını ihlal edebilir. Kullanım tamamen kullanıcının sorumluluğundadır.</p>
+            </div>
+        </div>
+
+        <div class="terms-section">
+            <h2>◈ 3. ÖDEME VE FİYATLANDIRMA</h2>
+            <p>Ödeme koşulları:</p>
+            <ul>
+                <li>Tüm fiyatlar Türk Lirası (TL) cinsindendir</li>
+                <li>KDV dahildir</li>
+                <li>Ödeme başarıyla tamamlandıktan sonra ürünler anında teslim edilir</li>
+                <li>Kredi kartı ve diğer ödeme yöntemleri güvenli SSL bağlantısı ile işlenir</li>
+                <li>Fiyatlarımızdeğişiklik yapma hakkımız saklıdır</li>
+            </ul>
+        </div>
+
+        <div class="terms-section">
+            <h2>◈ 4. İADE VE GERİ ÖDEME</h2>
+            <p>İade politikamız:</p>
+            <ul>
+                <li>Yazılımsal arızalarda 7 gün içinde ücretsiz değişim veya geri ödeme</li>
+                <li>Yanlış ürün satın alınması durumunda 24 saat içinde değişim</li>
+                <li>Ödeme onayından sonra iade kabul edilmez (teknik arıza hariç)</li>
+                <li>Kişisel kullanıma özel ürünlerde (lisans anahtarı vb.) iade yoktur</li>
+                <li>İade taleplerinde destek ekibimizle iletişime geçilmelidir</li>
+            </ul>
+        </div>
+
+        <div class="terms-section">
+            <h2>◈ 5. HESAP GÜVENLİĞİ</h2>
+            <p>Kullanıcı sorumlulukları:</p>
+            <ul>
+                <li>Hesap bilgilerinizin güvenliğinden siz sorumlusunuz</li>
+                <li>Şifrenizi kimseyle paylaşmayın</li>
+                <li>Hesabınızda yetkisiz activity tespit edildiğinde bizimle iletişime geçin</li>
+                <li>18 yaşından büyük olmanız gerekmektedir</li>
+            </ul>
+        </div>
+
+        <div class="terms-section">
+            <h2>◈ 6. YASAKLI KULLANIM</h2>
+            <p>Aşağıdaki kullanımlar kesinlikle yasaktır:</p>
+            <ul>
+                <li>Yazılımı zararlı amaçlarla kullanmak</li>
+                <li>Üçüncü taraf sistemlerine izinsiz erişim sağlamak</li>
+                <li>Web sitemizi çökertmeye veya zarar vermeye çalışmak</li>
+                <li>Yasadışı içerikler yayınlamak</li>
+                <li>Başka kullanıcıların haklarını ihlal etmek</li>
+            </ul>
+            <div class="warning-box">
+                <p>⚠️ Yasaklı kullanım tespit edildiğinde hesabınız askıya alınabilir veya kalıcı olarak kapatılabilir. Yasadışı faaliyetlerde yetkililere bilgi verilecektir.</p>
+            </div>
+        </div>
+
+        <div class="terms-section">
+            <h2>◈ 7. SORUMLULUK SINIRLAMASI</h2>
+            <p>
+                MATRIXCHEATS, web sitesi ve ürünlerin kullanımından kaynaklanan doğrudan 
+                veya dolaylı zararlardan sorumlu tutulamaz. Kullanım tamamen kullanıcının 
+                sorumluluğundadır.
+            </p>
+            <p>
+                Ürünlerin oyun banı, hesap cezası gibi sonuçlar doğurması durumunda 
+                MATRIXCHEATS sorumluluk kabul etmez.
+            </p>
+        </div>
+
+        <div class="terms-section">
+            <h2>◈ 8. FİKRİ MÜLKİYET</h2>
+            <p>
+                Web sitemizdeki tüm içerik, tasarım, logo, görseller ve yazılımlar 
+                MATRIXCHEATS'in fikri mülkiyetidir. İzin almadan kopyalanamaz, 
+                dağıtılamaz veya kullanılamaz.
+            </p>
+        </div>
+
+        <div class="terms-section">
+            <h2>◈ 9. İLETİŞİM</h2>
+            <p>
+                Bu kullanım şartları hakkında sorularınız varsa bizimle iletişime geçebilirsiniz:
+            </p>
+            <ul>
+                <li>E-posta: destek@matrixcheats.com</li>
+                <li>Discord: matrixcheats.com/discord</li>
+            </ul>
+        </div>
+    </main>
+
+    <div class="modal" id="authModal">
+        <div class="auth-modal-wrapper">
+            <div class="auth-modal-frame">
+                <div class="auth-corner tl"></div>
+                <div class="auth-corner tr"></div>
+                <div class="auth-corner bl"></div>
+                <div class="auth-corner br"></div>
+                <button class="modal-close" onclick="closeAuth()">×</button>
+                <div class="auth-header">
+                    <span class="auth-logo">◈</span>
+                    <span class="auth-title">MATRIX<span>CHEATS</span></span>
+                </div>
+                <div class="auth-tabs">
+                    <button class="auth-tab active" onclick="switchAuthTab('login')">GİRİŞ</button>
+                    <button class="auth-tab" onclick="switchAuthTab('register')">KAYIT OL</button>
+                </div>
+                <form id="authForm">
+                    <div class="auth-input-group">
+                        <input type="email" id="authEmail" required placeholder="E-posta adresiniz">
+                        <div class="auth-input-line"></div>
+                    </div>
+                    <div class="auth-input-group">
+                        <input type="password" id="authPassword" required placeholder="Şifreniz">
+                        <div class="auth-input-line"></div>
+                    </div>
+                    <button type="submit" class="btn-auth">GİRİŞ YAP</button>
+                </form>
+                <div class="auth-footer">
+                    <span>◈ Güvenli Giriş</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/script.js"></script>
+    <script>
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                document.getElementById('loader').classList.add('hidden');
+            }, 1500);
+        });
+    </script>
+
+    <!-- Profile Modal -->
+    <div class="modal" id="profileModal">
+        <div class="profile-modal-wrapper">
+            <div class="profile-modal-frame">
+                <div class="auth-corner tl"></div>
+                <div class="auth-corner tr"></div>
+                <div class="auth-corner bl"></div>
+                <div class="auth-corner br"></div>
+                <button class="modal-close" onclick="closeProfileModal()">×</button>
+                <div class="profile-header">
+                    <div class="profile-avatar">◈</div>
+                    <h2 class="profile-title">HESABIM</h2>
+                    <p class="profile-email" id="profileEmail">kullanici@email.com</p>
+                </div>
+                <div class="profile-menu">
+                    <a href="orders.html" class="profile-menu-item">
+                        <span class="profile-icon">◈</span>
+                        <span>Siparislerim</span>
+                        <span class="profile-arrow">›</span>
+                    </a>
+<a href="#" class="profile-menu-item" onclick="openSupportModal(); return false;">
+                        <span class="profile-icon">🎫</span>
+                        <span>Sipariş Talebi Gönder</span>
+                        <span class="profile-arrow">›</span>
+                    </a>
+                    <div class="profile-menu-item" onclick="openAdminFromProfile()" id="adminMenuItem" style="display:none;">
+                        <span class="profile-icon">◈</span>
+                        <span>Admin Panel</span>
+                        <span class="profile-arrow">›</span>
+                    </div>
+                </div>
+                <div class="profile-footer">
+                    <button class="btn-logout" onclick="handleLogout()">
+                        <span>◈</span> CIKIS YAP
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

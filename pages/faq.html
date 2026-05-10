@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sıkça Sorulan Sorular | MATRIXCHEATS</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🟢</text></svg>">
+    <style>
+        .faq-page {
+            min-height: 100vh;
+            padding: 120px 20px 50px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .faq-header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+        .faq-header h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5rem;
+            color: #ff0040;
+            text-shadow: 0 0 20px rgba(255,0,64,0.5);
+            margin-bottom: 15px;
+            letter-spacing: 3px;
+        }
+        .faq-header p {
+            color: #808080;
+            font-size: 1rem;
+        }
+        .faq-item {
+            background: linear-gradient(180deg, rgba(20,20,20,0.9) 0%, rgba(10,10,10,0.95) 100%);
+            border: 1px solid #333;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        .faq-item:hover {
+            border-color: #ff0040;
+        }
+        .faq-question {
+            padding: 20px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1rem;
+            color: #00ff41;
+            letter-spacing: 1px;
+        }
+        .faq-question span {
+            transition: transform 0.3s ease;
+        }
+        .faq-item.active .faq-question span {
+            transform: rotate(45deg);
+        }
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        .faq-item.active .faq-answer {
+            max-height: 500px;
+        }
+        .faq-answer-content {
+            padding: 0 25px 20px;
+            color: #b0b0b0;
+            line-height: 1.8;
+            border-top: 1px solid #1a1a1a;
+            padding-top: 15px;
+        }
+        .faq-answer-content ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .faq-answer-content li {
+            margin-bottom: 8px;
+        }
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            color: #ff0040;
+            text-decoration: none;
+            margin-bottom: 30px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        .back-link:hover {
+            text-shadow: 0 0 15px rgba(255,0,64,0.5);
+        }
+        @media (max-width: 768px) {
+            .faq-page {
+                padding: 100px 15px 30px;
+            }
+            .faq-header h1 {
+                font-size: 1.8rem;
+            }
+            .faq-question {
+                font-size: 0.9rem;
+                padding: 15px 20px;
+            }
+            .faq-answer-content {
+                padding: 0 20px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="matrixCanvas"></canvas>
+    
+    <div class="loader" id="loader">
+        <div class="loader-text">YÜKLENİYOR...</div>
+        <div class="loader-bar">
+            <div class="loader-progress"></div>
+        </div>
+    </div>
+
+    <header class="header">
+        <div class="header-container">
+            <a href="../index.html" class="logo" style="text-decoration:none;">
+                <span class="logo-icon">◈</span>
+                <span class="logo-text">MATRIX<span class="logo-accent">CHEATS</span></span>
+            </a>
+            <nav class="nav">
+                <a href="../index.html#home" class="nav-link">ANA SAYFA</a>
+                <a href="../index.html#products" class="nav-link">ÜRÜNLER</a>
+                <a href="../index.html#about" class="nav-link">HAKKIMIZDA</a>
+                <a href="../index.html#contact" class="nav-link">İLETİŞİM</a>
+            </nav>
+            <div class="header-actions">
+                <div class="auth-box" onclick="handleAccountClick()">
+                    <div class="auth-box-icon">◈</div>
+                    <div class="auth-box-text">
+                        <span class="auth-box-title">GİRİŞ</span>
+                        <span class="auth-box-subtitle">/ KAYIT</span>
+                    </div>
+                </div>
+            </div>
+            <div class="mobile-toggle" onclick="toggleMobileMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </header>
+
+    <main class="faq-page">
+        <a href="../index.html" class="back-link">← ANA SAYFA</a>
+        
+        <div class="faq-header">
+            <h1>◈ SIKÇA SORULAN SORULAR ◈</h1>
+            <p>Merak ettiğiniz soruların cevaplarını burada bulabilirsiniz</p>
+        </div>
+
+        <div class="faq-list">
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    <span>Ürünleri nasıl satın alabilirim?</span>
+                    <span>+</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        Ürünlerimizi satın almak için öncelikle sitemize üye olmanız gerekmektedir. 
+                        Ardından istediğiniz ürünü seçip "Satın Al" butonuna tıklayarak ödeme sayfasına 
+                        yönlendirileceksiniz. Ödeme işleminizi tamamladıktan sonra ürününüz anında 
+                        hesabınıza aktarılacaktır.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    <span>Hangi ödeme yöntemlerini kabul ediyorsunuz?</span>
+                    <span>+</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        Şu an için aşağıdaki ödeme yöntemlerini kabul etmekteyiz:
+                        <ul>
+                            <li>Kredi Kartı / Banka Kartı (Visa, Mastercard)</li>
+                            <li>Papara</li>
+                            <li>Çevrimiçi Ödeme Sistemleri</li>
+                        </ul>
+                        Tüm ödemeleriniz güvenli SSL sertifikası ile şifrelenmektedir.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    <span>Satın aldığım ürünü nasıl aktif ederim?</span>
+                    <span>+</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        Satın alma işleminiz tamamlandıktan sonra size verilecek olan indirme linki 
+                        ve kullanım kılavuzunu içeren e-posta adresinize gönderilecektir. 
+                        Ayrıca "Siparişlerim" sayfasından tüm satın alma geçmişinizi ve ürün 
+                        anahtarlarınızı görüntüleyebilirsiniz.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    <span>İade politikalarınız nelerdir?</span>
+                    <span>+</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        Müşteri memnuniyeti bizim için en önemli konudur. Satın aldığınız ürünün 
+                        herhangi bir sorunu olması durumunda 7 gün içinde iade talebinde bulunabilirsiniz. 
+                        Yazılımsal arızalarda ücretsiz güncelleme veya değişim imkanı sunmaktayız.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    <span>Ürünler güncel mi kalıyor mu?</span>
+                    <span>+</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        Evet! Tüm ürünlerimiz düzenli olarak güncellenmektedir. Oyun güncellemeleri 
+                        çıktığında ürünlerimiz de en kısa sürede güncellenir. Güncel satın alma 
+                        yapan müşterilerimize ücretsiz güncelleme desteği sağlanmaktadır.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    <span>Teknik destek alabilir miyim?</span>
+                    <span>+</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        Elbette! 7/24 teknik destek ekibimiz Discord üzerinden hizmet vermektedir. 
+                        Kurulum veya kullanım sırasında herhangi bir sorun yaşarsanız Discord 
+                        sunucumuza katılarak destek talebi oluşturabilirsiniz.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    <span>Kaç cihazda kullanabilirim?</span>
+                    <span>+</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        Standart lisanslar tek cihaz için geçerlidir. Aile veya çoklu kullanım 
+                        paketlerimiz mevcuttur. Detaylı lisans bilgileri için ürün açıklamalarını 
+                        inceleyebilir veya destek ekibimizle iletişime geçebilirsiniz.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    <span>Üyelik hesabımı nasıl silebilirim?</span>
+                    <span>+</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        Hesabınızı silmek için destek ekibimizle iletişime geçmeniz gerekmektedir. 
+                        Hesap silme talebiniz 24 saat içinde işleme alınacaktır. Silme işleminden 
+                        önce tüm satın alma verilerinizin yedeklenmesi önerilir.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="modal" id="authModal">
+        <div class="auth-modal-wrapper">
+            <div class="auth-modal-frame">
+                <div class="auth-corner tl"></div>
+                <div class="auth-corner tr"></div>
+                <div class="auth-corner bl"></div>
+                <div class="auth-corner br"></div>
+                <button class="modal-close" onclick="closeAuth()">×</button>
+                <div class="auth-header">
+                    <span class="auth-logo">◈</span>
+                    <span class="auth-title">MATRIX<span>CHEATS</span></span>
+                </div>
+                <div class="auth-tabs">
+                    <button class="auth-tab active" onclick="switchAuthTab('login')">GİRİŞ</button>
+                    <button class="auth-tab" onclick="switchAuthTab('register')">KAYIT OL</button>
+                </div>
+                <form id="authForm">
+                    <div class="auth-input-group">
+                        <input type="email" id="authEmail" required placeholder="E-posta adresiniz">
+                        <div class="auth-input-line"></div>
+                    </div>
+                    <div class="auth-input-group">
+                        <input type="password" id="authPassword" required placeholder="Şifreniz">
+                        <div class="auth-input-line"></div>
+                    </div>
+                    <button type="submit" class="btn-auth">GİRİŞ YAP</button>
+                </form>
+                <div class="auth-footer">
+                    <span>◈ Güvenli Giriş</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/script.js"></script>
+    <script>
+        function toggleFaq(element) {
+            const faqItem = element.parentElement;
+            const wasActive = faqItem.classList.contains('active');
+            
+            document.querySelectorAll('.faq-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            if (!wasActive) {
+                faqItem.classList.add('active');
+            }
+        }
+
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                document.getElementById('loader').classList.add('hidden');
+            }, 1500);
+        });
+
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                const href = this.getAttribute('href');
+                if (href.startsWith('#')) {
+                    e.preventDefault();
+                    const target = document.querySelector(href);
+                    if (target) {
+                        target.scrollIntoView({ behavior: 'smooth' });
+                    }
+                }
+            });
+        });
+    </script>
+
+    <!-- Profile Modal -->
+    <div class="modal" id="profileModal">
+        <div class="profile-modal-wrapper">
+            <div class="profile-modal-frame">
+                <div class="auth-corner tl"></div>
+                <div class="auth-corner tr"></div>
+                <div class="auth-corner bl"></div>
+                <div class="auth-corner br"></div>
+                <button class="modal-close" onclick="closeProfileModal()">×</button>
+                <div class="profile-header">
+                    <div class="profile-avatar">◈</div>
+                    <h2 class="profile-title">HESABIM</h2>
+                    <p class="profile-email" id="profileEmail">kullanici@email.com</p>
+                </div>
+                <div class="profile-menu">
+                    <a href="orders.html" class="profile-menu-item">
+                        <span class="profile-icon">◈</span>
+                        <span>Siparislerim</span>
+                        <span class="profile-arrow">›</span>
+                    </a>
+<a href="#" class="profile-menu-item" onclick="openSupportModal(); return false;">
+                        <span class="profile-icon">🎫</span>
+                        <span>Sipariş Talebi Gönder</span>
+                        <span class="profile-arrow">›</span>
+                    </a>
+                    <div class="profile-menu-item" onclick="openAdminFromProfile()" id="adminMenuItem" style="display:none;">
+                        <span class="profile-icon">◈</span>
+                        <span>Admin Panel</span>
+                        <span class="profile-arrow">›</span>
+                    </div>
+                </div>
+                <div class="profile-footer">
+                    <button class="btn-logout" onclick="handleLogout()">
+                        <span>◈</span> CIKIS YAP
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
