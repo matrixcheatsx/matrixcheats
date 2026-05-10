@@ -1151,16 +1151,25 @@ async function saveAllProducts() {
     saveProductsToStorage();
     
     if (window.firebaseReady && window.db && window.auth && window.auth.currentUser) {
-        try {
-            console.log('Firebase\'ye kaydediliyor...', 'Kullanıcı:', window.auth.currentUser.email);
-            await window.db.collection('products').doc('products_list').set({
-                products: products,
-                updatedAt: new Date()
-            });
-            console.log('Firebase kaydetme başarılı!');
-        } catch (e) {
-            console.error('Firebase kaydetme hatası:', e);
-            showMessage('Firebase kaydetme hatası: ' + e.message, 'error');
+        const userEmail = window.auth.currentUser.email;
+        const isAdminEmail = ['ysufrakann@gmail.com', 'admin@matrixcheats.com', 'yusuf@matrixcheats.com'].includes(userEmail);
+        
+        console.log('Firebase\'ye kaydediliyor...', 'Kullanıcı:', userEmail, 'Admin:', isAdminEmail);
+        
+        if (isAdminEmail) {
+            try {
+                await window.db.collection('products').doc('products_list').set({
+                    products: products,
+                    updatedAt: new Date()
+                });
+                console.log('Firebase kaydetme başarılı!');
+            } catch (e) {
+                console.error('Firebase kaydetme hatası:', e);
+                showMessage('Firebase kaydetme hatası: ' + e.message, 'error');
+            }
+        } else {
+            console.warn('Admin değil!');
+            showMessage('Admin yetkiniz yok!', 'error');
         }
     } else {
         console.warn('Firebase bağlı değil veya giriş yapılmamış');
