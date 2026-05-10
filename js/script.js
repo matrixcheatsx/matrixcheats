@@ -725,7 +725,7 @@ function initSmoothScroll() {
         anchor.addEventListener('click', function(e) {
             e.preventDefault();
             const href = this.getAttribute('href');
-            if (href && href !== '#') {
+            if (href && href !== '#' && !href.startsWith('http')) {
                 const target = document.querySelector(href);
                 if(target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
