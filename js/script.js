@@ -76,15 +76,6 @@ function validateImageUrl(url) {
     }
 }
 
-const defaultProducts = [
-    { id: 1, icon: '🎮', image: '', title: 'VALORANT CHEAT', desc: 'En güncel VALORANT hile yazılımı', features: ['Aimbot', 'Wallhack', 'Skin Changer', 'Triggerbot'], prices: { day: 49, week: 149, month: 299 }, paymentLinks: { day: '', week: '', month: '' }, systemReq: { os: 'Windows 10/11', processor: 'Intel Core i5', ram: '8GB', gpu: 'GTX 1050' } },
-    { id: 2, icon: '⚔️', image: '', title: 'CS2 CHEAT', desc: 'Counter-Strike 2 için premium çözümler', features: ['ESP', 'Aim Assistance', 'Skin Mod', 'Bhop'], prices: { day: 59, week: 179, month: 349 }, paymentLinks: { day: '', week: '', month: '' }, systemReq: { os: 'Windows 10/11', processor: 'Intel Core i5', ram: '8GB', gpu: 'GTX 1050' } },
-    { id: 3, icon: '🏀', image: '', title: 'NBA 2K24 CHEAT', desc: 'NBA 2K24 için özel yapım', features: ['Skill Unlock', 'VC Generator', 'Stats Edit'], prices: { day: 39, week: 99, month: 199 }, paymentLinks: { day: '', week: '', month: '' }, systemReq: { os: 'Windows 10/11', processor: 'Intel Core i5', ram: '8GB', gpu: 'GTX 1050' } },
-    { id: 4, icon: '🏎️', image: '', title: 'EA FC 24 CHEAT', desc: 'EA FC 24 Ultimate Team hile', features: ['Coin Generator', 'Player Unlock', 'Trade Bot'], prices: { day: 79, week: 249, month: 449 }, paymentLinks: { day: '', week: '', month: '' }, systemReq: { os: 'Windows 10/11', processor: 'Intel Core i7', ram: '16GB', gpu: 'GTX 1660' } },
-    { id: 5, icon: '🎯', image: '', title: 'APEX LEGENDS CHEAT', desc: 'Apex Legends için profesyonel çözüm', features: ['ESP', 'Aimbot', 'Loot Radar'], prices: { day: 69, week: 199, month: 399 }, paymentLinks: { day: '', week: '', month: '' }, systemReq: { os: 'Windows 10/11', processor: 'Intel Core i5', ram: '8GB', gpu: 'GTX 1050' } },
-    { id: 6, icon: '🌍', image: '', title: 'Rust CHEAT', desc: 'Rust oyunu için tam kapsamlı çözüm', features: ['ESP', 'Item ESP', 'Shoot Through Wall'], prices: { day: 99, week: 349, month: 549 }, paymentLinks: { day: '', week: '', month: '' }, systemReq: { os: 'Windows 10/11', processor: 'Intel Core i7', ram: '16GB', gpu: 'GTX 1660' } }
-];
-
 let products = [];
 
 async function loadProductsFromStorage() {
@@ -111,10 +102,12 @@ async function loadProductsFromStorage() {
                 return;
             }
         } catch (e) {
-            products = [...defaultProducts];
+            products = [];
         }
     }
-    products = [...defaultProducts];
+    if (products.length === 0) {
+        products = [];
+    }
 }
 
 async function syncProductsFromFirebase() {
@@ -1149,11 +1142,11 @@ async function saveAllProducts() {
 async function resetProducts() {
     showConfirm('ÜRÜNLERİ SIFIRLA', 'Tüm ürünleri sıfırlamak istediğinize emin misiniz?', async () => {
         localStorage.removeItem('matrixProducts');
-        products = [...defaultProducts];
+        products = [];
         
         if (window.firebaseReady && window.db) {
             await window.db.collection('products').doc('products_list').set({
-                products: products,
+                products: [],
                 updatedAt: new Date()
             });
         }

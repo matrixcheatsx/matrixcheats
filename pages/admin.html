@@ -435,17 +435,33 @@
         }
     </script>
     <script>
-        const products = [
-            { id: 1, icon: '🎮', title: 'VALORANT CHEAT', desc: 'En güncel VALORANT hile yazılımı', features: ['Aimbot', 'Wallhack', 'Skin Changer', 'Triggerbot'], prices: { day: 49, week: 149, month: 299 } },
-            { id: 2, icon: '⚔️', title: 'CS2 CHEAT', desc: 'Counter-Strike 2 için premium çözümler', features: ['ESP', 'Aim Assistance', 'Skin Mod', 'Bhop'], prices: { day: 59, week: 179, month: 349 } },
-            { id: 3, icon: '🏀', title: 'NBA 2K24 CHEAT', desc: 'NBA 2K24 için özel yapım', features: ['Skill Unlock', 'VC Generator', 'Stats Edit'], prices: { day: 39, week: 99, month: 199 } },
-            { id: 4, icon: '🏎️', title: 'EA FC 24 CHEAT', desc: 'EA FC 24 Ultimate Team hile', features: ['Coin Generator', 'Player Unlock', 'Trade Bot'], prices: { day: 79, week: 249, month: 449 } },
-            { id: 5, icon: '🎯', title: 'APEX LEGENDS CHEAT', desc: 'Apex Legends için profesyonel çözüm', features: ['ESP', 'Aimbot', 'Loot Radar'], prices: { day: 69, week: 199, month: 399 } },
-            { id: 6, icon: '🌍', title: 'Rust CHEAT', desc: 'Rust oyunu için tam kapsamlı çözüm', features: ['ESP', 'Item ESP', 'Shoot Through Wall'], prices: { day: 99, week: 349, month: 549 } }
-        ];
-
-        const savedProducts = localStorage.getItem('matrixProducts');
-        let adminProducts = savedProducts ? JSON.parse(savedProducts) : [...products];
+        let adminProducts = [];
+        
+        async function loadAdminProducts() {
+            const stored = localStorage.getItem('matrixProducts');
+            if (stored) {
+                const parsed = JSON.parse(stored);
+                if (Array.isArray(parsed) && parsed.length > 0) {
+                    adminProducts = parsed;
+                    renderProductsEdit();
+                    return;
+                }
+            }
+            if (window.firebaseReady && window.db) {
+                try {
+                    const doc = await window.db.collection('products').doc('products_list').get();
+                    if (doc.exists) {
+                        adminProducts = doc.data().products || [];
+                        renderProductsEdit();
+                        return;
+                    }
+                } catch (e) {
+                    console.log('Firebase load error');
+                }
+            }
+            adminProducts = [];
+            renderProductsEdit();
+        }
         
         function openAdmin() {
         
@@ -757,7 +773,7 @@
         }
         
         window.addEventListener('load', function() {
-            openAdmin();
+            loadAdminProducts();
         });
         
         // Matrix Message System
