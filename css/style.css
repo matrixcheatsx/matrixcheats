@@ -1625,7 +1625,7 @@ section {
     }
     
     .mobile-toggle {
-        display: flex;
+        display: none;
     }
     
     .header-actions {
