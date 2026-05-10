@@ -79,8 +79,6 @@ function validateImageUrl(url) {
 let products = [];
 
 async function loadProductsFromStorage() {
-    const stored = localStorage.getItem('matrixProducts');
-    
     if (window.firebaseReady && window.getProductsFromDB) {
         try {
             const dbProducts = await window.getProductsFromDB();
@@ -90,10 +88,11 @@ async function loadProductsFromStorage() {
                 return;
             }
         } catch (e) {
-            console.log('Firebase\'den ürün çekilemedi, localStorage denenecek');
+            console.log('Firebase\'den ürün çekilemedi');
         }
     }
     
+    const stored = localStorage.getItem('matrixProducts');
     if (stored) {
         try {
             const parsed = JSON.parse(stored);
@@ -105,9 +104,7 @@ async function loadProductsFromStorage() {
             products = [];
         }
     }
-    if (products.length === 0) {
-        products = [];
-    }
+    products = [];
 }
 
 async function syncProductsFromFirebase() {
@@ -536,11 +533,12 @@ function initProducts() {
     if (!grid) return;
     grid.innerHTML = '';
     
-    console.log('initProducts çalıştı, ürün sayısı:', products.length);
+    if (products.length === 0) {
+        grid.innerHTML = '<div style="text-align:center;padding:50px;color:#808080;font-family:\'Share Tech Mono\',monospace;"><p style="font-size:1.2rem;margin-bottom:10px;">◈</p><p>Henüz ürün eklenmemiş.</p></div>';
+        return;
+    }
     
     products.forEach(product => {
-        console.log('Ürün:', product.title, '- Resim:', product.image);
-        
         const card = document.createElement('div');
         card.className = 'product-card';
         

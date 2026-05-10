@@ -443,8 +443,8 @@
         let currentProduct = null;
         let selectedPackage = 'month';
 
-        document.addEventListener('DOMContentLoaded', function() {
-            loadProductsFromStorage();
+        document.addEventListener('DOMContentLoaded', async function() {
+            await loadProductsFromStorage();
             console.log('Ürünler yüklendi:', products);
             
             if (typeof getCurrentUser === 'function' && window.firebaseReady) {
@@ -465,12 +465,22 @@
 
         function loadProduct() {
             const urlParams = new URLSearchParams(window.location.search);
-            const productId = parseInt(urlParams.get('id')) || 1;
+            const productId = parseInt(urlParams.get('id'));
             
             console.log('Product ID:', productId);
-            console.log('Bulunan ürün:', products.find(p => p.id === productId));
+            console.log('Tüm ürünler:', products);
             
-            currentProduct = products.find(p => p.id === productId) || products[0];
+            if (products.length === 0) {
+                document.getElementById('productTitle').textContent = 'Ürün bulunamadı';
+                document.getElementById('productDesc').textContent = 'Henüz ürün eklenmemiş.';
+                return;
+            }
+            
+            currentProduct = products.find(p => p.id === productId);
+            
+            if (!currentProduct) {
+                currentProduct = products[0];
+            }
             
             console.log('Seçili ürün:', currentProduct);
             console.log('Resim URL:', currentProduct?.image);
