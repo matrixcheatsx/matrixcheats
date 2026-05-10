@@ -90,9 +90,9 @@ let products = [];
 async function loadProductsFromStorage() {
     const stored = localStorage.getItem('matrixProducts');
     
-    if (typeof getProductsFromDB === 'function' && window.firebaseReady) {
+    if (window.firebaseReady && window.getProductsFromDB) {
         try {
-            const dbProducts = await getProductsFromDB();
+            const dbProducts = await window.getProductsFromDB();
             if (dbProducts && Array.isArray(dbProducts) && dbProducts.length > 0) {
                 products = dbProducts;
                 localStorage.setItem('matrixProducts', JSON.stringify(products));
@@ -118,12 +118,13 @@ async function loadProductsFromStorage() {
 }
 
 async function syncProductsFromFirebase() {
-    if (typeof getProductsFromDB !== 'function' || !window.firebaseReady) return;
+    if (!window.firebaseReady || !window.getProductsFromDB) return;
     try {
-        const dbProducts = await getProductsFromDB();
+        const dbProducts = await window.getProductsFromDB();
         if (dbProducts && Array.isArray(dbProducts) && dbProducts.length > 0) {
             products = dbProducts;
             localStorage.setItem('matrixProducts', JSON.stringify(products));
+            initProducts();
         }
     } catch (e) {
         console.log('Firebase sync başarısız');
