@@ -1150,9 +1150,9 @@ async function saveAllProducts() {
     products = updatedProducts;
     saveProductsToStorage();
     
-    if (window.firebaseReady && window.db) {
+    if (window.firebaseReady && window.db && window.auth && window.auth.currentUser) {
         try {
-            console.log('Firebase\'ye kaydediliyor...');
+            console.log('Firebase\'ye kaydediliyor...', 'Kullanıcı:', window.auth.currentUser.email);
             await window.db.collection('products').doc('products_list').set({
                 products: products,
                 updatedAt: new Date()
@@ -1163,7 +1163,8 @@ async function saveAllProducts() {
             showMessage('Firebase kaydetme hatası: ' + e.message, 'error');
         }
     } else {
-        console.warn('Firebase bağlı değil, sadece localStorage\'a kaydedildi');
+        console.warn('Firebase bağlı değil veya giriş yapılmamış');
+        showMessage('Giriş yapılmamış veya Firebase bağlı değil', 'warning');
     }
     
     initProducts();
