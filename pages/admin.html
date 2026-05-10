@@ -413,6 +413,27 @@
         </div>
     </div>
 
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCIdRKoALvfMgIRlYjvpckRQzyWGYXSu4w",
+            authDomain: "matrixcheat-0011.firebaseapp.com",
+            projectId: "matrixcheat-0011",
+            storageBucket: "matrixcheat-0011.firebasestorage.app",
+            messagingSenderId: "398069626242",
+            appId: "1:398069626242:web:7979c93b79b40b95138b9b"
+        };
+        
+        let db, auth, firebaseReady;
+        if (typeof firebase !== 'undefined') {
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.firestore();
+            auth = firebase.auth();
+            firebaseReady = true;
+        }
+    </script>
     <script>
         const products = [
             { id: 1, icon: '🎮', title: 'VALORANT CHEAT', desc: 'En güncel VALORANT hile yazılımı', features: ['Aimbot', 'Wallhack', 'Skin Changer', 'Triggerbot'], prices: { day: 49, week: 149, month: 299 } },
@@ -448,15 +469,171 @@
             document.querySelector('.admin-title').textContent = titles[section];
         }
         
-        function loadAdminData() {
-            document.getElementById('statOrders').textContent = '12';
-            document.getElementById('statPending').textContent = '3';
-            document.getElementById('statUsers').textContent = '156';
-            document.getElementById('statRevenue').textContent = '₺12,450';
+        async function loadAdminData() {
+            if (!firebaseReady) {
+                document.getElementById('statOrders').textContent = '-';
+                document.getElementById('statPending').textContent = '-';
+                document.getElementById('statUsers').textContent = '-';
+                document.getElementById('statRevenue').textContent = '-';
+                return;
+            }
             
-            renderProductsEdit();
-            renderOrders();
-            renderUsers();
+            try {
+                const [supportSnapshot, usersSnapshot, ordersSnapshot] = await Promise.all([
+                    db.collection('support_requests').get(),
+                    db.collection('users').get(),
+                    db.collection('orders').get()
+                ]);
+                
+                const requests = supportSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                const users = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                const orders = ordersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                
+                const totalOrders = requests.length;
+                const pendingOrders = requests.filter(r => r.status === 'Yeni' || r.status === 'İnceleniyor').length;
+                const totalUsers = users.length;
+                
+                let revenue = 0;
+                orders.forEach(order => {
+                    if (order.price) revenue += parseInt(order.price) || 0;
+                });
+                requests.forEach(req => {
+                    const priceMap = { '1 Gün': 49, '1 Hafta': 149, '1 Ay': 299, 'day': 49, 'week': 149, 'month': 299 };
+                    const price = priceMap[req.package] || 0;
+                    revenue += price;
+                });
+                
+                document.getElementById('statOrders').textContent = totalOrders;
+                document.getElementById('statPending').textContent = pendingOrders;
+                document.getElementById('statUsers').textContent = totalUsers;
+                document.getElementById('statRevenue').textContent = '₺' + revenue.toLocaleString('tr-TR');
+                
+                renderProductsEdit();
+                renderRequests(requests);
+                renderUsers(users);
+            } catch (e) {
+                console.error('Admin data load error:', e);
+                showMessage('Veriler yüklenirken hata oluştu!', 'error');
+            }
+        }
+        
+        function renderRequests(requests) {
+            const container = document.getElementById('ordersList');
+            if (!requests || requests.length === 0) {
+                container.innerHTML = '<div style="text-align:center;padding:40px;color:#808080;">Henüz sipariş talebi yok.</div>';
+                return;
+            }
+            
+            container.innerHTML = requests.map(req => {
+                const statusClass = req.status === 'Yeni' ? 'pending' : req.status === 'İnceleniyor' ? 'pending' : req.status === 'Tamamlandı' ? 'completed' : 'cancelled';
+                const date = req.createdAt ? new Date(req.createdAt.seconds ? req.createdAt.seconds * 1000 : req.createdAt).toLocaleDateString('tr-TR') : '-';
+                
+                return `
+                <div class="order-card">
+                    <div class="order-header">
+                        <span class="order-id">#${req.id.slice(0, 8).toUpperCase()}</span>
+                        <span class="order-date">${date}</span>
+                    </div>
+                    <div class="order-details">
+                        <div class="order-detail-item">
+                            <label>Oyun</label>
+                            <span>${req.game || '-'}</span>
+                        </div>
+                        <div class="order-detail-item">
+                            <label>Paket</label>
+                            <span>${req.package || '-'}</span>
+                        </div>
+                        <div class="order-detail-item">
+                            <label>Sipariş No</label>
+                            <span>${req.orderNumber || '-'}</span>
+                        </div>
+                    </div>
+                    <div class="order-details">
+                        <div class="order-detail-item">
+                            <label>Müşteri</label>
+                            <span>${req.userEmail || '-'}</span>
+                        </div>
+                        <div class="order-detail-item">
+                            <label>Durum</label>
+                            <span class="status-badge status-${statusClass}">${req.status || 'Yeni'}</span>
+                        </div>
+                    </div>
+                    ${req.note ? `<div style="padding:10px;background:rgba(0,0,0,0.3);border-radius:5px;margin-top:10px;"><label style="color:#808080;font-size:0.8rem;">Not:</label><p style="color:#e0e0e0;margin-top:5px;">${req.note}</p></div>` : ''}
+                    <div class="order-actions">
+                        <button class="action-btn" onclick="updateRequestStatus('${req.id}', 'İnceleniyor')">⏳ İnceleniyor</button>
+                        <button class="action-btn" onclick="updateRequestStatus('${req.id}', 'Tamamlandı')">✓ Tamamlandı</button>
+                        <button class="action-btn danger" onclick="updateRequestStatus('${req.id}', 'İptal')">✕ İptal</button>
+                    </div>
+                </div>
+            `}).join('');
+        }
+        
+        async function updateRequestStatus(requestId, status) {
+            if (!firebaseReady) {
+                showMessage('Firebase bağlı değil!', 'error');
+                return;
+            }
+            try {
+                await db.collection('support_requests').doc(requestId).update({ status: status });
+                showMessage('Durum güncellendi!', 'success');
+                loadAdminData();
+            } catch (e) {
+                showMessage('Hata: ' + e.message, 'error');
+            }
+        }
+        
+        function renderUsers(users) {
+            const container = document.getElementById('usersList');
+            if (!users || users.length === 0) {
+                container.innerHTML = '<div style="text-align:center;padding:40px;color:#808080;">Henüz kullanıcı yok.</div>';
+                return;
+            }
+            
+            container.innerHTML = `
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>E-posta</th>
+                            <th>İsim</th>
+                            <th>Admin</th>
+                            <th>Kayıt Tarihi</th>
+                            <th>İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${users.map(user => {
+                            const date = user.createdAt ? new Date(user.createdAt.seconds ? user.createdAt.seconds * 1000 : user.createdAt).toLocaleDateString('tr-TR') : '-';
+                            return `
+                            <tr>
+                                <td>${user.email || '-'}</td>
+                                <td>${user.displayName || '-'}</td>
+                                <td><span class="status-badge status-${user.isAdmin ? 'completed' : 'cancelled'}">${user.isAdmin ? 'Admin' : 'Kullanıcı'}</span></td>
+                                <td>${date}</td>
+                                <td>
+                                    <button class="action-btn" onclick="toggleUserAdmin('${user.email}', ${!user.isAdmin})">${user.isAdmin ? 'Admin Kaldır' : 'Admin Yap'}</button>
+                                </td>
+                            </tr>
+                        `}).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+        
+        async function toggleUserAdmin(email, makeAdmin) {
+            if (!firebaseReady) {
+                showMessage('Firebase bağlı değil!', 'error');
+                return;
+            }
+            try {
+                const snapshot = await db.collection('users').where('email', '==', email).get();
+                if (!snapshot.empty) {
+                    await db.collection('users').doc(snapshot.docs[0].id).update({ isAdmin: makeAdmin });
+                    showMessage(makeAdmin ? 'Kullanıcı admin yapıldı!' : 'Admin yetkisi kaldırıldı!', 'success');
+                    loadAdminData();
+                }
+            } catch (e) {
+                showMessage('Hata: ' + e.message, 'error');
+            }
         }
         
         function renderProductsEdit() {
@@ -555,94 +732,16 @@
             showMessage(`${adminProducts.length} ürün başarıyla kaydedildi! Ana sayfayı yenileyerek değişiklikleri görebilirsin.`, 'success');
         }
         
-        function renderOrders() {
-            const mockOrders = [
-                { id: 'ORD-001', product: 'VALORANT CHEAT', duration: '1 Ay', price: 299, status: 'pending', date: '08.05.2026', customer: 'test@example.com' },
-                { id: 'ORD-002', product: 'CS2 CHEAT', duration: '1 Hafta', price: 179, status: 'completed', date: '07.05.2026', customer: 'user1@test.com' },
-                { id: 'ORD-003', product: 'EA FC 24 CHEAT', duration: '1 Gün', price: 79, status: 'pending', date: '07.05.2026', customer: 'user2@test.com' },
-                { id: 'ORD-004', product: 'Rust CHEAT', duration: '1 Ay', price: 549, status: 'cancelled', date: '06.05.2026', customer: 'user3@test.com' },
-            ];
-            
-            const container = document.getElementById('ordersList');
-            container.innerHTML = mockOrders.map(order => `
-                <div class="order-card">
-                    <div class="order-header">
-                        <span class="order-id">${order.id}</span>
-                        <span class="order-date">${order.date}</span>
-                    </div>
-                    <div class="order-details">
-                        <div class="order-detail-item">
-                            <label>Ürün</label>
-                            <span>${order.product}</span>
-                        </div>
-                        <div class="order-detail-item">
-                            <label>Paket</label>
-                            <span>${order.duration}</span>
-                        </div>
-                        <div class="order-detail-item">
-                            <label>Fiyat</label>
-                            <span>₺${order.price}</span>
-                        </div>
-                    </div>
-                    <div class="order-details">
-                        <div class="order-detail-item">
-                            <label>Müşteri</label>
-                            <span>${order.customer}</span>
-                        </div>
-                        <div class="order-detail-item">
-                            <label>Durum</label>
-                            <span class="status-badge status-${order.status}">${order.status === 'pending' ? 'Beklemede' : order.status === 'completed' ? 'Tamamlandı' : 'İptal'}</span>
-                        </div>
-                    </div>
-                    <div class="order-actions">
-                        <button class="action-btn" onclick="updateOrder('${order.id}', 'completed')">✓ Tamamla</button>
-                        <button class="action-btn" onclick="updateOrder('${order.id}', 'pending')">⏳ Beklemede</button>
-                        <button class="action-btn danger" onclick="updateOrder('${order.id}', 'cancelled')">✕ İptal</button>
-                    </div>
-                </div>
-            `).join('');
-        }
-        
         function updateOrder(orderId, status) {
-            showMessage(`Sipariş ${orderId} durumu "${status}" olarak güncellendi`, 'success');
+            showMessage(`Sipariş ${orderId} durumu güncellendi`, 'success');
         }
         
-        function renderUsers() {
-            const mockUsers = [
-                { email: 'admin@matrix.com', name: 'Admin', status: 'active', orders: 0 },
-                { email: 'test@example.com', name: 'Test Kullanıcı', status: 'active', orders: 5 },
-                { email: 'user1@test.com', name: 'Ahmet Yılmaz', status: 'active', orders: 12 },
-                { email: 'user2@test.com', name: 'Mehmet Demir', status: 'inactive', orders: 2 },
-            ];
-            
-            const container = document.getElementById('usersList');
-            container.innerHTML = `
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>E-posta</th>
-                            <th>İsim</th>
-                            <th>Durum</th>
-                            <th>Sipariş Sayısı</th>
-                            <th>İşlemler</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${mockUsers.map(user => `
-                            <tr>
-                                <td>${user.email}</td>
-                                <td>${user.name}</td>
-                                <td><span class="status-badge status-${user.status === 'active' ? 'completed' : 'cancelled'}">${user.status === 'active' ? 'Aktif' : 'Pasif'}</span></td>
-                                <td>${user.orders}</td>
-                                <td>
-                                    <button class="action-btn">Düzenle</button>
-                                    <button class="action-btn danger">Sil</button>
-                                </td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-            `;
+        function renderUsersOnly() {
+            if (!firebaseReady) return;
+            db.collection('users').get().then(snapshot => {
+                const users = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderUsers(users);
+            });
         }
         
         window.addEventListener('load', function() {
