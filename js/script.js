@@ -1203,35 +1203,3 @@ async function resetProducts() {
     });
 }
 
-function toggleChat() {
-    const chatWindow = document.getElementById('chatWindow');
-    if (chatWindow) {
-        const isHidden = chatWindow.style.display === 'none' || chatWindow.style.display === '';
-        chatWindow.style.display = isHidden ? 'block' : 'none';
-    }
-}
-
-function sendMessage() {
-    const input = document.getElementById('chatInput');
-    const messagesDiv = document.getElementById('chatMessages');
-    if (!input || !messagesDiv) return;
-    
-    const message = input.value.trim();
-    if (!message) return;
-    
-    const userMsg = document.createElement('div');
-    userMsg.style.cssText = 'background:rgba(0,255,65,0.15);padding:8px 10px;border-radius:5px;color:#00ff41;font-size:0.75rem;border-left:2px solid #00ff41;align-self:flex-end;max-width:80%;';
-    userMsg.textContent = message;
-    messagesDiv.appendChild(userMsg);
-    
-    input.value = '';
-    messagesDiv.scrollTop = messagesDiv.scrollHeight;
-    
-    setTimeout(() => {
-        const botMsg = document.createElement('div');
-        botMsg.style.cssText = 'background:rgba(255,0,64,0.15);padding:8px 10px;border-radius:5px;color:#ff0040;font-size:0.75rem;border-left:2px solid #ff0040;';
-        botMsg.innerHTML = '◈ Bu özellik yakında aktif olacak! Şu an için destek talebi oluşturabilirsiniz.';
-        messagesDiv.appendChild(botMsg);
-        messagesDiv.scrollTop = messagesDiv.scrollHeight;
-    }, 1000);
-}
