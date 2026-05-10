@@ -1022,23 +1022,37 @@ function deleteProduct(id) {
     });
 }
 
-function saveProducts() {
+async function saveProductInputs() {
     products = products.map(p => ({
         ...p,
-        title: document.getElementById('title_' + p.id).value,
-        image: document.getElementById('image_' + p.id).value,
-        paymentLink: document.getElementById('paymentLink_' + p.id).value,
-        desc: document.getElementById('desc_' + p.id).value,
+        title: sanitizeInput(document.getElementById('title_' + p.id)?.value || p.title),
+        image: validateImageUrl(document.getElementById('image_' + p.id)?.value || p.image || ''),
+        desc: sanitizeInput(document.getElementById('desc_' + p.id)?.value || p.desc),
         prices: {
-            day: parseInt(document.getElementById('price_day_' + p.id).value) || 0,
-            week: parseInt(document.getElementById('price_week_' + p.id).value) || 0,
-            month: parseInt(document.getElementById('price_month_' + p.id).value) || 0
-        }
+            day: parseInt(document.getElementById('price_day_' + p.id)?.value) || p.prices.day,
+            week: parseInt(document.getElementById('price_week_' + p.id)?.value) || p.prices.week,
+            month: parseInt(document.getElementById('price_month_' + p.id)?.value) || p.prices.month
+        },
+        paymentLinks: {
+            day: document.getElementById('payment_day_' + p.id)?.value || '',
+            week: document.getElementById('payment_week_' + p.id)?.value || '',
+            month: document.getElementById('payment_month_' + p.id)?.value || ''
+        },
+        systemReq: p.systemReq || { os: 'Windows 10/11', processor: 'Intel Core i5', ram: '8GB', gpu: 'GTX 1050' }
     }));
     
     saveProductsToStorage();
+    
+    if (window.firebaseReady && window.db) {
+        await window.db.collection('products').doc('products_list').set({
+            products: products,
+            updatedAt: new Date()
+        });
+    }
+    
     initProducts();
-    showMessage('Kaydedildi!', 'success');
+    renderAdminProducts();
+    showMessage('Ürünler kaydedildi!', 'success');
 }
 
 document.addEventListener('keydown', function(e) {
@@ -1088,7 +1102,9 @@ async function saveAllProducts() {
     
     saveProductsToStorage();
     
-    if (typeof saveProducts === 'function' && window.firebaseReady) {
+    if (window.firebaseReady && typeof window.saveProductsToFirebase === 'function') {
+        await window.saveProductsToFirebase(products);
+    } else if (window.firebaseReady && typeof saveProducts === 'function') {
         await saveProducts(products);
     }
     
