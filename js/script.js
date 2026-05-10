@@ -1,4 +1,5 @@
 // Matrix Message System
+
 function showMessage(text, type = 'info', duration = 4000) {
     let container = document.querySelector('.matrix-message-container');
     if (!container) {
@@ -58,6 +59,23 @@ function showConfirm(title, message, onConfirm, onCancel) {
     };
 }
 
+function sanitizeInput(str) {
+    if (typeof str !== 'string') return '';
+    return str.replace(/[<>'"&]/g, '');
+}
+
+function validateImageUrl(url) {
+    if (!url || typeof url !== 'string') return '';
+    try {
+        const trimmed = url.trim();
+        if (trimmed === '') return '';
+        const parsed = new URL(trimmed);
+        return ['http:', 'https:'].includes(parsed.protocol) ? trimmed : '';
+    } catch {
+        return '';
+    }
+}
+
 const defaultProducts = [
     { id: 1, icon: '🎮', image: '', title: 'VALORANT CHEAT', desc: 'En güncel VALORANT hile yazılımı', features: ['Aimbot', 'Wallhack', 'Skin Changer', 'Triggerbot'], prices: { day: 49, week: 149, month: 299 }, paymentLinks: { day: '', week: '', month: '' }, systemReq: { os: 'Windows 10/11', processor: 'Intel Core i5', ram: '8GB', gpu: 'GTX 1050' } },
     { id: 2, icon: '⚔️', image: '', title: 'CS2 CHEAT', desc: 'Counter-Strike 2 için premium çözümler', features: ['ESP', 'Aim Assistance', 'Skin Mod', 'Bhop'], prices: { day: 59, week: 179, month: 349 }, paymentLinks: { day: '', week: '', month: '' }, systemReq: { os: 'Windows 10/11', processor: 'Intel Core i5', ram: '8GB', gpu: 'GTX 1050' } },
@@ -86,13 +104,6 @@ function loadProductsFromStorage() {
     } else {
         products = [...defaultProducts];
     }
-}
-
-function resetProducts() {
-    localStorage.removeItem('matrixProducts');
-    products = [...defaultProducts];
-    initProducts();
-    showMessage('Ürünler sıfırlandı!', 'success');
 }
 
 function saveProductsToStorage() {
@@ -170,7 +181,6 @@ function openProfileModal() {
     const storedUser = localStorage.getItem('matrixUser');
     const user = storedUser ? JSON.parse(storedUser) : null;
     
-    // Firebase user object yapısını kontrol et
     const userEmail = user && (user.email || (user._delegate && user._delegate.email));
     
     if (!userEmail) {
@@ -180,8 +190,7 @@ function openProfileModal() {
     
     document.getElementById('profileEmail').textContent = userEmail;
     
-    const ADMIN_EMAILS = ['admin@matrixcheats.com', 'yusuf@matrixcheats.com', 'ysufrakann@gmail.com'];
-    const isAdmin = ADMIN_EMAILS.includes(userEmail.toLowerCase()) || user.isAdmin === true;
+    const isAdmin = user.isAdmin === true;
     
     document.getElementById('adminMenuItem').style.display = isAdmin ? 'flex' : 'none';
     
@@ -189,43 +198,28 @@ function openProfileModal() {
 }
 
 function handleAccountClick() {
-    console.log('handleAccountClick called');
-    
-    // Önce Firebase auth.currentUser kontrol et (en güvenilir)
     if (window.auth && window.auth.currentUser) {
-        console.log('Firebase currentUser:', window.auth.currentUser.email);
         openProfileModal();
         return;
     }
     
-    // Sonra localStorage kontrol et
     const storedUser = localStorage.getItem('matrixUser');
-    console.log('storedUser exists:', !!storedUser);
     
     if (!storedUser) {
-        console.log('No stored user, opening auth');
         openAuth();
         return;
     }
     
     try {
         const user = JSON.parse(storedUser);
-        
-        // Firebase user object yapısını kontrol et
-        // email _delegate'da veya doğrudan user.email'de olabilir
         const email = user.email || (user._delegate && user._delegate.email);
-        const uid = user.uid || (user._delegate && user._delegate.uid);
-        
-        console.log('Parsed user - email:', email, 'uid:', uid);
         
         if (email) {
             openProfileModal();
         } else {
-            console.log('No email found, opening auth');
             openAuth();
         }
     } catch (e) {
-        console.log('Parse error:', e);
         openAuth();
     }
 }
@@ -284,10 +278,10 @@ document.addEventListener('DOMContentLoaded', function() {
             const supportData = {
                 userId: userUid,
                 userEmail: userEmail,
-                game: document.getElementById('supportGame').value,
-                package: document.getElementById('supportPackage').value,
+                game: sanitizeInput(document.getElementById('supportGame').value),
+                package: sanitizeInput(document.getElementById('supportPackage').value),
                 orderNumber: orderNumber,
-                note: document.getElementById('supportNote').value
+                note: sanitizeInput(document.getElementById('supportNote').value)
             };
             
             if (typeof createSupportRequest === 'function') {
@@ -331,24 +325,16 @@ async function handleLogin(email, password) {
     }
     
     const result = await loginUser(email, password);
-    console.log('Login result:', result);
     
     if (result.success) {
         const user = await getCurrentUser();
         
-        // Admin kontrolü - email listesi kontrol et
-        const ADMIN_EMAILS = ['admin@matrixcheats.com', 'yusuf@matrixcheats.com', email.toLowerCase()];
-        const isAdminByEmail = ADMIN_EMAILS.includes(email.toLowerCase());
-        
-        // Admin yetkisini localStorage'a kaydet
-        user.isAdmin = isAdminByEmail || user.isAdmin;
+        user.isAdmin = user.isAdmin || false;
         localStorage.setItem('matrixUser', JSON.stringify(user));
-        
-        console.log('User logged in:', user.email, 'isAdmin:', user.isAdmin);
         
         updateAuthUI(user);
         closeAuth();
-        showMessage('Giriş başarılı! ' + (user.isAdmin ? '(Admin)' : ''), 'success');
+        showMessage('Giriş başarılı!', 'success');
         saveRememberMe();
     } else {
         showMessage('Giriş başarısız: ' + result.error, 'error');
@@ -380,12 +366,10 @@ async function handleRegister(email, password) {
     }
     
     const result = await createUser(email, password, {
-        displayName: email.split('@')[0],
+        displayName: sanitizeInput(email.split('@')[0]),
         isAdmin: false,
         orders: []
     });
-    
-    console.log('Register result:', result);
     
     if (result.success) {
         const user = await getCurrentUser();
@@ -432,9 +416,6 @@ async function handleGoogleLogin() {
     
     if (result.success) {
         const user = await getCurrentUser();
-        const ADMIN_EMAILS = ['admin@matrixcheats.com', 'yusuf@matrixcheats.com', 'ysufrakann@gmail.com'];
-        const isAdminByEmail = user.email && ADMIN_EMAILS.includes(user.email.toLowerCase());
-        user.isAdmin = isAdminByEmail || user.isAdmin;
         localStorage.setItem('matrixUser', JSON.stringify(user));
         
         updateAuthUI(user);
@@ -547,10 +528,12 @@ function initProducts() {
         
         let imageHTML = '';
         if (product.image && product.image.trim() !== '') {
-            console.log('Resim var:', product.image);
-            imageHTML = `<div class="product-image"><img src="${product.image}" alt="${product.title}" onerror="this.style.display='none'; console.log('Resim yüklenemedi: '+this.src)"></div>`;
-        } else {
-            console.log('Emoji kullanılıyor');
+            const validUrl = validateImageUrl(product.image);
+            if (validUrl) {
+                imageHTML = `<div class="product-image"><img src="${validUrl}" alt="${sanitizeInput(product.title)}" onerror="this.style.display='none';"></div>`;
+            }
+        }
+        if (!imageHTML) {
             imageHTML = `<div class="product-icon">${product.icon}</div>`;
         }
         
@@ -617,7 +600,57 @@ function initMatrixCanvas() {
 
 function initLoader() {
     const loader = document.getElementById('loader');
-    if (loader) {
+    const loaderCanvas = document.getElementById('loaderCanvas');
+    
+    if (loaderCanvas) {
+        const ctx = loaderCanvas.getContext('2d');
+        loaderCanvas.width = window.innerWidth;
+        loaderCanvas.height = window.innerHeight;
+        
+        const chars = 'MATRIX0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ@#$%^&*';
+        const fontSize = 14;
+        const columns = loaderCanvas.width / fontSize;
+        const drops = [];
+        
+        for (let i = 0; i < columns; i++) {
+            drops[i] = Math.random() * loaderCanvas.height;
+        }
+        
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, loaderCanvas.width, loaderCanvas.height);
+            
+            ctx.fillStyle = '#00ff41';
+            ctx.font = fontSize + 'px monospace';
+            
+            for (let i = 0; i < drops.length; i++) {
+                const char = chars[Math.floor(Math.random() * chars.length)];
+                const y = drops[i] * fontSize;
+                const isRed = Math.random() > 0.85;
+                ctx.fillStyle = isRed ? '#ff0040' : '#00ff41';
+                ctx.fillText(char, i * fontSize, y);
+                
+                if (y > loaderCanvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
+            }
+        }
+        
+        const matrixInterval = setInterval(drawMatrix, 50);
+        
+        window.addEventListener('resize', function() {
+            loaderCanvas.width = window.innerWidth;
+            loaderCanvas.height = window.innerHeight;
+        });
+        
+        if (loader) {
+            setTimeout(function() {
+                clearInterval(matrixInterval);
+                loader.classList.add('hidden');
+            }, 2000);
+        }
+    } else if (loader) {
         setTimeout(function() {
             loader.classList.add('hidden');
         }, 2000);
@@ -713,43 +746,36 @@ async function openAdminPanel() {
     const storedUser = localStorage.getItem('matrixUser');
     const user = storedUser ? JSON.parse(storedUser) : null;
     
-    console.log('Admin check - user:', user);
-    
     if (!user) {
         showMessage('Admin girişi için önce giriş yapmalısınız!', 'warning');
         openAuth();
         return;
     }
     
-    // Firebase user object yapısını kontrol et
     const userEmail = user.email || (user._delegate && user._delegate.email);
     const userUid = user.uid || (user._delegate && user._delegate.uid);
     
-    console.log('userEmail:', userEmail, 'userUid:', userUid);
-    
-    if (!userEmail) {
+    if (!userEmail || !userUid) {
         showMessage('Admin girişi için önce giriş yapmalısınız!', 'warning');
         openAuth();
         return;
     }
     
-    // Admin yetkisini email ile kontrol et
-    const ADMIN_EMAILS = ['admin@matrixcheats.com', 'yusuf@matrixcheats.com', 'ysufrakann@gmail.com'];
     const isAdminByEmail = ADMIN_EMAILS.includes(userEmail.toLowerCase());
-    const hasAdminFlag = user.isAdmin === true;
     
-    console.log('isAdminByEmail:', isAdminByEmail, 'hasAdminFlag:', hasAdminFlag);
-    
-    if (!isAdminByEmail && !hasAdminFlag) {
-        showMessage('Bu sayfaya erişim yetkiniz yok! Admin değilsiniz.', 'error');
-        return;
+    if (!isAdminByEmail) {
+        const hasAdminFlag = user.isAdmin === true;
+        if (!hasAdminFlag) {
+            showMessage('Bu sayfaya erişim yetkiniz yok!', 'error');
+            return;
+        }
+        const isVerifiedAdmin = await verifyAdminStatus(userUid);
+        if (!isVerifiedAdmin) {
+            showMessage('Bu sayfaya erişim yetkiniz yok!', 'error');
+            return;
+        }
     }
     
-    // Admin yetkisini güncelle
-    user.isAdmin = true;
-    localStorage.setItem('matrixUser', JSON.stringify(user));
-    
-    // Tüm modal'ları kapat
     document.querySelectorAll('.modal').forEach(m => m.classList.remove('active'));
     document.getElementById('authModal').style.display = 'none';
     document.getElementById('profileModal').style.display = 'none';
@@ -796,7 +822,6 @@ async function loadSupportRequests() {
     console.log('loadSupportRequests çalıştı');
     const container = document.getElementById('adminSupportList');
     if (!container) {
-        console.log('Container bulunamadı');
         return;
     }
     
@@ -808,7 +833,6 @@ async function loadSupportRequests() {
     
     console.log('getSupportRequests çağrılıyor...');
     const requests = await getSupportRequests();
-    console.log('Gelen talepler:', requests);
     
     if (requests.length === 0) {
         container.innerHTML = '<div style="text-align:center;padding:40px;color:#808080;">Henüz sipariş talebi bulunmuyor.</div>';
@@ -992,10 +1016,6 @@ function saveProducts() {
 }
 
 document.addEventListener('keydown', function(e) {
-    if(e.ctrlKey && e.key === 'q') {
-        e.preventDefault();
-        openAdminPanel();
-    }
     if(e.key === 'Escape') {
         closeAdminPanel();
         closeAuth();
@@ -1024,9 +1044,9 @@ function addNewProduct() {
 function saveAllProducts() {
     products = products.map(p => ({
         ...p,
-        title: document.getElementById('title_' + p.id)?.value || p.title,
-        image: document.getElementById('image_' + p.id)?.value || p.image || '',
-        desc: document.getElementById('desc_' + p.id)?.value || p.desc,
+        title: sanitizeInput(document.getElementById('title_' + p.id)?.value || p.title),
+        image: validateImageUrl(document.getElementById('image_' + p.id)?.value || p.image || ''),
+        desc: sanitizeInput(document.getElementById('desc_' + p.id)?.value || p.desc),
         prices: {
             day: parseInt(document.getElementById('price_day_' + p.id)?.value) || p.prices.day,
             week: parseInt(document.getElementById('price_week_' + p.id)?.value) || p.prices.week,
@@ -1039,7 +1059,7 @@ function saveAllProducts() {
         },
         systemReq: p.systemReq || { os: 'Windows 10/11', processor: 'Intel Core i5', ram: '8GB', gpu: 'GTX 1050' }
     }));
-    console.log('Kaydedilen ürünler:', JSON.stringify(products));
+    
     saveProductsToStorage();
     initProducts();
     renderAdminProducts();

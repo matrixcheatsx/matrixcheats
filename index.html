@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MATRIXCHEATS - Premium Gaming Solutions</title>
     <link rel="stylesheet" href="css/style.css">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://apis.google.com https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com; frame-ancestors 'none';">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
@@ -17,9 +18,15 @@
     <canvas id="matrixCanvas"></canvas>
     
     <div class="loader" id="loader">
-        <div class="loader-text">INITIALIZING MATRIX PROTOCOL...</div>
-        <div class="loader-bar">
-            <div class="loader-progress"></div>
+        <canvas class="loader-canvas" id="loaderCanvas"></canvas>
+        <div class="loader-bg"></div>
+        <div class="loader-content">
+            <div class="loader-logo">◈ MATRIX<span>CHEATS</span></div>
+            <div class="loader-tagline">PREMIUM GAMING SOLUTIONS</div>
+            <div class="loader-text">INITIALIZING SYSTEM...</div>
+            <div class="loader-bar">
+                <div class="loader-progress"></div>
+            </div>
         </div>
     </div>
 
@@ -419,26 +426,26 @@
             }, 1000);
         });
         
-        document.getElementById('closeAdminBtn').addEventListener('click', closeAdminPanel);
-        document.getElementById('addProductBtn').addEventListener('click', addNewProduct);
-        document.getElementById('saveProductsBtn').addEventListener('click', saveAllProducts);
-        document.getElementById('resetProductsBtn').addEventListener('click', resetProducts);
-        
-        // Admin panel tab butonları
-        document.getElementById('btnProducts').addEventListener('click', function() { showAdminTab('products'); });
-        document.getElementById('btnSupport').addEventListener('click', function() { showAdminTab('support'); });
-        document.getElementById('btnSettings').addEventListener('click', function() { showAdminTab('settings'); });
-        
-        // Support tab açılışında talepleri yükle
-        document.getElementById('btnSupport').addEventListener('click', function() {
-            loadSupportRequests();
-        });
-        
-        document.addEventListener('keydown', function(e) {
-            if (e.ctrlKey && e.key === 'q') {
-                e.preventDefault();
-                openAdminPanel();
+        window.addEventListener('load', function() {
+            if (typeof closeAdminPanel === 'function') {
+                document.getElementById('closeAdminBtn').addEventListener('click', closeAdminPanel);
             }
+            if (typeof addNewProduct === 'function') {
+                document.getElementById('addProductBtn').addEventListener('click', addNewProduct);
+            }
+            if (typeof saveAllProducts === 'function') {
+                document.getElementById('saveProductsBtn').addEventListener('click', saveAllProducts);
+            }
+            if (typeof resetProducts === 'function') {
+                document.getElementById('resetProductsBtn').addEventListener('click', resetProducts);
+            }
+            document.getElementById('btnProducts').addEventListener('click', function() { showAdminTab('products'); });
+            document.getElementById('btnSupport').addEventListener('click', function() { showAdminTab('support'); });
+            document.getElementById('btnSettings').addEventListener('click', function() { showAdminTab('settings'); });
+            
+            document.getElementById('btnSupport').addEventListener('click', function() {
+                loadSupportRequests();
+            });
         });
     </script>
 

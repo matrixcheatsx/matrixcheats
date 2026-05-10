@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://apis.google.com https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com; frame-ancestors 'none';">
     <title>Admin Panel - MATRIXCHEATS</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -426,9 +427,6 @@
         let adminProducts = savedProducts ? JSON.parse(savedProducts) : [...products];
         
         function openAdmin() {
-            document.getElementById('adminOverlay').classList.add('active');
-            loadAdminData();
-        }
         
         function closeAdmin() {
             document.getElementById('adminOverlay').classList.remove('active');
@@ -646,13 +644,6 @@
                 </table>
             `;
         }
-        
-        document.addEventListener('keydown', function(e) {
-            if(e.ctrlKey && e.key === 'q') {
-                e.preventDefault();
-                openAdmin();
-            }
-        });
         
         window.addEventListener('load', function() {
             openAdmin();

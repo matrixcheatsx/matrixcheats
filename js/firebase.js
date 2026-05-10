@@ -12,13 +12,15 @@ let db = null;
 let auth = null;
 let firebaseReady = false;
 
+const ADMIN_EMAILS = ['admin@matrixcheats.com', 'yusuf@matrixcheats.com', 'ysufrakann@gmail.com'];
+
 if (typeof firebase !== 'undefined') {
     try {
         firebase.initializeApp(firebaseConfig);
         db = firebase.firestore();
         auth = firebase.auth();
         firebaseReady = true;
-        console.log('Firebase initialized:', firebaseConfig.projectId);
+        console.log('Firebase initialized');
     } catch (e) {
         console.error('Firebase init error:', e);
     }
@@ -75,7 +77,6 @@ async function getCurrentUser() {
                 try {
                     const userDoc = await db.collection(USERS_COLLECTION).doc(user.uid).get();
                     const userData = userDoc.exists ? userDoc.data() : null;
-                    const ADMIN_EMAILS = ['admin@matrixcheats.com', 'yusuf@matrixcheats.com', 'ysufrakann@gmail.com'];
                     const isAdminByEmail = ADMIN_EMAILS.includes(user.email.toLowerCase());
                     const fullUser = { 
                         ...user, 
@@ -83,11 +84,9 @@ async function getCurrentUser() {
                         isAdmin: (userData && userData.isAdmin) || isAdminByEmail
                     };
                     localStorage.setItem('matrixUser', JSON.stringify(fullUser));
-                    console.log('getCurrentUser - fullUser:', fullUser);
                     resolve(fullUser);
                 } catch (e) {
                     console.log('getCurrentUser error:', e);
-                    const ADMIN_EMAILS = ['admin@matrixcheats.com', 'yusuf@matrixcheats.com', 'ysufrakann@gmail.com'];
                     const isAdminByEmail = ADMIN_EMAILS.includes(user.email.toLowerCase());
                     const fullUser = { ...user, isAdmin: isAdminByEmail };
                     localStorage.setItem('matrixUser', JSON.stringify(fullUser));
@@ -187,12 +186,38 @@ async function updateUserProfile(userId, userData) {
     }
 }
 
+function sanitizeInput(str) {
+    if (typeof str !== 'string') return '';
+    return str.replace(/[<>'"&]/g, '');
+}
+
+function validateImageUrl(url) {
+    if (!url || typeof url !== 'string') return '';
+    try {
+        const trimmed = url.trim();
+        if (trimmed === '') return '';
+        const parsed = new URL(trimmed);
+        return ['http:', 'https:'].includes(parsed.protocol) ? trimmed : '';
+    } catch {
+        return '';
+    }
+}
+
+async function verifyAdminStatus(userId) {
+    if (!firebaseReady || !db || !userId) return false;
+    try {
+        const userDoc = await db.collection(USERS_COLLECTION).doc(userId).get();
+        return userDoc.exists && userDoc.data().isAdmin === true;
+    } catch (e) {
+        console.error('Admin verification error:', e);
+        return false;
+    }
+}
+
 function isAdmin() {
     const user = JSON.parse(localStorage.getItem('matrixUser') || '{}');
     return user.isAdmin === true;
 }
-
-const ADMIN_EMAILS = ['admin@matrixcheats.com', 'yusuf@matrixcheats.com', 'ysufrakann@gmail.com'];
 
 async function setUserAdmin(email, isAdminRole) {
     if (!firebaseReady || !db) return { success: false, error: 'Firebase not connected!' };
@@ -298,10 +323,10 @@ async function createSupportRequest(supportData) {
 }
 
 async function getSupportRequests() {
-    console.log('getSupportRequests çağrıldı, firebaseReady:', firebaseReady, 'db:', !!db);
+        console.log('getSupportRequests çağrıldı');
     if (!firebaseReady || !db) return [];
     try {
-        console.log('Firestore query yapılıyor...');
+        console.log('Firestore query yapılıyor');
         const snapshot = await db.collection(SUPPORT_COLLECTION).orderBy('createdAt', 'desc').get();
         console.log('Snapshot size:', snapshot.size);
         return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -321,6 +346,9 @@ async function updateSupportStatus(requestId, status) {
     }
 }
 
+window.verifyAdminStatus = verifyAdminStatus;
+window.sanitizeInput = sanitizeInput;
+window.validateImageUrl = validateImageUrl;
 window.loginWithGoogle = loginWithGoogle;
 window.resetPassword = resetPassword;
 window.updateUserPassword = updateUserPassword;
