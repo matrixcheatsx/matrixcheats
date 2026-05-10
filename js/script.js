@@ -79,25 +79,35 @@ function validateImageUrl(url) {
 let products = [];
 
 async function loadProductsFromStorage() {
+    console.log('loadProductsFromStorage - başladı');
+    
     if (window.firebaseReady && window.getProductsFromDB) {
+        console.log('Firebase\'den ürünler çekiliyor...');
         try {
             const dbProducts = await window.getProductsFromDB();
+            console.log('Firebase ürünleri:', dbProducts);
             if (dbProducts && Array.isArray(dbProducts) && dbProducts.length > 0) {
                 products = dbProducts;
                 localStorage.setItem('matrixProducts', JSON.stringify(products));
+                console.log('Firebase\'den yüklendi:', products.length, 'ürün');
                 return;
             }
+            console.log('Firebase\'de ürün yok veya boş array');
         } catch (e) {
-            console.log('Firebase\'den ürün çekilemedi');
+            console.log('Firebase hatası:', e);
         }
+    } else {
+        console.log('Firebase hazır değil veya getProductsFromDB yok');
     }
     
     const stored = localStorage.getItem('matrixProducts');
+    console.log('localStorage products:', stored);
     if (stored) {
         try {
             const parsed = JSON.parse(stored);
             if (Array.isArray(parsed) && parsed.length > 0) {
                 products = parsed;
+                console.log('localStorage\'dan yüklendi:', products.length, 'ürün');
                 return;
             }
         } catch (e) {
@@ -105,6 +115,7 @@ async function loadProductsFromStorage() {
         }
     }
     products = [];
+    console.log('Son ürünler:', products);
 }
 
 async function syncProductsFromFirebase() {
@@ -532,6 +543,8 @@ function initProducts() {
     const grid = document.getElementById('productsGrid');
     if (!grid) return;
     grid.innerHTML = '';
+    
+    console.log('initProducts - ürün sayısı:', products.length);
     
     if (products.length === 0) {
         grid.innerHTML = '<div style="text-align:center;padding:50px;color:#808080;font-family:\'Share Tech Mono\',monospace;"><p style="font-size:1.2rem;margin-bottom:10px;">◈</p><p>Henüz ürün eklenmemiş.</p></div>';
@@ -963,22 +976,34 @@ function renderAdminOrders() {
 
 function renderAdminProducts() {
     const container = document.getElementById('adminProductsList');
+    if (!container) {
+        console.log('adminProductsList container not found');
+        return;
+    }
+    
+    console.log('renderAdminProducts - products:', products);
+    
+    if (products.length === 0) {
+        container.innerHTML = '<div style="text-align:center;padding:40px;color:#808080;">Ürün yok. "Yeni Ürün" butonuna tıklayarak ekleyin.</div>';
+        return;
+    }
+    
     const paymentLinks = p => p.paymentLinks || { day: '', week: '', month: '' };
     container.innerHTML = products.map(p => `
         <div style="background:transparent;border:1px solid #00ff41;padding:20px;margin-bottom:20px;border-radius:8px;">
             <div style="display:flex;justify-content:space-between;margin-bottom:15px;">
-                <span style="color:#00ff41;font-family:'Orbitron',sans-serif;">${p.icon} ${p.title}</span>
+                <span style="color:#00ff41;font-family:'Orbitron',sans-serif;">${p.icon || '🎮'} ${p.title}</span>
                 <button onclick="deleteProduct(${p.id})" style="background:#ff5252;border:none;color:white;padding:8px 15px;cursor:pointer;border-radius:4px;">Sil</button>
             </div>
             <div style="margin-bottom:10px;">
                 <input type="text" id="title_${p.id}" value="${p.title}" placeholder="Ürün Adı" style="width:100%;padding:8px;background:#050505;border:1px solid #1a1a1a;color:#e0e0e0;">
             </div>
             <input type="text" id="image_${p.id}" value="${p.image || ''}" placeholder="🖼️ Resim URL (opsiyonel)" style="width:100%;padding:8px;margin-bottom:10px;background:#050505;border:1px solid #1a1a1a;color:#e0e0e0;">
-            <textarea id="desc_${p.id}" style="width:100%;padding:8px;margin-bottom:10px;background:#050505;border:1px solid #1a1a1a;color:#e0e0e0;min-height:50px;">${p.desc}</textarea>
+            <textarea id="desc_${p.id}" style="width:100%;padding:8px;margin-bottom:10px;background:#050505;border:1px solid #1a1a1a;color:#e0e0e0;min-height:50px;">${p.desc || ''}</textarea>
             <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px;">
-                <input type="number" id="price_day_${p.id}" value="${p.prices.day}" placeholder="1 Gün - Fiyat" style="padding:8px;background:#050505;border:1px solid #1a1a1a;color:#e0e0e0;">
-                <input type="number" id="price_week_${p.id}" value="${p.prices.week}" placeholder="1 Hafta - Fiyat" style="padding:8px;background:#050505;border:1px solid #1a1a1a;color:#e0e0e0;">
-                <input type="number" id="price_month_${p.id}" value="${p.prices.month}" placeholder="1 Ay - Fiyat" style="padding:8px;background:#050505;border:1px solid #1a1a1a;color:#e0e0e0;">
+                <input type="number" id="price_day_${p.id}" value="${p.prices?.day || 0}" placeholder="1 Gün - Fiyat" style="padding:8px;background:#050505;border:1px solid #1a1a1a;color:#e0e0e0;">
+                <input type="number" id="price_week_${p.id}" value="${p.prices?.week || 0}" placeholder="1 Hafta - Fiyat" style="padding:8px;background:#050505;border:1px solid #1a1a1a;color:#e0e0e0;">
+                <input type="number" id="price_month_${p.id}" value="${p.prices?.month || 0}" placeholder="1 Ay - Fiyat" style="padding:8px;background:#050505;border:1px solid #1a1a1a;color:#e0e0e0;">
             </div>
             <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
                 <input type="text" id="payment_day_${p.id}" value="${paymentLinks(p).day}" placeholder="1 Gün - Ödeme Linki" style="padding:8px;background:#050505;border:1px solid #ff0040;color:#ff0040;">
@@ -1074,6 +1099,9 @@ function addNewProduct() {
 }
 
 async function saveAllProducts() {
+    console.log('saveAllProducts - başladı, products:', products);
+    console.log('firebaseReady:', window.firebaseReady, 'db:', !!window.db);
+    
     const updatedProducts = [];
     
     for (const p of products) {
@@ -1087,22 +1115,21 @@ async function saveAllProducts() {
         const payWeekEl = document.getElementById('payment_week_' + p.id);
         const payMonthEl = document.getElementById('payment_month_' + p.id);
         
-        if (!titleEl || !descEl) {
-            console.warn('Ürün input\'ları bulunamadı:', p.id);
-            continue;
+        if (!titleEl) {
+            console.warn('title input not found for product:', p.id);
         }
         
         updatedProducts.push({
             id: p.id,
             icon: p.icon || '🎮',
-            title: sanitizeInput(titleEl.value) || p.title,
+            title: titleEl ? titleEl.value : (p.title || 'Yeni Ürün'),
             image: validateImageUrl(imgEl?.value || p.image || ''),
-            desc: sanitizeInput(descEl.value) || p.desc,
+            desc: descEl ? descEl.value : (p.desc || ''),
             features: p.features || [],
             prices: {
-                day: parseInt(dayEl?.value) || p.prices.day || 0,
-                week: parseInt(weekEl?.value) || p.prices.week || 0,
-                month: parseInt(monthEl?.value) || p.prices.month || 0
+                day: parseInt(dayEl?.value) || p.prices?.day || 0,
+                week: parseInt(weekEl?.value) || p.prices?.week || 0,
+                month: parseInt(monthEl?.value) || p.prices?.month || 0
             },
             paymentLinks: {
                 day: payDayEl?.value || p.paymentLinks?.day || '',
@@ -1112,6 +1139,8 @@ async function saveAllProducts() {
             systemReq: p.systemReq || { os: 'Windows 10/11', processor: 'Intel Core i5', ram: '8GB', gpu: 'GTX 1050' }
         });
     }
+    
+    console.log('updatedProducts:', updatedProducts);
     
     if (updatedProducts.length === 0) {
         showMessage('Kaydedilecek ürün bulunamadı!', 'warning');
@@ -1123,13 +1152,18 @@ async function saveAllProducts() {
     
     if (window.firebaseReady && window.db) {
         try {
+            console.log('Firebase\'ye kaydediliyor...');
             await window.db.collection('products').doc('products_list').set({
                 products: products,
                 updatedAt: new Date()
             });
+            console.log('Firebase kaydetme başarılı!');
         } catch (e) {
-            console.error('Firebase save error:', e);
+            console.error('Firebase kaydetme hatası:', e);
+            showMessage('Firebase kaydetme hatası: ' + e.message, 'error');
         }
+    } else {
+        console.warn('Firebase bağlı değil, sadece localStorage\'a kaydedildi');
     }
     
     initProducts();
