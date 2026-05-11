@@ -5,6 +5,10 @@ async function loadProduct() {
     const urlParams = new URLSearchParams(window.location.search);
     const productId = parseInt(urlParams.get('id'));
     
+    if (products.length === 0) {
+        await loadProductsFromStorage();
+    }
+    
     console.log('Product ID:', productId);
     console.log('Tüm ürünler:', products);
     
