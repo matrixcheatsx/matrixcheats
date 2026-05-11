@@ -194,5 +194,96 @@
             initLoader();
         });
     </script>
+
+    <!-- Profile Modal -->
+    <div class="modal" id="profileModal">
+        <div class="profile-modal-wrapper">
+            <div class="profile-modal-frame">
+                <div class="auth-corner tl"></div>
+                <div class="auth-corner tr"></div>
+                <div class="auth-corner bl"></div>
+                <div class="auth-corner br"></div>
+                <button class="modal-close" onclick="closeProfileModal()">×</button>
+                <div class="profile-header">
+                    <div class="profile-avatar">◈</div>
+                    <h2 class="profile-title">HESABIM</h2>
+                    <p class="profile-email" id="profileEmail">kullanici@email.com</p>
+                </div>
+                <div class="profile-menu">
+                    <a href="orders.html" class="profile-menu-item">
+                        <span class="profile-icon">📦</span>
+                        <span>Siparişlerim</span>
+                        <span class="profile-arrow">›</span>
+                    </a>
+                    <a href="#" class="profile-menu-item" onclick="openSupportModal(); return false;">
+                        <span class="profile-icon">🎫</span>
+                        <span>Sipariş Talebi Gönder</span>
+                        <span class="profile-arrow">›</span>
+                    </a>
+                    <div class="profile-menu-item" onclick="openAdminFromProfile()" id="adminMenuItem" style="display: none;">
+                        <span class="profile-icon">⚙️</span>
+                        <span>Admin Panel</span>
+                        <span class="profile-arrow">›</span>
+                    </div>
+                </div>
+                <div class="profile-footer">
+                    <button class="btn-logout" onclick="handleLogout()">
+                        <span>◈</span> ÇIKIŞ YAP
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Support Modal -->
+    <div class="modal" id="supportModal">
+        <div class="auth-modal-wrapper">
+            <div class="auth-modal-frame" style="max-width:450px;">
+                <div class="auth-corner tl"></div>
+                <div class="auth-corner tr"></div>
+                <div class="auth-corner bl"></div>
+                <div class="auth-corner br"></div>
+                <button class="modal-close" onclick="closeSupportModal()">×</button>
+                <div class="auth-header">
+                    <span class="auth-logo">📋</span>
+                    <span class="auth-title">SİPARİŞ<span>TALEBİ</span></span>
+                </div>
+                <form id="supportForm">
+                    <div class="auth-input-group">
+                        <select id="supportGame" required style="width:100%;padding:15px;background:transparent;border:none;color:#00ff41;font-family:'Share Tech Mono',monospace;font-size:1rem;border-bottom:2px solid #ff0040;">
+                            <option value="">Oyun Seçin</option>
+                            <option value="VALORANT">VALORANT</option>
+                            <option value="CS2">CS2</option>
+                            <option value="NBA 2K24">NBA 2K24</option>
+                            <option value="EA FC 24">EA FC 24</option>
+                            <option value="APEX LEGENDS">APEX LEGENDS</option>
+                            <option value="Rust">Rust</option>
+                            <option value="Diğer">Diğer</option>
+                        </select>
+                    </div>
+                    <div class="auth-input-group">
+                        <select id="supportPackage" required style="width:100%;padding:15px;background:transparent;border:none;color:#00ff41;font-family:'Share Tech Mono',monospace;font-size:1rem;border-bottom:2px solid #ff0040;">
+                            <option value="">Paket Seçin</option>
+                            <option value="1 Gün">1 Gün</option>
+                            <option value="1 Hafta">1 Hafta</option>
+                            <option value="1 Ay">1 Ay</option>
+                        </select>
+                    </div>
+                    <div class="auth-input-group">
+                        <input type="text" id="supportOrderNumber" required placeholder="Sipariş Numaranız (5-15 rakam)" pattern="[0-9]{5,15}" minlength="5" maxlength="15" style="width:100%;padding:15px;background:transparent;border:none;color:#00ff41;font-family:'Share Tech Mono',monospace;font-size:1rem;border-bottom:2px solid #ff0040;">
+                        <div class="auth-input-line"></div>
+                    </div>
+                    <div class="auth-input-group">
+                        <textarea id="supportNote" placeholder="Ek not (opsiyonel)" rows="3" style="width:100%;padding:15px;background:transparent;border:none;color:#00ff41;font-family:'Share Tech Mono',monospace;font-size:1rem;border-bottom:2px solid #ff0040;resize:none;"></textarea>
+                        <div class="auth-input-line"></div>
+                    </div>
+                    <button type="submit" class="btn-auth">GÖNDER</button>
+                </form>
+                <div class="auth-footer">
+                    <span>◈ Talep gönderildikten sonra size Discord'dan ulaşacağız</span>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

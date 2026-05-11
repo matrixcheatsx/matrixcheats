@@ -232,5 +232,22 @@ window.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
         closeAuth();
         closeProfileModal();
+        closeSupportModal();
+    }
+});
+
+function openSupportModal() {
+    document.getElementById('supportModal').classList.add('active');
+    document.getElementById('profileModal').classList.remove('active');
+}
+
+function closeSupportModal() {
+    document.getElementById('supportModal').classList.remove('active');
+}
+
+window.addEventListener('click', function(e) {
+    const supportModal = document.getElementById('supportModal');
+    if (e.target === supportModal) {
+        closeSupportModal();
     }
 });
