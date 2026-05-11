@@ -291,6 +291,32 @@ function renderProductsEdit() {
                     <input type="number" id="price_month_${product.id}" value="${product.prices?.month || 0}">
                 </div>
             </div>
+            
+            <div class="admin-form-group">
+                <label>◈ ÖZELLİKLER ◈</label>
+                <div id="features_${product.id}" class="features-edit-list">
+                    ${(product.features || []).map((f, fi) => `
+                        <div class="feature-edit-item">
+                            <input type="text" class="feature-input" id="feature_${product.id}_${fi}" value="${f}">
+                            <button class="action-btn danger small" onclick="removeFeature(${product.id}, ${fi})">✕</button>
+                        </div>
+                    `).join('')}
+                </div>
+                <button class="action-btn" onclick="addFeature(${product.id})" style="margin-top: 10px;">+ Özellik Ekle</button>
+            </div>
+            
+            <div class="admin-form-group" style="margin-top: 20px;">
+                <label>◈ SİSTEM GEREKSİNİMLERİ ◈</label>
+                <div class="form-row" style="margin-top: 10px;">
+                    <input type="text" id="sys_os_${product.id}" value="${product.systemReq?.os || 'Windows 10/11'}" placeholder="İşletim Sistemi">
+                    <input type="text" id="sys_cpu_${product.id}" value="${product.systemReq?.processor || 'Intel Core i5'}" placeholder="İşlemci">
+                </div>
+                <div class="form-row">
+                    <input type="text" id="sys_ram_${product.id}" value="${product.systemReq?.ram || '8GB'}" placeholder="RAM">
+                    <input type="text" id="sys_gpu_${product.id}" value="${product.systemReq?.gpu || 'GTX 1050'}" placeholder="Ekran Kartı">
+                </div>
+                <input type="text" id="sys_storage_${product.id}" value="${product.systemReq?.storage || '500MB'}" placeholder="Depolama" style="margin-top: 10px;">
+            </div>
         </div>
     `).join('');
 }
@@ -303,7 +329,7 @@ function addNewProduct() {
         image: '',
         title: 'YENİ ÜRÜN',
         desc: 'Ürün açıklaması',
-        features: ['Özellik 1', 'Özellik 2'],
+        features: ['Aim Assist - Hassas nişan sistemi', 'ESP - Oyuncu görünürlüğü', 'Skin Changer - Karakter görünümü', 'Anti-Ban koruma'],
         prices: { day: 99, week: 249, month: 399 },
         systemReq: { os: 'Windows 10/11', processor: 'Intel Core i5', ram: '8GB', gpu: 'GTX 1050', storage: '500MB' }
     };
@@ -319,6 +345,30 @@ function deleteAdminProduct(productId) {
     });
 }
 
+function addFeature(productId) {
+    const product = adminProducts.find(p => p.id === productId);
+    if (!product) return;
+    
+    if (!product.features) {
+        product.features = [];
+    }
+    product.features.push('Yeni özellik');
+    renderProductsEdit();
+    
+    setTimeout(() => {
+        const newInput = document.getElementById(`feature_${productId}_${product.features.length - 1}`);
+        if (newInput) newInput.focus();
+    }, 50);
+}
+
+function removeFeature(productId, featureIndex) {
+    const product = adminProducts.find(p => p.id === productId);
+    if (!product || !product.features) return;
+    
+    product.features.splice(featureIndex, 1);
+    renderProductsEdit();
+}
+
 async function saveAllAdminProducts() {
     if (adminProducts.length === 0) {
         showMessage('Kaydedilecek ürün yok!', 'warning');
@@ -332,16 +382,37 @@ async function saveAllAdminProducts() {
         const dayPriceEl = document.getElementById(`price_day_${product.id}`);
         const weekPriceEl = document.getElementById(`price_week_${product.id}`);
         const monthPriceEl = document.getElementById(`price_month_${product.id}`);
+        const featuresContainer = document.getElementById(`features_${product.id}`);
+        
+        const sysOsEl = document.getElementById(`sys_os_${product.id}`);
+        const sysCpuEl = document.getElementById(`sys_cpu_${product.id}`);
+        const sysRamEl = document.getElementById(`sys_ram_${product.id}`);
+        const sysGpuEl = document.getElementById(`sys_gpu_${product.id}`);
+        const sysStorageEl = document.getElementById(`sys_storage_${product.id}`);
+        
+        let features = product.features || [];
+        if (featuresContainer) {
+            const featureInputs = featuresContainer.querySelectorAll('.feature-input');
+            features = Array.from(featureInputs).map(input => input.value.trim()).filter(f => f.length > 0);
+        }
         
         return {
             ...product,
             icon: iconEl ? iconEl.value : product.icon,
             title: titleEl ? titleEl.value : product.title,
             desc: descEl ? descEl.value : product.desc,
+            features: features,
             prices: {
                 day: parseInt(dayPriceEl?.value) || product.prices?.day || 0,
                 week: parseInt(weekPriceEl?.value) || product.prices?.week || 0,
                 month: parseInt(monthPriceEl?.value) || product.prices?.month || 0
+            },
+            systemReq: {
+                os: sysOsEl?.value || 'Windows 10/11',
+                processor: sysCpuEl?.value || 'Intel Core i5',
+                ram: sysRamEl?.value || '8GB',
+                gpu: sysGpuEl?.value || 'GTX 1050',
+                storage: sysStorageEl?.value || '500MB'
             }
         };
     });

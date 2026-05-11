@@ -379,6 +379,38 @@
     color: white;
 }
 
+.features-edit-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.feature-edit-item {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.feature-input {
+    flex: 1;
+    padding: 10px 15px !important;
+    background: var(--bg-dark) !important;
+    border: 1px solid var(--border) !important;
+    color: var(--text) !important;
+    font-family: 'Share Tech Mono', monospace !important;
+}
+
+.feature-input:focus {
+    border-color: var(--primary) !important;
+    outline: none;
+}
+
+.action-btn.small {
+    padding: 5px 10px;
+    font-size: 0.75rem;
+}
+
 @media (max-width: 1024px) {
     .admin-stats {
         grid-template-columns: repeat(2, 1fr);

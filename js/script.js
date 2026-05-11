@@ -148,8 +148,41 @@ async function loadProductsFromStorage() {
             products = [];
         }
     }
-    products = [];
-    console.log('Son ürünler:', products);
+    
+    products = [
+        {
+            id: 1,
+            icon: '🎯',
+            image: '',
+            title: 'VALORANT CHEAT',
+            desc: 'En güncel ve güvenli VALORANT hile yazılımı.',
+            features: ['Aimbot - Hassas nişan sistemi', 'ESP - Oyuncu görünürlüğü', 'Skin Changer', 'Wallhack', 'Anti-Ban koruma', 'Otomatik güncelleme'],
+            prices: { day: 49, week: 149, month: 299 },
+            systemReq: { os: 'Windows 10/11', processor: 'Intel Core i5', ram: '8GB', gpu: 'GTX 1050', storage: '500MB' }
+        },
+        {
+            id: 2,
+            icon: '🔫',
+            image: '',
+            title: 'CS2 CHEAT',
+            desc: 'Counter-Strike 2 için en iyi hile çözümü.',
+            features: ['Aimbot - Hassas nişan', 'ESP - Oyuncu görünürlüğü', 'Skin Changer', 'Radar Hack', 'Bhop Helper'],
+            prices: { day: 59, week: 169, month: 349 },
+            systemReq: { os: 'Windows 10/11', processor: 'Intel Core i5', ram: '8GB', gpu: 'GTX 1050', storage: '500MB' }
+        },
+        {
+            id: 3,
+            icon: '🏀',
+            image: '',
+            title: 'NBA 2K24 CHEAT',
+            desc: 'NBA 2K24 için hile yazılımı.',
+            features: ['VC Generator', 'Player Stats Editor', 'Unlock All', 'Skill Cheat'],
+            prices: { day: 79, week: 199, month: 399 },
+            systemReq: { os: 'Windows 10/11', processor: 'Intel Core i7', ram: '16GB', gpu: 'RTX 2060', storage: '1GB' }
+        }
+    ];
+    localStorage.setItem('matrixProducts', JSON.stringify(products));
+    console.log('Varsayılan ürünler yüklendi:', products.length);
 }
 
 async function syncProductsFromFirebase() {
