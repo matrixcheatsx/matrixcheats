@@ -1116,7 +1116,11 @@ function renderAdminProducts() {
     }
     
     const paymentLinks = p => p.paymentLinks || { day: '', week: '', month: '' };
-    container.innerHTML = products.map(p => `
+    container.innerHTML = products.map(p => {
+        const features = p.features || [];
+        const sysReq = p.systemReq || { os: 'Windows 10/11', processor: 'Intel Core i5', ram: '8GB', gpu: 'GTX 1050', storage: '500MB' };
+        
+        return `
         <div style="background:transparent;border:1px solid #00ff41;padding:20px;margin-bottom:20px;border-radius:8px;">
             <div style="display:flex;justify-content:space-between;margin-bottom:15px;">
                 <span style="color:#00ff41;font-family:'Orbitron',sans-serif;">${p.icon || '🎮'} ${p.title}</span>
@@ -1132,13 +1136,40 @@ function renderAdminProducts() {
                 <input type="number" id="price_week_${p.id}" value="${p.prices?.week || 0}" placeholder="1 Hafta - Fiyat" style="padding:8px;background:#050505;border:1px solid #1a1a1a;color:#e0e0e0;">
                 <input type="number" id="price_month_${p.id}" value="${p.prices?.month || 0}" placeholder="1 Ay - Fiyat" style="padding:8px;background:#050505;border:1px solid #1a1a1a;color:#e0e0e0;">
             </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:15px;">
                 <input type="text" id="payment_day_${p.id}" value="${paymentLinks(p).day}" placeholder="1 Gün - Ödeme Linki" style="padding:8px;background:#050505;border:1px solid #ff0040;color:#ff0040;">
                 <input type="text" id="payment_week_${p.id}" value="${paymentLinks(p).week}" placeholder="1 Hafta - Ödeme Linki" style="padding:8px;background:#050505;border:1px solid #ff0040;color:#ff0040;">
                 <input type="text" id="payment_month_${p.id}" value="${paymentLinks(p).month}" placeholder="1 Ay - Ödeme Linki" style="padding:8px;background:#050505;border:1px solid #ff0040;color:#ff0040;">
             </div>
+            
+            <!-- ÖZELLİKLER -->
+            <div style="margin-bottom:15px;padding:15px;background:rgba(0,255,65,0.05);border:1px solid #1a1a1a;border-radius:5px;">
+                <div style="color:#00ff41;font-family:'Orbitron',sans-serif;margin-bottom:10px;font-size:0.9rem;">◈ ÖZELLİKLER ◈</div>
+                <div id="features_list_${p.id}">
+                    ${features.map((f, fi) => `
+                        <div style="display:flex;gap:5px;margin-bottom:5px;">
+                            <input type="text" class="feature-input" data-pid="${p.id}" data-fi="${fi}" value="${f}" style="flex:1;padding:8px;background:#050505;border:1px solid #1a1a1a;color:#e0e0e0;">
+                            <button onclick="removeProductFeature(${p.id}, ${fi})" style="background:#ff5252;border:none;color:white;padding:8px 12px;cursor:pointer;border-radius:4px;">✕</button>
+                        </div>
+                    `).join('')}
+                </div>
+                <button onclick="addProductFeature(${p.id})" style="background:transparent;border:1px solid #00ff41;color:#00ff41;padding:8px 15px;cursor:pointer;border-radius:4px;font-size:0.8rem;margin-top:5px;">+ Özellik Ekle</button>
+            </div>
+            
+            <!-- SİSTEM GEREKSİNİMLERİ -->
+            <div style="padding:15px;background:rgba(255,0,64,0.05);border:1px solid #1a1a1a;border-radius:5px;">
+                <div style="color:#ff0040;font-family:'Orbitron',sans-serif;margin-bottom:10px;font-size:0.9rem;">◈ SİSTEM GEREKSİNİMLERİ ◈</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                    <input type="text" id="sys_os_${p.id}" value="${sysReq.os}" placeholder="İşletim Sistemi" style="padding:8px;background:#050505;border:1px solid #1a1a1a;color:#e0e0e0;">
+                    <input type="text" id="sys_cpu_${p.id}" value="${sysReq.processor}" placeholder="İşlemci" style="padding:8px;background:#050505;border:1px solid #1a1a1a;color:#e0e0e0;">
+                    <input type="text" id="sys_ram_${p.id}" value="${sysReq.ram}" placeholder="RAM" style="padding:8px;background:#050505;border:1px solid #1a1a1a;color:#e0e0e0;">
+                    <input type="text" id="sys_gpu_${p.id}" value="${sysReq.gpu}" placeholder="Ekran Kartı" style="padding:8px;background:#050505;border:1px solid #1a1a1a;color:#e0e0e0;">
+                </div>
+                <input type="text" id="sys_storage_${p.id}" value="${sysReq.storage}" placeholder="Depolama" style="width:100%;padding:8px;margin-top:10px;background:#050505;border:1px solid #1a1a1a;color:#e0e0e0;">
+            </div>
         </div>
-    `).join('');
+    `;
+    }).join('');
 }
 
 function addProduct() {
@@ -1149,10 +1180,29 @@ function addProduct() {
         image: '',
         title: 'YENİ ÜRÜN',
         desc: 'Ürün açıklaması',
-        features: ['Özellik'],
+        features: ['Aimbot - Hassas nişan', 'ESP - Oyuncu görünürlüğü', 'Anti-Ban koruma'],
         prices: { day: 99, week: 249, month: 399 },
-        systemReq: { os: 'Windows 10/11', processor: 'Intel Core i5', ram: '8GB', gpu: 'GTX 1050' }
+        systemReq: { os: 'Windows 10/11', processor: 'Intel Core i5', ram: '8GB', gpu: 'GTX 1050', storage: '500MB' }
     });
+    renderAdminProducts();
+}
+
+function addProductFeature(productId) {
+    const product = products.find(p => p.id === productId);
+    if (!product) return;
+    if (!product.features) product.features = [];
+    product.features.push('Yeni özellik');
+    renderAdminProducts();
+    setTimeout(() => {
+        const inputs = document.querySelectorAll(`#features_list_${productId} .feature-input`);
+        if (inputs.length > 0) inputs[inputs.length - 1].focus();
+    }, 50);
+}
+
+function removeProductFeature(productId, featureIndex) {
+    const product = products.find(p => p.id === productId);
+    if (!product || !product.features) return;
+    product.features.splice(featureIndex, 1);
     renderAdminProducts();
 }
 
@@ -1167,23 +1217,39 @@ function deleteProduct(id) {
 }
 
 async function saveProductInputs() {
-    products = products.map(p => ({
-        ...p,
-        title: sanitizeInput(document.getElementById('title_' + p.id)?.value || p.title),
-        image: validateImageUrl(document.getElementById('image_' + p.id)?.value || p.image || ''),
-        desc: sanitizeInput(document.getElementById('desc_' + p.id)?.value || p.desc),
-        prices: {
-            day: parseInt(document.getElementById('price_day_' + p.id)?.value) || p.prices.day,
-            week: parseInt(document.getElementById('price_week_' + p.id)?.value) || p.prices.week,
-            month: parseInt(document.getElementById('price_month_' + p.id)?.value) || p.prices.month
-        },
-        paymentLinks: {
-            day: document.getElementById('payment_day_' + p.id)?.value || '',
-            week: document.getElementById('payment_week_' + p.id)?.value || '',
-            month: document.getElementById('payment_month_' + p.id)?.value || ''
-        },
-        systemReq: p.systemReq || { os: 'Windows 10/11', processor: 'Intel Core i5', ram: '8GB', gpu: 'GTX 1050' }
-    }));
+    products = products.map(p => {
+        const featuresContainer = document.getElementById(`features_list_${p.id}`);
+        let features = p.features || [];
+        if (featuresContainer) {
+            const inputs = featuresContainer.querySelectorAll('.feature-input');
+            features = Array.from(inputs).map(input => input.value.trim()).filter(f => f.length > 0);
+        }
+        
+        return {
+            ...p,
+            title: sanitizeInput(document.getElementById('title_' + p.id)?.value || p.title),
+            image: validateImageUrl(document.getElementById('image_' + p.id)?.value || p.image || ''),
+            desc: sanitizeInput(document.getElementById('desc_' + p.id)?.value || p.desc),
+            features: features,
+            prices: {
+                day: parseInt(document.getElementById('price_day_' + p.id)?.value) || p.prices.day,
+                week: parseInt(document.getElementById('price_week_' + p.id)?.value || p.prices.week),
+                month: parseInt(document.getElementById('price_month_' + p.id)?.value || p.prices.month)
+            },
+            paymentLinks: {
+                day: document.getElementById('payment_day_' + p.id)?.value || '',
+                week: document.getElementById('payment_week_' + p.id)?.value || '',
+                month: document.getElementById('payment_month_' + p.id)?.value || ''
+            },
+            systemReq: {
+                os: document.getElementById(`sys_os_${p.id}`)?.value || p.systemReq?.os || 'Windows 10/11',
+                processor: document.getElementById(`sys_cpu_${p.id}`)?.value || p.systemReq?.processor || 'Intel Core i5',
+                ram: document.getElementById(`sys_ram_${p.id}`)?.value || p.systemReq?.ram || '8GB',
+                gpu: document.getElementById(`sys_gpu_${p.id}`)?.value || p.systemReq?.gpu || 'GTX 1050',
+                storage: document.getElementById(`sys_storage_${p.id}`)?.value || p.systemReq?.storage || '500MB'
+            }
+        };
+    });
     
     saveProductsToStorage();
     
@@ -1242,6 +1308,19 @@ async function saveAllProducts() {
         const payWeekEl = document.getElementById('payment_week_' + p.id);
         const payMonthEl = document.getElementById('payment_month_' + p.id);
         
+        const sysOsEl = document.getElementById('sys_os_' + p.id);
+        const sysCpuEl = document.getElementById('sys_cpu_' + p.id);
+        const sysRamEl = document.getElementById('sys_ram_' + p.id);
+        const sysGpuEl = document.getElementById('sys_gpu_' + p.id);
+        const sysStorageEl = document.getElementById('sys_storage_' + p.id);
+        
+        const featuresContainer = document.getElementById('features_list_' + p.id);
+        let features = p.features || [];
+        if (featuresContainer) {
+            const inputs = featuresContainer.querySelectorAll('.feature-input');
+            features = Array.from(inputs).map(input => input.value.trim()).filter(f => f.length > 0);
+        }
+        
         if (!titleEl) {
             console.warn('title input not found for product:', p.id);
         }
@@ -1252,7 +1331,7 @@ async function saveAllProducts() {
             title: titleEl ? titleEl.value : (p.title || 'Yeni Ürün'),
             image: validateImageUrl(imgEl?.value || p.image || ''),
             desc: descEl ? descEl.value : (p.desc || ''),
-            features: p.features || [],
+            features: features,
             prices: {
                 day: parseInt(dayEl?.value) || p.prices?.day || 0,
                 week: parseInt(weekEl?.value) || p.prices?.week || 0,
@@ -1263,7 +1342,13 @@ async function saveAllProducts() {
                 week: payWeekEl?.value || p.paymentLinks?.week || '',
                 month: payMonthEl?.value || p.paymentLinks?.month || ''
             },
-            systemReq: p.systemReq || { os: 'Windows 10/11', processor: 'Intel Core i5', ram: '8GB', gpu: 'GTX 1050' }
+            systemReq: {
+                os: sysOsEl?.value || p.systemReq?.os || 'Windows 10/11',
+                processor: sysCpuEl?.value || p.systemReq?.processor || 'Intel Core i5',
+                ram: sysRamEl?.value || p.systemReq?.ram || '8GB',
+                gpu: sysGpuEl?.value || p.systemReq?.gpu || 'GTX 1050',
+                storage: sysStorageEl?.value || p.systemReq?.storage || '500MB'
+            }
         });
     }
     
