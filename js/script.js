@@ -675,7 +675,6 @@ function initProducts() {
             ${imageHTML}
             <h3 class="product-title">${product.title}</h3>
             <p class="product-desc">${product.desc}</p>
-            <ul class="product-features">${featuresHTML}</ul>
             <div class="product-price">₺${cheapestPrice}<span>${cheapestLabel} en ucuz</span></div>
             <button class="btn-product" onclick="viewProduct(${product.id})">DETAYLI İNCELE</button>
         `;
