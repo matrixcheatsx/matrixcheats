@@ -42,8 +42,22 @@ async function loadProduct() {
     if (descEl) descEl.textContent = currentProduct.desc;
     
     const featuresGrid = document.getElementById('featuresGrid');
-    if (featuresGrid && currentProduct.features) {
-        const featuresHTML = currentProduct.features.map(f => `
+    console.log('Ürün özellikleri:', currentProduct.features);
+    
+    let features = currentProduct.features || [];
+    
+    if (features.length === 0) {
+        features = [
+            'Aimbot - Hassas nişan sistemi',
+            'ESP - Oyuncu görünürlüğü',
+            'Skin Changer - Silah görünümü değiştirme',
+            'Wallhack - Duvarların arkasını görme',
+            'Anti-Ban koruma sistemi'
+        ];
+    }
+    
+    if (featuresGrid) {
+        const featuresHTML = features.map(f => `
             <div class="feature-item">
                 <span class="feature-icon">✓</span>
                 <span class="feature-text">${f}</span>
@@ -52,7 +66,14 @@ async function loadProduct() {
         featuresGrid.innerHTML = featuresHTML;
     }
     
-    const sysReq = currentProduct.systemReq || { os: 'Windows 10/11', processor: 'Intel Core i5', ram: '8GB', gpu: 'GTX 1050', storage: '500MB' };
+    const sysReq = currentProduct.systemReq || { 
+        os: 'Windows 10/11', 
+        processor: 'Intel Core i5', 
+        ram: '8GB', 
+        gpu: 'GTX 1050', 
+        storage: '500MB' 
+    };
+    console.log('Sistem gereksinimleri:', sysReq);
     const sysReqHTML = `
         <div class="system-req-item">
             <span class="system-req-label">İşletim Sistemi</span>
