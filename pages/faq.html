@@ -4,129 +4,53 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://apis.google.com https://accounts.google.com https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://oauth2.googleapis.com https://www.googleapis.com; frame-ancestors 'none'; frame-src https://accounts.google.com/;">
+    <meta name="description" content="MATRIXCHEATS hakkında sıkça sorulan sorular. Kurulum, kullanım, lisans ve destek hakkında tüm sorularınızın cevapları.">
+    <meta name="keywords" content="SSS, sıkça sorulan sorular, FAQ, matrixcheats destek, yardım">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://matrixcheats.com/pages/faq.html">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Sıkça Sorulan Sorular | MATRIXCHEATS">
+    <meta property="og:description" content="Tüm sorularınızın cevapları - SSS">
+    <meta property="og:url" content="https://matrixcheats.com/pages/faq.html">
+    <meta property="og:image" content="https://matrixcheats.com/assets/og-image.jpg">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Sıkça Sorulan Sorular | MATRIXCHEATS">
+    <meta name="twitter:description" content="Tüm sorularınızın cevapları - SSS">
     <title>Sıkça Sorulan Sorular | MATRIXCHEATS</title>
     <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/pages.css">
+    <link rel="stylesheet" href="../css/faq.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Share+Tech+Mono&display=swap">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🟢</text></svg>">
-    <style>
-        .faq-page {
-            min-height: 100vh;
-            padding: 120px 20px 50px;
-            max-width: 900px;
-            margin: 0 auto;
-        }
-        .faq-header {
-            text-align: center;
-            margin-bottom: 50px;
-        }
-        .faq-header h1 {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 2.5rem;
-            color: #ff0040;
-            text-shadow: 0 0 20px rgba(255,0,64,0.5);
-            margin-bottom: 15px;
-            letter-spacing: 3px;
-        }
-        .faq-header p {
-            color: #808080;
-            font-size: 1rem;
-        }
-        .faq-item {
-            background: linear-gradient(180deg, rgba(20,20,20,0.9) 0%, rgba(10,10,10,0.95) 100%);
-            border: 1px solid #333;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            overflow: hidden;
-            transition: all 0.3s ease;
-        }
-        .faq-item:hover {
-            border-color: #ff0040;
-        }
-        .faq-question {
-            padding: 20px 25px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            font-family: 'Orbitron', sans-serif;
-            font-size: 1rem;
-            color: #00ff41;
-            letter-spacing: 1px;
-        }
-        .faq-question span {
-            transition: transform 0.3s ease;
-        }
-        .faq-item.active .faq-question span {
-            transform: rotate(45deg);
-        }
-        .faq-answer {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease;
-        }
-        .faq-item.active .faq-answer {
-            max-height: 500px;
-        }
-        .faq-answer-content {
-            padding: 0 25px 20px;
-            color: #b0b0b0;
-            line-height: 1.8;
-            border-top: 1px solid #1a1a1a;
-            padding-top: 15px;
-        }
-        .faq-answer-content ul {
-            margin: 10px 0;
-            padding-left: 20px;
-        }
-        .faq-answer-content li {
-            margin-bottom: 8px;
-        }
-        .back-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            color: #ff0040;
-            text-decoration: none;
-            margin-bottom: 30px;
-            font-family: 'Orbitron', sans-serif;
-            font-size: 0.9rem;
-            transition: all 0.3s ease;
-        }
-        .back-link:hover {
-            text-shadow: 0 0 15px rgba(255,0,64,0.5);
-        }
-        @media (max-width: 768px) {
-            .faq-page {
-                padding: 100px 15px 30px;
-            }
-            .faq-header h1 {
-                font-size: 1.8rem;
-            }
-            .faq-question {
-                font-size: 0.9rem;
-                padding: 15px 20px;
-            }
-            .faq-answer-content {
-                padding: 0 20px 15px;
-            }
-        }
-    </style>
+    <link rel="preconnect" href="https://www.gstatic.com">
+    <link rel="preconnect" href="https://firebase.googleapis.com">
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js" defer crossorigin="anonymous"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js" defer crossorigin="anonymous"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js" defer crossorigin="anonymous"></script>
 </head>
 <body>
     <canvas id="matrixCanvas"></canvas>
     
     <div class="loader" id="loader">
-        <div class="loader-text">YÜKLENİYOR...</div>
-        <div class="loader-bar">
-            <div class="loader-progress"></div>
+        <div class="loader-content">
+            <div class="loader-icon">◈ MATRIX<span>CHEATS</span></div>
+            <div class="loader-dots">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <div class="loader-bar">
+                <div class="loader-progress"></div>
+            </div>
         </div>
     </div>
 
     <header class="header">
         <div class="header-container">
-            <a href="../index.html" class="logo" style="text-decoration:none;">
+            <a href="../index.html" class="logo">
                 <span class="logo-icon">◈</span>
                 <span class="logo-text">MATRIX<span class="logo-accent">CHEATS</span></span>
             </a>
@@ -137,6 +61,11 @@
                 <a href="../index.html#contact" class="nav-link">İLETİŞİM</a>
             </nav>
             <div class="header-actions">
+                <a href="#" id="discordLink" target="_blank" class="header-social" title="Discord">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
+                    </svg>
+                </a>
                 <div class="auth-box" onclick="handleAccountClick()">
                     <div class="auth-box-icon">◈</div>
                     <div class="auth-box-text">
@@ -163,7 +92,7 @@
 
         <div class="faq-list">
             <div class="faq-item">
-                <div class="faq-question" onclick="toggleFaq(this)">
+                <div class="faq-question" onclick="toggleFaq(this)" role="button" tabindex="0" aria-expanded="false">
                     <span>Ürünleri nasıl satın alabilirim?</span>
                     <span>+</span>
                 </div>
@@ -178,7 +107,7 @@
             </div>
 
             <div class="faq-item">
-                <div class="faq-question" onclick="toggleFaq(this)">
+                <div class="faq-question" onclick="toggleFaq(this)" role="button" tabindex="0" aria-expanded="false">
                     <span>Hangi ödeme yöntemlerini kabul ediyorsunuz?</span>
                     <span>+</span>
                 </div>
@@ -196,7 +125,7 @@
             </div>
 
             <div class="faq-item">
-                <div class="faq-question" onclick="toggleFaq(this)">
+                <div class="faq-question" onclick="toggleFaq(this)" role="button" tabindex="0" aria-expanded="false">
                     <span>Satın aldığım ürünü nasıl aktif ederim?</span>
                     <span>+</span>
                 </div>
@@ -211,7 +140,7 @@
             </div>
 
             <div class="faq-item">
-                <div class="faq-question" onclick="toggleFaq(this)">
+                <div class="faq-question" onclick="toggleFaq(this)" role="button" tabindex="0" aria-expanded="false">
                     <span>İade politikalarınız nelerdir?</span>
                     <span>+</span>
                 </div>
@@ -225,7 +154,7 @@
             </div>
 
             <div class="faq-item">
-                <div class="faq-question" onclick="toggleFaq(this)">
+                <div class="faq-question" onclick="toggleFaq(this)" role="button" tabindex="0" aria-expanded="false">
                     <span>Ürünler güncel mi kalıyor mu?</span>
                     <span>+</span>
                 </div>
@@ -239,7 +168,7 @@
             </div>
 
             <div class="faq-item">
-                <div class="faq-question" onclick="toggleFaq(this)">
+                <div class="faq-question" onclick="toggleFaq(this)" role="button" tabindex="0" aria-expanded="false">
                     <span>Teknik destek alabilir miyim?</span>
                     <span>+</span>
                 </div>
@@ -253,7 +182,7 @@
             </div>
 
             <div class="faq-item">
-                <div class="faq-question" onclick="toggleFaq(this)">
+                <div class="faq-question" onclick="toggleFaq(this)" role="button" tabindex="0" aria-expanded="false">
                     <span>Kaç cihazda kullanabilirim?</span>
                     <span>+</span>
                 </div>
@@ -267,7 +196,7 @@
             </div>
 
             <div class="faq-item">
-                <div class="faq-question" onclick="toggleFaq(this)">
+                <div class="faq-question" onclick="toggleFaq(this)" role="button" tabindex="0" aria-expanded="false">
                     <span>Üyelik hesabımı nasıl silebilirim?</span>
                     <span>+</span>
                 </div>
@@ -295,8 +224,8 @@
                     <span class="auth-title">MATRIX<span>CHEATS</span></span>
                 </div>
                 <div class="auth-tabs">
-                    <button class="auth-tab active" onclick="switchAuthTab('login')">GİRİŞ</button>
-                    <button class="auth-tab" onclick="switchAuthTab('register')">KAYIT OL</button>
+                    <button class="auth-tab active" id="loginTab" onclick="switchAuthTab('login')">GİRİŞ</button>
+                    <button class="auth-tab" id="registerTab" onclick="switchAuthTab('register')">KAYIT OL</button>
                 </div>
                 <form id="authForm">
                     <div class="auth-input-group">
@@ -307,8 +236,25 @@
                         <input type="password" id="authPassword" required placeholder="Şifreniz">
                         <div class="auth-input-line"></div>
                     </div>
-                    <button type="submit" class="btn-auth">GİRİŞ YAP</button>
+                    <div class="auth-options" id="authOptions" style="display: flex; justify-content: space-between; align-items: center; margin: 15px 0; font-size: 0.85rem;">
+                        <label class="remember-me" style="display: flex; align-items: center; gap: 8px; color: #888; cursor: pointer;">
+                            <input type="checkbox" id="rememberMe" style="display: none;">
+                            <span class="checkmark" style="width: 16px; height: 16px; border: 1px solid #444; border-radius: 3px; display: flex; align-items: center; justify-content: center;"></span>
+                            <span>Beni hatırla</span>
+                        </label>
+                        <a href="#" class="forgot-password" onclick="showForgotPassword(event)" style="color: #ff0040; text-decoration: none; font-size: 0.8rem;">Şifremi unuttum?</a>
+                    </div>
+                    <button type="submit" class="btn-auth" id="authSubmitBtn">GİRİŞ YAP</button>
                 </form>
+                <div id="forgotPasswordForm" style="display: none;">
+                    <p class="forgot-desc" style="color: #888; font-size: 0.85rem; text-align: center; margin-bottom: 15px;">Şifrenizi sıfırlamak için e-posta adresinizi girin.</p>
+                    <div class="auth-input-group">
+                        <input type="email" id="resetEmail" required placeholder="E-posta adresiniz">
+                        <div class="auth-input-line"></div>
+                    </div>
+                    <button type="button" class="btn-auth" onclick="handleForgotPassword()">SIFIRLA</button>
+                    <a href="#" class="back-to-login" onclick="showLoginForm(event)" style="display: block; text-align: center; color: #00ff41; text-decoration: none; margin-top: 15px; font-size: 0.85rem;">Girişe dön</a>
+                </div>
                 <div class="auth-footer">
                     <span>◈ Güvenli Giriş</span>
                 </div>
@@ -316,39 +262,59 @@
         </div>
     </div>
 
-    <script src="../js/script.js"></script>
+    <script src="../js/firebase.js" defer></script>
+    <script src="../js/script.js" defer></script>
+    <script src="../js/pages.js" defer></script>
     <script>
-        function toggleFaq(element) {
-            const faqItem = element.parentElement;
-            const wasActive = faqItem.classList.contains('active');
-            
-            document.querySelectorAll('.faq-item').forEach(item => {
-                item.classList.remove('active');
-            });
-            
-            if (!wasActive) {
-                faqItem.classList.add('active');
-            }
+        document.addEventListener('DOMContentLoaded', function() {
+            initMatrixCanvas();
+            initLoader();
+            initAuth();
+            checkRememberMe();
+        });
+
+        function showForgotPassword(e) {
+            if (e && e.preventDefault) e.preventDefault();
+            document.getElementById('authForm').style.display = 'none';
+            document.getElementById('forgotPasswordForm').style.display = 'block';
+            document.getElementById('authOptions').style.display = 'none';
         }
 
-        window.addEventListener('load', function() {
-            setTimeout(function() {
-                document.getElementById('loader').classList.add('hidden');
-            }, 1500);
-        });
+        function showLoginForm(e) {
+            if (e && e.preventDefault) e.preventDefault();
+            document.getElementById('authForm').style.display = 'block';
+            document.getElementById('forgotPasswordForm').style.display = 'none';
+            document.getElementById('authOptions').style.display = 'flex';
+        }
 
-        document.querySelectorAll('.nav-link').forEach(link => {
-            link.addEventListener('click', function(e) {
-                const href = this.getAttribute('href');
-                if (href.startsWith('#')) {
+        function initAuth() {
+            const authForm = document.getElementById('authForm');
+            if (authForm) {
+                authForm.addEventListener('submit', async function(e) {
                     e.preventDefault();
-                    const target = document.querySelector(href);
-                    if (target) {
-                        target.scrollIntoView({ behavior: 'smooth' });
+                    const email = document.getElementById('authEmail').value;
+                    const password = document.getElementById('authPassword').value;
+                    
+                    if (typeof handleLogin === 'function') {
+                        await handleLogin(email, password);
                     }
-                }
-            });
-        });
+                });
+            }
+            
+            const googleBtn = document.getElementById('googleLoginBtn');
+            if (googleBtn) {
+                googleBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    if (typeof handleGoogleLogin === 'function') {
+                        handleGoogleLogin();
+                    }
+                });
+            }
+            
+            if (typeof checkCurrentUser === 'function') {
+                checkCurrentUser();
+            }
+        }
     </script>
 
     <!-- Profile Modal -->
@@ -367,24 +333,24 @@
                 </div>
                 <div class="profile-menu">
                     <a href="orders.html" class="profile-menu-item">
-                        <span class="profile-icon">◈</span>
-                        <span>Siparislerim</span>
+                        <span class="profile-icon">📦</span>
+                        <span>Siparişlerim</span>
                         <span class="profile-arrow">›</span>
                     </a>
-<a href="#" class="profile-menu-item" onclick="openSupportModal(); return false;">
+                    <a href="#" class="profile-menu-item" onclick="openSupportModal(); return false;">
                         <span class="profile-icon">🎫</span>
                         <span>Sipariş Talebi Gönder</span>
                         <span class="profile-arrow">›</span>
                     </a>
-                    <div class="profile-menu-item" onclick="openAdminFromProfile()" id="adminMenuItem" style="display:none;">
-                        <span class="profile-icon">◈</span>
+                    <div class="profile-menu-item" onclick="openAdminFromProfile()" id="adminMenuItem" style="display: none;">
+                        <span class="profile-icon">⚙️</span>
                         <span>Admin Panel</span>
                         <span class="profile-arrow">›</span>
                     </div>
                 </div>
                 <div class="profile-footer">
                     <button class="btn-logout" onclick="handleLogout()">
-                        <span>◈</span> CIKIS YAP
+                        <span>◈</span> ÇIKIŞ YAP
                     </button>
                 </div>
             </div>

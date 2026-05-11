@@ -5,20 +5,54 @@ function showMessage(text, type = 'info', duration = 4000) {
     if (!container) {
         container = document.createElement('div');
         container.className = 'matrix-message-container';
+        container.setAttribute('role', 'region');
+        container.setAttribute('aria-live', 'polite');
+        container.setAttribute('aria-label', 'Bildirimler');
         document.body.appendChild(container);
     }
     
     const msg = document.createElement('div');
     msg.className = `matrix-message ${type}`;
-    msg.innerHTML = `${text}<span class="close-msg" onclick="this.parentElement.remove()">×</span>`;
+    msg.setAttribute('role', 'alert');
+    msg.setAttribute('tabindex', '0');
+    
+    const content = document.createElement('span');
+    content.className = 'msg-content';
+    content.textContent = text;
+    
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'close-msg';
+    closeBtn.setAttribute('aria-label', 'Bildirimi kapat');
+    closeBtn.setAttribute('type', 'button');
+    closeBtn.innerHTML = '×';
+    closeBtn.addEventListener('click', () => removeMessage(msg));
+    
+    msg.appendChild(content);
+    msg.appendChild(closeBtn);
     container.appendChild(msg);
     
+    msg.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') removeMessage(msg);
+    });
+    
     if (duration > 0) {
+        const progress = document.createElement('div');
+        progress.className = 'msg-progress';
+        progress.style.animation = `progressBar ${duration}ms linear forwards`;
+        msg.appendChild(progress);
+        
         setTimeout(() => {
-            msg.classList.add('hiding');
-            setTimeout(() => msg.remove(), 300);
+            removeMessage(msg);
         }, duration);
     }
+    
+    msg.focus();
+    return msg;
+}
+
+function removeMessage(msg) {
+    msg.classList.add('hiding');
+    msg.addEventListener('animationend', () => msg.remove());
 }
 
 function showConfirm(title, message, onConfirm, onCancel) {
@@ -144,6 +178,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     initProducts();
     initCounters();
     initSmoothScroll();
+    initScrollAnimations();
     initForm();
     initActiveUsers();
     initAuth();
@@ -372,7 +407,39 @@ async function handleLogin(email, password) {
     btn.disabled = false;
 }
 
+function validatePassword(password) {
+    const minLength = 8;
+    const hasUpper = /[A-Z]/.test(password);
+    const hasLower = /[a-z]/.test(password);
+    const hasNumber = /[0-9]/.test(password);
+    const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+    
+    const errors = [];
+    if (password.length < minLength) errors.push(`${minLength}+ karakter`);
+    if (!hasUpper) errors.push('büyük harf');
+    if (!hasLower) errors.push('küçük harf');
+    if (!hasNumber) errors.push('rakam');
+    if (!hasSpecial) errors.push('özel karakter');
+    
+    if (errors.length > 0) {
+        return { valid: false, message: 'Şifre: ' + errors.join(', ') + ' içermeli' };
+    }
+    return { valid: true };
+}
+
+function sanitizeHTML(str) {
+    const temp = document.createElement('div');
+    temp.textContent = str;
+    return temp.innerHTML;
+}
+
 async function handleRegister(email, password) {
+    const passwordCheck = validatePassword(password);
+    if (!passwordCheck.valid) {
+        showMessage(passwordCheck.message, 'error');
+        return;
+    }
+    
     const btn = document.querySelector('#authForm button[type="submit"]');
     btn.textContent = 'Kayıt yapılıyor...';
     btn.disabled = true;
@@ -746,6 +813,20 @@ function initSmoothScroll() {
     });
 }
 
+function initScrollAnimations() {
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+            }
+        });
+    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+    
+    document.querySelectorAll('.fade-in, .fade-in-up, .fade-in-left, .fade-in-right, .scale-in').forEach(el => {
+        observer.observe(el);
+    });
+}
+
 function initForm() {
     const contactForm = document.getElementById('contactForm');
     if(contactForm) {
@@ -758,7 +839,16 @@ function initForm() {
 }
 
 function toggleMobileMenu() {
-    document.querySelector('.nav').classList.toggle('active');
+    const nav = document.querySelector('.nav');
+    const toggle = document.querySelector('.mobile-toggle');
+    if (nav) {
+        nav.classList.toggle('active');
+    }
+    if (toggle) {
+        toggle.classList.toggle('active');
+        const isExpanded = toggle.getAttribute('aria-expanded') === 'true';
+        toggle.setAttribute('aria-expanded', !isExpanded);
+    }
 }
 
 function openAuth() {

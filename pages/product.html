@@ -6,308 +6,39 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://apis.google.com https://accounts.google.com https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://oauth2.googleapis.com https://www.googleapis.com; frame-ancestors 'none'; frame-src https://accounts.google.com/;">
     <title>Ürün Detayları - MATRIXCHEATS</title>
     <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/pages.css">
+    <link rel="stylesheet" href="../css/product.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Share+Tech+Mono&display=swap">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🟢</text></svg>">
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js" crossorigin="anonymous"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js" crossorigin="anonymous"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js" crossorigin="anonymous"></script>
-    <style>
-        .product-detail {
-            min-height: 100vh;
-            padding: 100px 20px 50px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        .product-detail-header {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 50px;
-            margin-bottom: 50px;
-        }
-        .product-image-container {
-            background: linear-gradient(180deg, rgba(255,0,64,0.1) 0%, rgba(0,0,0,0.8) 100%);
-            border: 2px solid #ff0040;
-            border-radius: 10px;
-            overflow: hidden;
-            width: 100%;
-            min-height: 300px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 0 30px rgba(255,0,64,0.3), inset 0 0 30px rgba(255,0,64,0.1);
-            position: relative;
-            padding: 20px;
-        }
-        .product-image-container::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, #ff0040, transparent);
-            z-index: 2;
-        }
-        .product-image-container img {
-            max-width: 100%;
-            max-height: 350px;
-            width: auto;
-            height: auto;
-            object-fit: contain;
-            transition: transform 0.3s ease;
-        }
-        .product-image-container:hover img {
-            transform: scale(1.02);
-        }
-        .product-image-container .no-image {
-            font-size: 5rem;
-            color: #ff0040;
-            text-shadow: 0 0 20px rgba(255,0,64,0.5);
-        }
-        .product-detail-info h1 {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 2.5rem;
-            margin-bottom: 15px;
-            color: var(--text);
-        }
-        .product-detail-info .product-icon {
-            font-size: 3rem;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 80px;
-            height: 80px;
-        }
-        .product-detail-info .product-icon img {
-            border-radius: 10px;
-            border: 2px solid #ff0040;
-            box-shadow: 0 0 15px rgba(255,0,64,0.4);
-        }
-        .product-detail-info .product-desc {
-            color: var(--text-muted);
-            font-size: 1.1rem;
-            margin-bottom: 30px;
-        }
-        .features-section {
-            margin-bottom: 50px;
-        }
-        .features-section h2 {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 1.8rem;
-            margin-bottom: 30px;
-            color: var(--primary);
-        }
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
-        }
-        .feature-item {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            padding: 20px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            transition: all 0.3s ease;
-        }
-        .feature-item:hover {
-            border-color: var(--primary);
-        }
-        .feature-icon {
-            color: var(--primary);
-            font-size: 1.5rem;
-        }
-        .feature-text {
-            color: var(--text);
-        }
-        .system-req-section {
-            margin-bottom: 50px;
-        }
-        .system-req-section h2 {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 1.8rem;
-            margin-bottom: 30px;
-            color: var(--primary);
-        }
-        .system-req-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-        }
-        .system-req-item {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            padding: 15px 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-        .system-req-label {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-        }
-        .system-req-value {
-            color: var(--primary);
-            font-weight: 500;
-        }
-        .buy-section {
-            margin-top: 30px;
-            padding: 25px;
-            background: rgba(10,10,10,0.9);
-            border: 1px solid #333;
-            border-radius: 10px;
-        }
-        .packages-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-        .package-card {
-            background: #1a1a1a;
-            border: 1px solid #333;
-            border-radius: 8px;
-            padding: 20px 12px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        .package-card:hover {
-            border-color: #ff0040;
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(255,0,64,0.3);
-        }
-        .package-card.selected {
-            border-color: #ff0040;
-            background: rgba(255,0,64,0.15);
-            box-shadow: 0 0 20px rgba(255,0,64,0.4);
-        }
-        .package-duration {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 0.9rem;
-            color: #00ff41;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 8px;
-        }
-        .package-price {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 1.3rem;
-            color: #fff;
-            text-shadow: 0 0 10px rgba(255,0,64,0.8);
-            margin-bottom: 5px;
-        }
-        .package-label {
-            font-size: 0.7rem;
-            color: #888;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .buy-btn {
-            display: block;
-            width: 100%;
-            padding: 18px;
-            background: linear-gradient(135deg, #ff0040 0%, #b3002d 100%);
-            border: none;
-            color: #fff;
-            font-family: 'Orbitron', sans-serif;
-            font-size: 1rem;
-            font-weight: 700;
-            letter-spacing: 2px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border-radius: 6px;
-            text-transform: uppercase;
-        }
-        .buy-btn:hover {
-            box-shadow: 0 0 30px rgba(255,0,64,0.6);
-            transform: scale(1.02);
-        }
-        @media (max-width: 600px) {
-            .packages-grid {
-                grid-template-columns: 1fr;
-            }
-            .package-card {
-                padding: 15px 10px;
-            }
-            .package-duration {
-                font-size: 0.8rem;
-            }
-            .package-price {
-                font-size: 1.1rem;
-            }
-        }
-        .back-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            color: var(--primary);
-            text-decoration: none;
-            font-size: 1rem;
-            margin-bottom: 30px;
-            transition: all 0.3s ease;
-        }
-        .back-btn:hover {
-            text-shadow: 0 0 10px var(--primary-glow);
-        }
-        @media (max-width: 768px) {
-            .product-detail {
-                padding: 80px 15px 30px;
-            }
-            .product-detail-header {
-                grid-template-columns: 1fr;
-                gap: 25px;
-            }
-            .product-image-container {
-                min-height: 200px;
-            }
-            .product-detail-info h1 {
-                font-size: 1.8rem;
-            }
-            .product-desc {
-                font-size: 1rem;
-            }
-            .features-grid {
-                grid-template-columns: 1fr;
-            }
-            .system-req-grid {
-                grid-template-columns: 1fr;
-            }
-            .buy-section {
-                padding: 15px;
-            }
-            .buy-btn {
-                padding: 15px;
-                font-size: 0.9rem;
-            }
-            .features-section h2,
-            .system-req-section h2 {
-                font-size: 1.3rem;
-            }
-            }
-            .features-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+    <link rel="preconnect" href="https://www.gstatic.com">
+    <link rel="preconnect" href="https://firebase.googleapis.com">
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js" defer crossorigin="anonymous"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js" defer crossorigin="anonymous"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js" defer crossorigin="anonymous"></script>
 </head>
 <body>
     <canvas id="matrixCanvas"></canvas>
     
     <div class="loader" id="loader">
-        <div class="loader-text">YÜKLENİYOR...</div>
-        <div class="loader-bar">
-            <div class="loader-progress"></div>
+        <div class="loader-content">
+            <div class="loader-icon">◈ MATRIX<span>CHEATS</span></div>
+            <div class="loader-dots">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <div class="loader-bar">
+                <div class="loader-progress"></div>
+            </div>
         </div>
     </div>
 
     <header class="header">
         <div class="header-container">
-            <a href="../index.html" class="logo" style="text-decoration:none;">
+            <a href="../index.html" class="logo">
                 <span class="logo-icon">◈</span>
                 <span class="logo-text">MATRIX<span class="logo-accent">CHEATS</span></span>
             </a>
@@ -340,7 +71,7 @@
     </header>
 
     <main class="product-detail">
-        <a href="../index.html#products" class="back-btn">← Ana Sayfaya Dön</a>
+        <a href="../index.html#products" class="back-link">← Ana Sayfaya Dön</a>
         
         <div class="product-detail-header">
             <div class="product-image-container" id="productImage"></div>
@@ -351,7 +82,7 @@
         </div>
 
         <section class="buy-section">
-            <h3 style="text-align:center;margin-bottom:15px;font-family:'Orbitron',sans-serif;color:#ff0040;letter-spacing:2px;">◈ PAKET SEÇ ◈</h3>
+            <h3>◈ PAKET SEÇ ◈</h3>
             <div class="packages-grid" id="packagesGrid"></div>
             <button class="buy-btn" onclick="buyProduct()">◈ ŞİMDİ SATIN AL ◈</button>
         </section>
@@ -384,7 +115,7 @@
                     <button class="auth-tab" id="registerTab" onclick="switchAuthTab('register')">KAYIT OL</button>
                 </div>
                 
-                <button type="button" class="btn-google" id="googleLoginBtn" style="width:100%;padding:12px 15px;background:#fff;border:1px solid #ddd;color:#333;font-family:'Share Tech Mono',monospace;cursor:pointer;border-radius:4px;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:15px;">
+                <button type="button" class="btn-google" id="googleLoginBtn" style="width: 100%; padding: 12px 15px; background: #fff; border: 1px solid #ddd; color: #333; font-family: 'Share Tech Mono', monospace; cursor: pointer; border-radius: 4px; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 15px;">
                     <svg width="20" height="20" viewBox="0 0 24 24">
                         <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                         <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -394,8 +125,8 @@
                     <span>Google ile Giriş Yap</span>
                 </button>
                 
-                <div class="auth-divider" style="text-align:center;margin:15px 0;position:relative;">
-                    <span style="background:#0a0a0a;padding:0 15px;color:#666;font-size:0.8rem;position:relative;z-index:1;">veya</span>
+                <div class="auth-divider" style="text-align: center; margin: 15px 0; position: relative;">
+                    <span style="background: #0a0a0a; padding: 0 15px; color: #666; font-size: 0.8rem; position: relative; z-index: 1;">veya</span>
                 </div>
                 
                 <form id="authForm">
@@ -408,26 +139,26 @@
                         <div class="auth-input-line"></div>
                     </div>
                     
-                    <div class="auth-options" id="authOptions" style="display:flex;justify-content:space-between;align-items:center;margin:15px 0;font-size:0.85rem;">
-                        <label class="remember-me" style="display:flex;align-items:center;gap:8px;color:#888;cursor:pointer;">
-                            <input type="checkbox" id="rememberMe" style="display:none;">
-                            <span class="checkmark" style="width:16px;height:16px;border:1px solid #444;border-radius:3px;display:flex;align-items:center;justify-content:center;"></span>
+                    <div class="auth-options" id="authOptions" style="display: flex; justify-content: space-between; align-items: center; margin: 15px 0; font-size: 0.85rem;">
+                        <label class="remember-me" style="display: flex; align-items: center; gap: 8px; color: #888; cursor: pointer;">
+                            <input type="checkbox" id="rememberMe" style="display: none;">
+                            <span class="checkmark" style="width: 16px; height: 16px; border: 1px solid #444; border-radius: 3px; display: flex; align-items: center; justify-content: center;"></span>
                             <span>Beni hatırla</span>
                         </label>
-                        <a href="#" class="forgot-password" onclick="showForgotPassword(event)" style="color:#ff0040;text-decoration:none;font-size:0.8rem;">Şifremi unuttum?</a>
+                        <a href="#" class="forgot-password" onclick="showForgotPassword(event)" style="color: #ff0040; text-decoration: none; font-size: 0.8rem;">Şifremi unuttum?</a>
                     </div>
                     
                     <button type="submit" class="btn-auth" id="authSubmitBtn">GİRİŞ YAP</button>
                 </form>
                 
-                <div id="forgotPasswordForm" style="display:none;">
-                    <p class="forgot-desc" style="color:#888;font-size:0.85rem;text-align:center;margin-bottom:15px;">Şifrenizi sıfırlamak için e-posta adresinizi girin.</p>
+                <div id="forgotPasswordForm" style="display: none;">
+                    <p class="forgot-desc" style="color: #888; font-size: 0.85rem; text-align: center; margin-bottom: 15px;">Şifrenizi sıfırlamak için e-posta adresinizi girin.</p>
                     <div class="auth-input-group">
                         <input type="email" id="resetEmail" required placeholder="E-posta adresiniz">
                         <div class="auth-input-line"></div>
                     </div>
                     <button type="button" class="btn-auth" onclick="handleForgotPassword()">SIFIRLA</button>
-                    <a href="#" class="back-to-login" onclick="showLoginForm(event)" style="display:block;text-align:center;color:#00ff41;text-decoration:none;margin-top:15px;font-size:0.85rem;">Girişe dön</a>
+                    <a href="#" class="back-to-login" onclick="showLoginForm(event)" style="display: block; text-align: center; color: #00ff41; text-decoration: none; margin-top: 15px; font-size: 0.85rem;">Girişe dön</a>
                 </div>
                 
                 <div class="auth-footer">
@@ -439,10 +170,9 @@
 
     <script src="../js/firebase.js"></script>
     <script src="../js/script.js"></script>
+    <script src="../js/pages.js"></script>
+    <script src="../js/product.js"></script>
     <script>
-        let currentProduct = null;
-        let selectedPackage = 'month';
-
         document.addEventListener('DOMContentLoaded', async function() {
             await loadProductsFromStorage();
             console.log('Ürünler yüklendi:', products);
@@ -463,159 +193,48 @@
             checkRememberMe();
         });
 
-        function loadProduct() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const productId = parseInt(urlParams.get('id'));
-            
-            console.log('Product ID:', productId);
-            console.log('Tüm ürünler:', products);
-            
-            if (products.length === 0) {
-                document.getElementById('productTitle').textContent = 'Ürün bulunamadı';
-                document.getElementById('productDesc').textContent = 'Henüz ürün eklenmemiş.';
-                return;
-            }
-            
-            currentProduct = products.find(p => p.id === productId);
-            
-            if (!currentProduct) {
-                currentProduct = products[0];
-            }
-            
-            console.log('Seçili ürün:', currentProduct);
-            console.log('Resim URL:', currentProduct?.image);
-            
-            const mainImage = document.getElementById('productImage');
-            if (mainImage && currentProduct) {
-                if (currentProduct.image && currentProduct.image.trim() !== '') {
-                    console.log('Resim gösteriliyor:', currentProduct.image);
-                    mainImage.innerHTML = `<img id="detailProductImg" src="${currentProduct.image}" alt="${currentProduct.title}" style="width:100%;height:100%;object-fit:contain;object-position:center;" onerror="this.style.display='none'; this.parentNode.innerHTML='<div style=\'font-size:80px;text-align:center;line-height:200px;\'>${currentProduct.icon}</div>';">`;
-                } else {
-                    console.log('Emoji gösteriliyor:', currentProduct.icon);
-                    mainImage.innerHTML = `<div style="font-size:80px;text-align:center;line-height:200px;">${currentProduct.icon}</div>`;
-                }
-            }
-            
-            const titleEl = document.getElementById('productTitle');
-            const descEl = document.getElementById('productDesc');
-            if (titleEl) titleEl.textContent = currentProduct.title;
-            if (descEl) descEl.textContent = currentProduct.desc;
-            
-            const featuresGrid = document.getElementById('featuresGrid');
-            if (featuresGrid) {
-                const featuresHTML = currentProduct.features.map(f => `
-                    <div class="feature-item">
-                        <span class="feature-icon">✓</span>
-                        <span class="feature-text">${f}</span>
-                    </div>
-                `).join('');
-                featuresGrid.innerHTML = featuresHTML;
-            }
-            
-            const sysReq = currentProduct.systemReq;
-            const sysReqHTML = `
-                <div class="system-req-item">
-                    <span class="system-req-label">İşletim Sistemi</span>
-                    <span class="system-req-value">${sysReq.os}</span>
-                </div>
-                <div class="system-req-item">
-                    <span class="system-req-label">İşlemci</span>
-                    <span class="system-req-value">${sysReq.processor}</span>
-                </div>
-                <div class="system-req-item">
-                    <span class="system-req-label">RAM</span>
-                    <span class="system-req-value">${sysReq.ram}</span>
-                </div>
-                <div class="system-req-item">
-                    <span class="system-req-label">Ekran Kartı</span>
-                    <span class="system-req-value">${sysReq.gpu}</span>
-                </div>
-                <div class="system-req-item">
-                    <span class="system-req-label">Depolama</span>
-                    <span class="system-req-value">${sysReq.storage}</span>
-                </div>
-            `;
-            const systemReqGrid = document.getElementById('systemReqGrid');
-            if (systemReqGrid) {
-                systemReqGrid.innerHTML = sysReqHTML;
-            }
-            
-            renderPackages();
+        function showForgotPassword(e) {
+            if (e && e.preventDefault) e.preventDefault();
+            document.getElementById('authForm').style.display = 'none';
+            document.getElementById('forgotPasswordForm').style.display = 'block';
+            document.getElementById('authOptions').style.display = 'none';
         }
 
-        function renderPackages() {
-            console.log('renderPackages called, currentProduct:', currentProduct);
-            const container = document.getElementById('packagesGrid');
-            if (!container) {
-                console.error('packagesGrid element not found!');
-                return;
-            }
-            const prices = currentProduct && currentProduct.prices ? currentProduct.prices : { day: 49, week: 149, month: 299 };
-            
-            const packages = [
-                { key: 'day', duration: '1 GÜN', price: prices.day || 49, label: 'Ekonomik' },
-                { key: 'week', duration: '1 HAFTA', price: prices.week || 149, label: 'Popüler' },
-                { key: 'month', duration: '1 AY', price: prices.month || 299, label: 'En İyi' }
-            ];
-            
-            const html = packages.map(pkg => `
-                <div class="package-card ${selectedPackage === pkg.key ? 'selected' : ''}" onclick="selectPackage('${pkg.key}')">
-                    <div class="package-duration">${pkg.duration}</div>
-                    <div class="package-price">₺${pkg.price}</div>
-                    <div class="package-label">${pkg.label}</div>
-                </div>
-            `).join('');
-            
-            container.innerHTML = html;
-            console.log('Packages rendered, html length:', html.length);
+        function showLoginForm(e) {
+            if (e && e.preventDefault) e.preventDefault();
+            document.getElementById('authForm').style.display = 'block';
+            document.getElementById('forgotPasswordForm').style.display = 'none';
+            document.getElementById('authOptions').style.display = 'flex';
         }
 
-        function selectPackage(key) {
-            selectedPackage = key;
-            renderPackages();
-        }
-
-        async function buyProduct() {
-            if (!currentProduct) {
-                showMessage('Ürün bulunamadı!', 'error');
-                return;
+        function initAuth() {
+            const authForm = document.getElementById('authForm');
+            if (authForm) {
+                authForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    const email = document.getElementById('authEmail').value;
+                    const password = document.getElementById('authPassword').value;
+                    
+                    if (typeof handleLogin === 'function') {
+                        await handleLogin(email, password);
+                    }
+                });
             }
             
-            const paymentLinks = currentProduct.paymentLinks || {};
-            const paymentLink = paymentLinks[selectedPackage];
+            const googleBtn = document.getElementById('googleLoginBtn');
+            if (googleBtn) {
+                googleBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    if (typeof handleGoogleLogin === 'function') {
+                        handleGoogleLogin();
+                    }
+                });
+            }
             
-            if (paymentLink && paymentLink.trim() !== '') {
-                window.open(paymentLink, '_blank');
-            } else {
-                showMessage('Bu paket için ödeme linki henüz ayarlanmamış!', 'warning');
+            if (typeof checkCurrentUser === 'function') {
+                checkCurrentUser();
             }
         }
-
-        function toggleMobileMenu() {
-            const nav = document.querySelector('.nav');
-            nav.classList.toggle('active');
-        }
-
-        function openAuth() {
-            document.getElementById('authModal').classList.add('active');
-        }
-
-        function closeAuth() {
-            document.getElementById('authModal').classList.remove('active');
-        }
-
-        window.addEventListener('click', function(e) {
-            const modal = document.getElementById('authModal');
-            if(e.target === modal) {
-                closeAuth();
-            }
-        });
-
-        window.addEventListener('keydown', function(e) {
-            if(e.key === 'Escape') {
-                closeAuth();
-            }
-        });
     </script>
 
     <!-- Profile Modal -->
@@ -634,24 +253,24 @@
                 </div>
                 <div class="profile-menu">
                     <a href="orders.html" class="profile-menu-item">
-                        <span class="profile-icon">◈</span>
-                        <span>Siparislerim</span>
+                        <span class="profile-icon">📦</span>
+                        <span>Siparişlerim</span>
                         <span class="profile-arrow">›</span>
                     </a>
-<a href="#" class="profile-menu-item" onclick="openSupportModal(); return false;">
+                    <a href="#" class="profile-menu-item" onclick="openSupportModal(); return false;">
                         <span class="profile-icon">🎫</span>
                         <span>Sipariş Talebi Gönder</span>
                         <span class="profile-arrow">›</span>
                     </a>
-                    <div class="profile-menu-item" onclick="openAdminFromProfile()" id="adminMenuItem" style="display:none;">
-                        <span class="profile-icon">◈</span>
+                    <div class="profile-menu-item" onclick="openAdminFromProfile()" id="adminMenuItem" style="display: none;">
+                        <span class="profile-icon">⚙️</span>
                         <span>Admin Panel</span>
                         <span class="profile-arrow">›</span>
                     </div>
                 </div>
                 <div class="profile-footer">
                     <button class="btn-logout" onclick="handleLogout()">
-                        <span>◈</span> CIKIS YAP
+                        <span>◈</span> ÇIKIŞ YAP
                     </button>
                 </div>
             </div>
