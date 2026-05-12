@@ -72,6 +72,13 @@
                         <span class="auth-box-subtitle">/ KAYIT</span>
                     </div>
                 </div>
+                <div class="order-confirm-box" onclick="openOrderConfirmModal()">
+                    <span class="order-confirm-icon">✓</span>
+                    <div class="order-confirm-text">
+                        <span class="order-confirm-title">SİPARİŞ</span>
+                        <span class="order-confirm-subtitle">ONAYLAT</span>
+                    </div>
+                </div>
             </div>
             <div class="mobile-toggle" onclick="toggleMobileMenu()">
                 <span></span>
@@ -297,6 +304,45 @@
                 </form>
                 <div class="auth-footer">
                     <span>◈ Talep gönderildikten sonra size Discord'dan ulaşacağız</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Sipariş Onaylat Modal -->
+    <div class="modal" id="orderConfirmModal">
+        <div class="auth-modal-wrapper">
+            <div class="auth-modal-frame" style="max-width:450px;">
+                <div class="auth-corner tl"></div>
+                <div class="auth-corner tr"></div>
+                <div class="auth-corner bl"></div>
+                <div class="auth-corner br"></div>
+                <button class="modal-close" onclick="closeOrderConfirmModal()" aria-label="Onay ekranını kapat">×</button>
+                <div class="auth-header">
+                    <span class="auth-logo">✓</span>
+                    <span class="auth-title">SİPARİŞ<span>ONAYLAT</span></span>
+                </div>
+                <form id="orderConfirmForm">
+                    <div class="auth-input-group">
+                        <input type="text" id="confirmOrderNumber" required placeholder="Shopier Sipariş Numaranız" style="width:100%;padding:15px;background:transparent;border:none;color:#00ff41;font-family:'Share Tech Mono',monospace;font-size:1rem;border-bottom:2px solid #00ff41;">
+                        <div class="auth-input-line" style="background:linear-gradient(90deg, transparent, #00ff41, transparent);"></div>
+                    </div>
+                    <div class="auth-input-group">
+                        <input type="email" id="confirmGmail" required placeholder="Gmail Adresiniz" style="width:100%;padding:15px;background:transparent;border:none;color:#00ff41;font-family:'Share Tech Mono',monospace;font-size:1rem;border-bottom:2px solid #00ff41;">
+                        <div class="auth-input-line" style="background:linear-gradient(90deg, transparent, #00ff41, transparent);"></div>
+                    </div>
+                    <div class="auth-input-group">
+                        <select id="confirmProduct" required style="width:100%;padding:15px;background:transparent;border:none;color:#00ff41;font-family:'Share Tech Mono',monospace;font-size:1rem;border-bottom:2px solid #00ff41;">
+                            <option value="">Ürün Seçin</option>
+                        </select>
+                    </div>
+                    <div class="auth-input-group">
+                        <textarea id="confirmNote" placeholder="İletişim bilginiz (Discord vb. - opsiyonel)" rows="2" style="width:100%;padding:15px;background:transparent;border:none;color:#00ff41;font-family:'Share Tech Mono',monospace;font-size:1rem;border-bottom:2px solid #00ff41;resize:none;"></textarea>
+                        <div class="auth-input-line" style="background:linear-gradient(90deg, transparent, #00ff41, transparent);"></div>
+                    </div>
+                    <button type="submit" class="btn-auth" style="background:linear-gradient(90deg, #00ff41, #00cc33);color:#050505;">ONAYLAT</button>
+                </form>
+                <div class="auth-footer">
+                    <span>◈ Sipariş numaranız onaylandıktan sonra ürününüz aktif edilecektir</span>
                 </div>
             </div>
         </div>
