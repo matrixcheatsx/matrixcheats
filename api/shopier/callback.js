@@ -1,4 +1,4 @@
-const md5 = require('md5');
+const crypto = require('crypto');
 const { db, ORDERS_COLLECTION } = require('../../lib/firebase-admin');
 
 module.exports = async (req, res) => {
@@ -34,7 +34,7 @@ module.exports = async (req, res) => {
       return res.status(500).send('Sunucu yapilandirma hatasi');
     }
 
-    const beklenenHash = md5(osbKullanici + osbSifre + random_numarasi + sipariss_id + random_str).toLowerCase();
+    const beklenenHash = crypto.createHash('md5').update(osbKullanici + osbSifre + random_numarasi + sipariss_id + random_str).digest('hex').toLowerCase();
     const gelenHash = hash.toLowerCase();
 
     if (beklenenHash !== gelenHash) {
