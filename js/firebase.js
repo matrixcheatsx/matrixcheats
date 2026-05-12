@@ -350,13 +350,16 @@ async function updateSupportStatus(requestId, status) {
 async function createOrderConfirmation(data) {
     if (!firebaseReady || !db) return { success: false, error: 'Firebase not connected!' };
     try {
+        console.log('Sipariş onayı kaydediliyor:', data);
         const docRef = await db.collection(CONFIRM_COLLECTION).add({
             ...data,
             status: 'Onay Bekliyor',
             createdAt: new Date()
         });
+        console.log('Sipariş onayı kaydedildi, ID:', docRef.id);
         return { success: true, id: docRef.id };
     } catch (error) {
+        console.error('Sipariş onayı kaydetme hatası:', error);
         return { success: false, error: error.message };
     }
 }
@@ -364,8 +367,14 @@ async function createOrderConfirmation(data) {
 async function getOrderConfirmations() {
     if (!firebaseReady || !db) return [];
     try {
-        const snapshot = await db.collection(CONFIRM_COLLECTION).orderBy('createdAt', 'desc').get();
-        return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const snapshot = await db.collection(CONFIRM_COLLECTION).get();
+        const docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        docs.sort((a, b) => {
+            const da = a.createdAt?.seconds ? a.createdAt.seconds * 1000 : new Date(a.createdAt || 0).getTime();
+            const db2 = b.createdAt?.seconds ? b.createdAt.seconds * 1000 : new Date(b.createdAt || 0).getTime();
+            return db2 - da;
+        });
+        return docs;
     } catch (error) {
         console.error('Error getting confirmations:', error);
         return [];

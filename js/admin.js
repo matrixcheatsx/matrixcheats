@@ -78,7 +78,7 @@ async function loadAdminData() {
 
     try {
         const [confirmSnap, usersSnap] = await Promise.all([
-            window.db.collection('order_confirmations').get(),
+            window.db.collection(window.CONFIRM_COLLECTION || 'order_confirmations').get(),
             window.db.collection('users').get()
         ]);
 
@@ -430,9 +430,12 @@ async function loadSupportRequests() {
 async function loadConfirmations() {
     if (typeof getOrderConfirmations !== 'function') { showMessage('Onay sistemi yüklenemedi!', 'error'); return; }
     try {
+        console.log('Onay talepleri yükleniyor...');
         const confirmations = await getOrderConfirmations();
+        console.log('Yüklenen onay talebi sayısı:', confirmations.length);
         renderConfirmations(confirmations);
     } catch (e) {
+        console.error('Onaylar yüklenirken hata:', e);
         showMessage('Onaylar yüklenirken hata: ' + e.message, 'error');
     }
 }
@@ -491,7 +494,7 @@ function renderConfirmations(confirmations) {
 async function updateConfirmation(id, status) {
     if (!window.firebaseReady || !window.db) { showMessage('Firebase bağlı değil!', 'error'); return; }
     try {
-        await window.db.collection('order_confirmations').doc(id).update({ status });
+        await window.db.collection(window.CONFIRM_COLLECTION || 'order_confirmations').doc(id).update({ status });
         showMessage('Durum güncellendi!', 'success');
         const confirmations = await window.getOrderConfirmations();
         renderConfirmations(confirmations);
