@@ -185,26 +185,13 @@ async function buyProduct() {
             return;
         }
 
-        const yon = result.yonlendirme;
+        const sf = result.shopier_form;
         const form = document.createElement('form');
-        form.action = 'https://www.shopier.com/odeme.php';
-        form.method = 'POST';
+        form.action = sf.action;
+        form.method = sf.method;
         form.style.display = 'none';
 
-        const params = {
-            'shopier_osb_kullanici': 'ced46b9eccc1b9b34cace5ce159c6897',
-            'shopier_siparis_id': yon.siparis_id,
-            'shopier_urun_adi': yon.urun_adi,
-            'shopier_urun_fiyat': yon.urun_fiyat.toString(),
-            'shopier_alinacak_urun_tipi': 'dijital',
-            'shopier_musteri_adi': yon.musteri_adi,
-            'shopier_musteri_soyadi': yon.musteri_soyadi || '',
-            'shopier_musteri_email': yon.musteri_email,
-            'shopier_musteri_telefon': yon.musteri_telefon || '',
-            'shopier_callback_url': yon.callback_url
-        };
-
-        for (const [key, val] of Object.entries(params)) {
+        for (const [key, val] of Object.entries(sf.fields)) {
             const input = document.createElement('input');
             input.type = 'hidden';
             input.name = key;

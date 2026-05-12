@@ -7,92 +7,67 @@ module.exports = async (req, res) => {
   }
 
   try {
-    let body = '';
-    req.on('data', chunk => body += chunk);
+    let raw = '';
+    req.on('data', chunk => raw += chunk);
     await new Promise(resolve => req.on('end', resolve));
-    const data = JSON.parse(body || '{}');
+    const data = JSON.parse(raw || '{}');
 
     const {
-      random_numarasi,
-      sipariss_id,
-      random_str,
-      hash,
-      buyer_name,
-      buyer_surname,
-      buyer_email,
-      buyer_phone,
-      payment_tutar,
-      payment_type,
-      urunler
+      platform_order_id,
+      status,
+      payment_id,
+      random_nr,
+      signature,
+      installment
     } = data;
 
-    if (!hash || !random_numarasi || !sipariss_id || !random_str) {
+    if (!signature || !platform_order_id || !random_nr) {
       console.log('Shopier callback: Eksik parametreler');
       return res.status(400).send('Eksik parametreler');
     }
 
-    const osbKullanici = process.env.OSB_KULLANICI_ADI;
-    const osbSifre = process.env.OSB_SIFRE;
+    const apiSecret = process.env.OSB_SIFRE;
 
-    if (!osbKullanici || !osbSifre) {
-      console.log('Shopier callback: OSB bilgileri eksik');
-      return res.status(500).send('Sunucu yapilandirma hatasi');
+    const expectedSig = crypto.createHmac('sha256', apiSecret)
+      .update(random_nr + platform_order_id)
+      .digest();
+
+    const decodedSig = Buffer.from(signature, 'base64');
+
+    if (!crypto.timingSafeEqual(expectedSig, decodedSig)) {
+      console.log(`Shopier callback: I M Z A  B A S A R I S I Z! Siparis #${platform_order_id}`);
+      console.log(`Beklenen: ${expectedSig.toString('base64')}, Gelen: ${signature}`);
+      return res.status(403).send('Imza dogrulama basarisiz');
     }
 
-    const beklenenHash = crypto.createHash('md5').update(osbKullanici + osbSifre + random_numarasi + sipariss_id + random_str).digest('hex').toLowerCase();
-    const gelenHash = hash.toLowerCase();
+    console.log(`Shopier callback: I M Z A  B A S A R I L I! Siparis #${platform_order_id}`);
 
-    if (beklenenHash !== gelenHash) {
-      console.log(`Shopier callback: HASH BASARISIZ! Siparis #${sipariss_id}`);
-      console.log(`Beklenen: ${beklenenHash}, Gelen: ${gelenHash}`);
-      return res.status(403).send('Hash dogrulama basarisiz');
-    }
+    const isSuccess = status === 'success';
 
-    console.log(`Shopier callback: HASH BASARILI! Siparis #${sipariss_id}`);
-
-    let urunAdi = '';
-    let urunFiyat = 0;
-
-    try {
-      const urunList = typeof urunler === 'string' ? JSON.parse(urunler) : urunler;
-      if (Array.isArray(urunList) && urunList.length > 0) {
-        urunAdi = urunList[0].product_name || '';
-        urunFiyat = parseFloat(urunList[0].product_price) || 0;
-      }
-    } catch (e) {}
-
-    const mevcut = await getDocument(sipariss_id);
-    const guncelData = {
-      musteriAdi: buyer_name || '',
-      musteriSoyadi: buyer_surname || '',
-      musteriTelefon: buyer_phone || '',
-      randomNumarasi: random_numarasi,
-      randomStr: random_str,
-      odemeTutari: parseFloat(payment_tutar) || urunFiyat,
-      odemeTipi: payment_type || '',
-      durum: 'odendi_key_bekliyor',
+    const updateData = {
+      durum: isSuccess ? 'odendi_key_bekliyor' : 'odeme_basarisiz',
       odemeTarihi: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
+      shopierStatus: status || '',
+      shopierPaymentId: payment_id || '',
+      shopierInstallment: installment || '0',
+      shopierRandomNr: random_nr
     };
 
-    if (urunAdi) guncelData.urunAdi = urunAdi;
-    if (urunFiyat) guncelData.urunFiyat = urunFiyat;
-    if (buyer_email) guncelData.musteriEmail = buyer_email;
-
+    const mevcut = await getDocument(platform_order_id);
     if (mevcut) {
-      await updateDocument(sipariss_id, guncelData);
+      await updateDocument(platform_order_id, updateData);
     } else {
-      guncelData.siparisId = sipariss_id;
-      guncelData.urunId = 0;
-      guncelData.urunAdi = urunAdi || 'Bilinmeyen Ürün';
-      guncelData.urunFiyat = urunFiyat || parseFloat(payment_tutar) || 0;
-      guncelData.musteriEmail = buyer_email || '';
-      guncelData.lisansAnahtari = '';
-      guncelData.createdAt = new Date().toISOString();
-      await setDocument(sipariss_id, guncelData);
+      updateData.siparisId = platform_order_id;
+      updateData.urun_adi = 'Bilinmeyen Ürün';
+      updateData.urunFiyat = 0;
+      updateData.musteriEmail = '';
+      updateData.lisansAnahtari = '';
+      updateData.createdAt = new Date().toISOString();
+      await setDocument(platform_order_id, updateData);
     }
 
-    console.log(`Shopier callback: Odeme kaydedildi - #${sipariss_id}`);
+    console.log(`Shopier callback: Odeme ${isSuccess ? 'basarili' : 'basarisiz'} - #${platform_order_id}`);
     res.status(200).send('OK');
 
   } catch (error) {
