@@ -29,9 +29,7 @@ module.exports = async (req, res) => {
       createdAt: new Date().toISOString()
     });
 
-    const siteUrl = process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : (process.env.SITE_URL || 'http://localhost:3000');
+    const siteUrl = 'https://matrixcheats-theta.vercel.app';
 
     res.json({
       durum: 'basarili',
