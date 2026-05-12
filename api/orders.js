@@ -14,7 +14,6 @@ module.exports = async (req, res) => {
 
     const snapshot = await db.collection(ORDERS_COLLECTION)
       .where('musteriEmail', '==', email)
-      .orderBy('createdAt', 'desc')
       .get();
 
     const siparisler = snapshot.docs.map(doc => {

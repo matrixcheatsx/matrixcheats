@@ -12,15 +12,15 @@ module.exports = async (req, res) => {
     if (durum) {
       snapshot = await db.collection(ORDERS_COLLECTION)
         .where('durum', '==', durum)
-        .orderBy('createdAt', 'desc')
         .get();
     } else {
       snapshot = await db.collection(ORDERS_COLLECTION)
-        .orderBy('createdAt', 'desc')
         .get();
     }
 
-    const siparisler = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const siparisler = snapshot.docs
+      .map(doc => ({ id: doc.id, ...doc.data() }))
+      .sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
     res.json({ durum: 'basarili', siparisler });
 
   } catch (error) {
