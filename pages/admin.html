@@ -116,7 +116,7 @@
             <!-- ORDERS -->
             <section class="admin-section" id="secOrders">
                 <div class="admin-card">
-                    <div class="admin-card-header">📦 Sipariş Onay Talepleri</div>
+                    <div class="admin-card-header">📦 Sipariş Onay Talepleri <button class="btn btn-ghost btn-xs" onclick="testFirestore()" style="float:right;">🔄 Test</button></div>
                     <div class="admin-card-body">
                         <div id="confirmationsSummary"></div>
                         <div id="confirmationsList" class="order-card-list"></div>
@@ -191,8 +191,27 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 <script src="../js/firebase.js"></script>
 <script src="../js/admin.js"></script>
-<script>
-    function toggleSidebar() {
+    <script>
+        async function testFirestore() {
+            const status = document.getElementById('headerStatus');
+            if (typeof getOrderConfirmations !== 'function') {
+                status.textContent = '❌ getOrderConfirmations yok!';
+                return;
+            }
+            status.textContent = 'Test yapılıyor...';
+            try {
+                const data = await getOrderConfirmations();
+                status.textContent = '✅ ' + data.length + ' kayıt bulundu';
+                console.log('Test sonucu:', data);
+                const cont = document.getElementById('confirmationsList');
+                if (cont) cont.innerHTML = '<pre style="color:#00ff41;font-size:12px;">' + JSON.stringify(data, null, 2) + '</pre>';
+            } catch(e) {
+                status.textContent = '❌ Hata: ' + e.message;
+                console.error('Test hatası:', e);
+            }
+        }
+
+        function toggleSidebar() {
         document.getElementById('adminSidebar').classList.toggle('open');
         document.getElementById('sidebarOverlay').classList.toggle('active');
     }

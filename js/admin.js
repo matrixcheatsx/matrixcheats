@@ -428,11 +428,13 @@ async function loadSupportRequests() {
 }
 
 async function loadConfirmations() {
-    if (typeof getOrderConfirmations !== 'function') { showMessage('Onay sistemi yüklenemedi!', 'error'); return; }
+    if (typeof getOrderConfirmations !== 'function') { showMessage('Onay sistemi yüklenemedi! (getOrderConfirmations bulunamadı)', 'error'); return; }
+    if (!window.firebaseReady) { showMessage('Firebase bağlı değil!', 'error'); return; }
     try {
         console.log('Onay talepleri yükleniyor...');
         const confirmations = await getOrderConfirmations();
         console.log('Yüklenen onay talebi sayısı:', confirmations.length);
+        if (confirmations.length > 0) console.log('İlk kayıt:', confirmations[0]);
         renderConfirmations(confirmations);
     } catch (e) {
         console.error('Onaylar yüklenirken hata:', e);
