@@ -49,8 +49,7 @@ function startAutoRefresh() {
         if (active) {
             const id = active.id;
             if (id === 'secDashboard') loadAdminData();
-            if (id === 'secOrders') loadSupportRequests();
-            if (id === 'secConfirmations') loadConfirmations();
+            if (id === 'secOrders') loadConfirmations();
         }
     }, 30000);
 }
@@ -78,38 +77,28 @@ async function loadAdminData() {
     }
 
     try {
-        const [supportSnap, usersSnap, confirmSnap] = await Promise.all([
-            window.db.collection('support_requests').get(),
-            window.db.collection('users').get(),
-            window.db.collection('order_confirmations').get()
+        const [confirmSnap, usersSnap] = await Promise.all([
+            window.db.collection('order_confirmations').get(),
+            window.db.collection('users').get()
         ]);
 
-        const requests = supportSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-        const users = usersSnap.docs.map(d => ({ id: d.id, ...d.data() }));
         const confirmations = confirmSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-        const total = requests.length;
-        const pending = requests.filter(r => r.status === 'Yeni' || r.status === 'İnceleniyor').length;
-        const pendingConfirms = confirmations.filter(r => r.status === 'Onay Bekliyor' || r.status === 'İnceleniyor').length;
+        const users = usersSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        const total = confirmations.length;
+        const pending = confirmations.filter(r => r.status === 'Onay Bekliyor' || r.status === 'İnceleniyor').length;
 
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        const todayOrders = requests.filter(r => {
+        const todayOrders = confirmations.filter(r => {
             const d = r.createdAt?.seconds ? new Date(r.createdAt.seconds * 1000) : new Date(r.createdAt);
             return d >= today;
         }).length;
 
-        let revenue = 0;
-        requests.forEach(r => {
-            const pkg = r.package || '';
-            if (pkg.includes('Ay') || pkg === 'month') revenue += 299;
-            else if (pkg.includes('Hafta') || pkg === 'week') revenue += 149;
-            else if (pkg.includes('Gün') || pkg === 'day') revenue += 49;
-        });
+        let revenue = pending * 299;
 
         document.getElementById('statOrders').textContent = total;
         document.getElementById('statPending').textContent = pending;
         document.getElementById('statUsers').textContent = users.length;
-        document.getElementById('statPendingConfirm').textContent = pendingConfirms;
         document.getElementById('statRevenue').textContent = '₺' + revenue.toLocaleString('tr-TR');
         document.getElementById('statProducts') && (document.getElementById('statProducts').textContent = productCount);
         document.getElementById('statToday') && (document.getElementById('statToday').textContent = todayOrders);
