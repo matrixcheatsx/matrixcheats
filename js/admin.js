@@ -478,6 +478,124 @@ async function toggleUserAdmin(email, makeAdmin) {
     }
 }
 
+let allShopierOrders = [];
+
+async function loadShopierOrders(filtre = '') {
+    const url = filtre ? `/api/admin/orders?durum=${filtre}` : '/api/admin/orders';
+    try {
+        const r = await fetch(url);
+        const d = await r.json();
+        if (d.durum !== 'basarili') { showMessage('Shopier siparişleri alınamadı!', 'error'); return; }
+        allShopierOrders = d.siparisler;
+        renderShopierOrders();
+        renderShopierStats();
+    } catch (e) {
+        showMessage('Shopier siparişleri yüklenirken hata: ' + e.message, 'error');
+    }
+}
+
+function renderShopierStats() {
+    const container = document.getElementById('shopierStats');
+    if (!container) return;
+    const bekleyen = allShopierOrders.filter(o => o.durum === 'odeme_bekliyor').length;
+    const odendi = allShopierOrders.filter(o => o.durum === 'odendi_key_bekliyor').length;
+    const teslim = allShopierOrders.filter(o => o.durum === 'teslim_edildi').length;
+    const toplam = allShopierOrders.length;
+    const gelir = allShopierOrders.filter(o => o.durum === 'teslim_edildi').reduce((t, o) => t + (parseFloat(o.urunFiyat) || 0), 0);
+    container.innerHTML = `
+        <div class="stat-card"><div class="stat-card-label">Ödeme Bekliyor</div><div class="stat-card-value pending" style="font-size:1.5rem;">${bekleyen}</div></div>
+        <div class="stat-card"><div class="stat-card-label">Key Bekliyor</div><div class="stat-card-value" style="font-size:1.5rem;color:#ffc107;">${odendi}</div></div>
+        <div class="stat-card"><div class="stat-card-label">Teslim Edildi</div><div class="stat-card-value" style="font-size:1.5rem;color:#00ff41;">${teslim}</div></div>
+        <div class="stat-card"><div class="stat-card-label">Toplam</div><div class="stat-card-value" style="font-size:1.5rem;">${toplam}</div></div>
+        <div class="stat-card"><div class="stat-card-label">Toplam Gelir</div><div class="stat-card-value revenue" style="font-size:1.5rem;">₺${gelir.toLocaleString('tr-TR')}</div></div>
+    `;
+
+    const filterContainer = document.getElementById('shopierFilters');
+    if (filterContainer) {
+        const filters = [
+            { label: 'Tümü', value: '' },
+            { label: 'Ödeme Bekliyor', value: 'odeme_bekliyor' },
+            { label: 'Key Bekliyor', value: 'odendi_key_bekliyor' },
+            { label: 'Teslim Edildi', value: 'teslim_edildi' }
+        ];
+        filterContainer.innerHTML = filters.map(f =>
+            `<button class="btn ${f.value === '' ? 'btn-primary' : 'btn-ghost'} btn-sm" onclick="filterShopier('${f.value}')">${f.label}</button>`
+        ).join('');
+    }
+}
+
+function filterShopier(filtre) {
+    document.querySelectorAll('#shopierFilters .btn').forEach(b => {
+        b.className = 'btn btn-sm ' + (b.textContent === (filtre === '' ? 'Tümü' : (
+            filtre === 'odeme_bekliyor' ? 'Ödeme Bekliyor' :
+            filtre === 'odendi_key_bekliyor' ? 'Key Bekliyor' : 'Teslim Edildi'
+        )) ? 'btn-primary' : 'btn-ghost');
+    });
+    loadShopierOrders(filtre);
+}
+
+function renderShopierOrders() {
+    const tbody = document.getElementById('shopierOrdersBody');
+    if (!tbody) return;
+    if (!allShopierOrders.length) {
+        tbody.innerHTML = '<tr><td colspan="8" class="empty-state"><div class="empty-state-icon">📋</div><div class="empty-state-text">Shopier siparişi bulunmuyor.</div></td></tr>';
+        return;
+    }
+    tbody.innerHTML = allShopierOrders.map(o => {
+        const durumText = {
+            'odeme_bekliyor': 'Ödeme Bekliyor',
+            'odendi_key_bekliyor': 'Ödendi - Key Bekliyor',
+            'teslim_edildi': 'Teslim Edildi'
+        }[o.durum] || o.durum;
+
+        const badgeClass = {
+            'odeme_bekliyor': 'badge-yellow',
+            'odendi_key_bekliyor': 'badge-blue',
+            'teslim_edildi': 'badge-green'
+        }[o.durum] || 'badge-red';
+
+        const islem = o.durum === 'odendi_key_bekliyor' ? `
+            <div style="display:flex;gap:6px;">
+                <input type="text" class="form-input form-input-sm" id="shopierKey-${o.siparisId}" placeholder="Lisans anahtarı..." style="min-width:140px;">
+                <button class="btn btn-primary btn-xs" onclick="deliverShopier('${o.siparisId}')">Teslim Et</button>
+            </div>
+        ` : o.durum === 'teslim_edildi' ? `<span style="color:#00ffff;">✓ ${o.lisansAnahtari}</span>` : '-';
+
+        return `<tr>
+            <td style="color:#00ff41;font-family:monospace;">${o.siparisId}</td>
+            <td>${o.urunAdi || '-'}${o.paket ? ' ('+o.paket+')' : ''}</td>
+            <td>₺${(parseFloat(o.urunFiyat) || 0).toFixed(2)}</td>
+            <td>${o.musteriAdi || ''} ${o.musteriSoyadi || ''}</td>
+            <td>${o.musteriEmail || '-'}</td>
+            <td>${o.odemeTarihi ? new Date(o.odemeTarihi).toLocaleDateString('tr-TR') : (o.createdAt ? new Date(o.createdAt).toLocaleDateString('tr-TR') : '-')}</td>
+            <td><span class="badge ${badgeClass}">${durumText}</span></td>
+            <td>${islem}</td>
+        </tr>`;
+    }).join('');
+}
+
+async function deliverShopier(siparisId) {
+    const input = document.getElementById(`shopierKey-${siparisId}`);
+    const anahtar = input?.value.trim();
+    if (!anahtar) { showMessage('Lisans anahtarı girin!', 'error'); return; }
+    try {
+        const r = await fetch('/api/admin/deliver', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ siparis_id: siparisId, lisans_anahtari: anahtar })
+        });
+        const d = await r.json();
+        if (d.durum === 'basarili') {
+            showMessage('Lisans anahtarı teslim edildi!', 'success');
+            loadShopierOrders();
+        } else {
+            showMessage(d.mesaj || 'Hata', 'error');
+        }
+    } catch (e) {
+        showMessage('Sunucu hatası: ' + e.message, 'error');
+    }
+}
+
 function showMessage(text, type) {
     const container = document.querySelector('.matrix-message-container') || (() => {
         const c = document.createElement('div');
