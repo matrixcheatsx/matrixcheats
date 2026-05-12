@@ -349,18 +349,20 @@ async function updateSupportStatus(requestId, status) {
 
 async function createOrderConfirmation(data) {
     if (!firebaseReady || !db) return { success: false, error: 'Firebase not connected!' };
+    if (!auth || !auth.currentUser) return { success: false, error: 'Oturum bulunamadı, lütfen tekrar giriş yapın!' };
     try {
-        console.log('Sipariş onayı kaydediliyor:', data);
-        const docRef = await db.collection(CONFIRM_COLLECTION).add({
+        const docId = 'MC-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).substr(2, 6).toUpperCase();
+        console.log('Sipariş onayı kaydediliyor, ID:', docId, data);
+        await db.collection(CONFIRM_COLLECTION).doc(docId).set({
             ...data,
             status: 'Onay Bekliyor',
             createdAt: new Date()
         });
-        console.log('Sipariş onayı kaydedildi, ID:', docRef.id);
-        return { success: true, id: docRef.id };
+        console.log('Sipariş onayı kaydedildi:', docId);
+        return { success: true, id: docId };
     } catch (error) {
         console.error('Sipariş onayı kaydetme hatası:', error);
-        return { success: false, error: error.message };
+        return { success: false, error: error.message || 'Bilinmeyen hata' };
     }
 }
 
