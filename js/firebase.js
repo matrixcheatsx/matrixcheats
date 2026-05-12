@@ -367,17 +367,23 @@ async function createOrderConfirmation(data) {
 async function getOrderConfirmations() {
     if (!firebaseReady || !db) return [];
     try {
-        const snapshot = await db.collection(CONFIRM_COLLECTION).get();
-        const docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        docs.sort((a, b) => {
-            const da = a.createdAt?.seconds ? a.createdAt.seconds * 1000 : new Date(a.createdAt || 0).getTime();
-            const db2 = b.createdAt?.seconds ? b.createdAt.seconds * 1000 : new Date(b.createdAt || 0).getTime();
-            return db2 - da;
-        });
-        return docs;
+        const snapshot = await db.collection(CONFIRM_COLLECTION).orderBy('createdAt', 'desc').get();
+        return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     } catch (error) {
-        console.error('Error getting confirmations:', error);
-        return [];
+        console.warn('orderBy desteklenmiyor, JS sıralama kullanılıyor:', error.message);
+        try {
+            const snapshot = await db.collection(CONFIRM_COLLECTION).get();
+            const docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            docs.sort((a, b) => {
+                const da = a.createdAt?.seconds ? a.createdAt.seconds * 1000 : new Date(a.createdAt || 0).getTime();
+                const db2 = b.createdAt?.seconds ? b.createdAt.seconds * 1000 : new Date(b.createdAt || 0).getTime();
+                return db2 - da;
+            });
+            return docs;
+        } catch (e2) {
+            console.error('Error getting confirmations:', e2);
+            return [];
+        }
     }
 }
 
