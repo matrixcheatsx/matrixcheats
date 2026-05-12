@@ -1013,15 +1013,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 note: sanitizeInput(note)
             };
             
-            if (typeof createOrderConfirmation === 'function') {
-                const result = await createOrderConfirmation(confirmData);
-                if (result.success) {
-                    showMessage('Sipariş onay talebiniz alındı! Admin onayından sonra aktif edilecektir.', 'success');
-                    closeOrderConfirmModal();
-                    document.getElementById('orderConfirmForm').reset();
-                } else {
-                    showMessage('Hata: ' + result.error, 'error');
-                }
+            if (typeof createOrderConfirmation !== 'function') {
+                showMessage('Sistem hatası: createOrderConfirmation fonksiyonu bulunamadı!', 'error');
+                console.error('createOrderConfirmation fonksiyonu mevcut değil! window:', Object.keys(window).filter(k => k.includes('create') || k.includes('Confirm')));
+                return;
+            }
+            console.log('Gönderilen veri:', confirmData);
+            const result = await createOrderConfirmation(confirmData);
+            console.log('Sonuç:', result);
+            if (result.success) {
+                showMessage('Sipariş onay talebiniz alındı! Admin onayından sonra aktif edilecektir.', 'success');
+                closeOrderConfirmModal();
+                document.getElementById('orderConfirmForm').reset();
+            } else {
+                showMessage('Hata: ' + result.error, 'error');
             }
         });
     }
