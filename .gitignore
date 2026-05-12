@@ -20,3 +20,6 @@ Thumbs.db
 firebase-config.js
 # Visual Studio
 .vs/
+# OS junk
+*.swp
+*.swo
