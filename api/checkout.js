@@ -22,7 +22,7 @@ module.exports = async (req, res) => {
     await setDocument(siparisId, {
       siparisId,
       urunId: urun_id || 0,
-      urunAdi,
+      urun_adi,
       urunFiyat: parseFloat(urun_fiyat),
       paket: paket || '',
       musteriAdi: musteri_adi || '',
@@ -45,7 +45,7 @@ module.exports = async (req, res) => {
       durum: 'basarili',
       yonlendirme: {
         siparis_id: siparisId,
-        urun_adi: urunAdi,
+        urun_adi: urun_adi,
         urun_fiyat: parseFloat(urun_fiyat),
         musteri_adi,
         musteri_soyadi,
