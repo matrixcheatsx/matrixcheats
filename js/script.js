@@ -355,6 +355,22 @@ function openSupportModal() {
         return;
     }
     
+    const sel = document.getElementById('supportGame');
+    if (sel) {
+        sel.innerHTML = '<option value="">Oyun Seçin</option>';
+        loadProductsFromStorage();
+        (products || []).forEach(p => {
+            const opt = document.createElement('option');
+            opt.value = p.title;
+            opt.textContent = p.icon + ' ' + p.title;
+            sel.appendChild(opt);
+        });
+        const other = document.createElement('option');
+        other.value = 'Diğer';
+        other.textContent = 'Diğer';
+        sel.appendChild(other);
+    }
+    
     document.getElementById('supportModal').classList.add('active');
 }
 
