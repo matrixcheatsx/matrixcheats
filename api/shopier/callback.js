@@ -10,65 +10,69 @@ module.exports = async (req, res) => {
     let raw = '';
     req.on('data', chunk => raw += chunk);
     await new Promise(resolve => req.on('end', resolve));
-    const data = JSON.parse(raw || '{}');
 
-    const {
-      platform_order_id,
-      status,
-      payment_id,
-      random_nr,
-      signature,
-      installment
-    } = data;
+    const params = new URLSearchParams(raw);
+    const resParam = params.get('res');
+    const hashParam = params.get('hash');
 
-    if (!signature || !platform_order_id || !random_nr) {
+    if (!resParam || !hashParam) {
       console.log('Shopier callback: Eksik parametreler');
       return res.status(400).send('Eksik parametreler');
     }
 
+    const apiUser = process.env.OSB_KULLANICI_ADI;
     const apiSecret = process.env.OSB_SIFRE;
 
-    const expectedSig = crypto.createHmac('sha256', apiSecret)
-      .update(random_nr + platform_order_id)
-      .digest();
+    const expectedHash = crypto.createHmac('sha256', apiSecret)
+      .update(resParam + apiUser)
+      .digest('hex');
 
-    const decodedSig = Buffer.from(signature, 'base64');
-
-    if (!crypto.timingSafeEqual(expectedSig, decodedSig)) {
-      console.log(`Shopier callback: I M Z A  B A S A R I S I Z! Siparis #${platform_order_id}`);
-      console.log(`Beklenen: ${expectedSig.toString('base64')}, Gelen: ${signature}`);
+    if (expectedHash !== hashParam) {
+      console.log('Shopier callback: Imza basarisiz');
       return res.status(403).send('Imza dogrulama basarisiz');
     }
 
-    console.log(`Shopier callback: I M Z A  B A S A R I L I! Siparis #${platform_order_id}`);
+    const jsonStr = Buffer.from(resParam, 'base64').toString('utf-8');
+    const result = JSON.parse(jsonStr);
 
-    const isSuccess = status === 'success';
+    const {
+      email: musteriEmail,
+      orderid: siparisId,
+      price: urunFiyat,
+      buyername: musteriAdi,
+      buyersurname: musteriSoyadi,
+      productid: productId,
+      productlist: productList,
+      istest: isTest
+    } = result;
+
+    console.log(`Shopier callback: Basarili - Siparis #${siparisId}, Tutar: ${urunFiyat}, Test: ${isTest}`);
 
     const updateData = {
-      durum: isSuccess ? 'odendi_key_bekliyor' : 'odeme_basarisiz',
+      durum: 'odendi_key_bekliyor',
       odemeTarihi: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      shopierStatus: status || '',
-      shopierPaymentId: payment_id || '',
-      shopierInstallment: installment || '0',
-      shopierRandomNr: random_nr
+      musteriEmail: musteriEmail || '',
+      musteriAdi: musteriAdi || '',
+      musteriSoyadi: musteriSoyadi || '',
+      urunFiyat: parseFloat(urunFiyat) || 0,
+      productId: productId || '',
+      productList: productList || '',
+      isTest: isTest || '0'
     };
 
-    const mevcut = await getDocument(platform_order_id);
+    const mevcut = await getDocument(siparisId);
     if (mevcut) {
-      await updateDocument(platform_order_id, updateData);
+      await updateDocument(siparisId, updateData);
     } else {
-      updateData.siparisId = platform_order_id;
-      updateData.urun_adi = 'Bilinmeyen Ürün';
-      updateData.urunFiyat = 0;
-      updateData.musteriEmail = '';
+      updateData.siparisId = siparisId;
+      updateData.urunAdi = 'Bilinmeyen Ürün';
       updateData.lisansAnahtari = '';
       updateData.createdAt = new Date().toISOString();
-      await setDocument(platform_order_id, updateData);
+      await setDocument(siparisId, updateData);
     }
 
-    console.log(`Shopier callback: Odeme ${isSuccess ? 'basarili' : 'basarisiz'} - #${platform_order_id}`);
-    res.status(200).send('OK');
+    res.status(200).send('success');
 
   } catch (error) {
     console.error('Shopier callback hatasi:', error.message);
