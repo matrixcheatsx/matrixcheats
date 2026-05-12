@@ -286,6 +286,10 @@ function updateAuthUI(user) {
         `;
         authBox.onclick = openProfileModal;
     }
+    const confirmBox = document.querySelector('.order-confirm-box');
+    if (confirmBox) {
+        confirmBox.style.display = user ? 'flex' : 'none';
+    }
 }
 
 function openProfileModal() {
@@ -541,6 +545,8 @@ async function handleLogout() {
         `;
         authBox.onclick = openAuth;
     }
+    const confirmBox = document.querySelector('.order-confirm-box');
+    if (confirmBox) confirmBox.style.display = 'none';
     showMessage('Çıkış yapıldı.', 'info');
 }
 
