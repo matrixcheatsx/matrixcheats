@@ -706,64 +706,82 @@ function initMatrixCanvas() {
     const ctx = canvas.getContext('2d');
     
     let animFrameId;
-    let canvasWidth, canvasHeight;
+    let w, h, cols, drops;
     const chars = '01';
-    const fontSize = 14;
-    let columns, drops;
+    const fSize = 14;
+    const gap = 16;
     
-    function resizeCanvas() {
-        canvasWidth = window.innerWidth;
-        canvasHeight = window.innerHeight;
-        canvas.width = canvasWidth;
-        canvas.height = canvasHeight;
-        columns = Math.ceil(canvasWidth / fontSize);
+    function resize() {
+        w = window.innerWidth;
+        h = window.innerHeight;
+        canvas.width = w;
+        canvas.height = h;
+        cols = Math.ceil(w / gap);
         drops = [];
-        for (let i = 0; i < columns; i++) {
-            drops[i] = Math.random() * canvasHeight;
+        for (let i = 0; i < cols; i++) {
+            drops[i] = {
+                y: Math.random() * h,
+                speed: 0.4 + Math.random() * 1.2,
+                isRed: i % 2 === 0 ? Math.random() > 0.5 : Math.random() > 0.5,
+                trail: Math.floor(4 + Math.random() * 8)
+            };
         }
     }
     
-    resizeCanvas();
+    resize();
     
     let lastTime = 0;
-    const interval = 50;
+    const interval = 40;
     
-    function drawMatrix(timestamp) {
+    function draw(timestamp) {
         if (timestamp - lastTime < interval) {
-            animFrameId = requestAnimationFrame(drawMatrix);
+            animFrameId = requestAnimationFrame(draw);
             return;
         }
         lastTime = timestamp;
         
-        ctx.fillStyle = 'rgba(5, 5, 5, 0.05)';
-        ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+        ctx.fillStyle = 'rgba(5, 5, 5, 0.08)';
+        ctx.fillRect(0, 0, w, h);
         
-        ctx.font = fontSize + 'px monospace';
+        ctx.font = fSize + 'px monospace';
         
         for (let i = 0; i < drops.length; i++) {
-            const char = chars[Math.floor(Math.random() * chars.length)];
-            const y = drops[i] * fontSize;
-            const useRed = Math.random() > 0.5;
-            ctx.fillStyle = useRed
-                ? `rgba(255, 0, 64, ${0.3 + Math.random() * 0.4})`
-                : `rgba(0, 255, 65, ${0.3 + Math.random() * 0.4})`;
-            ctx.fillText(char, i * fontSize, y);
+            const d = drops[i];
+            const x = i * gap;
+            const y = d.y;
             
-            if (y > canvasHeight && Math.random() > 0.975) {
-                drops[i] = 0;
+            const r = d.isRed ? 255 : 0;
+            const g = d.isRed ? 10 : 255;
+            const b = d.isRed ? 10 : 65;
+            
+            for (let t = 0; t < d.trail; t++) {
+                const ty = y - t * fSize;
+                if (ty < 0) break;
+                const alpha = t === 0 ? 0.95 : Math.max(0.05, 0.5 - t * 0.08);
+                if (alpha < 0.05) break;
+                const char = chars[Math.floor(Math.random() * chars.length)];
+                ctx.fillStyle = t === 0
+                    ? `rgba(${r}, ${g}, ${b}, 0.95)`
+                    : `rgba(${r}, ${g}, ${b}, ${alpha})`;
+                ctx.fillText(char, x, ty);
             }
-            drops[i]++;
+            
+            if (y > h + d.trail * fSize && Math.random() > 0.97) {
+                d.y = -d.trail * fSize;
+                d.speed = 0.4 + Math.random() * 1.2;
+            }
+            d.y += d.speed;
         }
         
-        animFrameId = requestAnimationFrame(drawMatrix);
+        animFrameId = requestAnimationFrame(draw);
     }
     
-    animFrameId = requestAnimationFrame(drawMatrix);
+    animFrameId = requestAnimationFrame(draw);
     
     let resizeTimeout;
-    window.addEventListener('resize', function() {
+    window.addEventListener('resize', () => {
         clearTimeout(resizeTimeout);
-        resizeTimeout = setTimeout(resizeCanvas, 100);
+        resizeTimeout = setTimeout(resize, 100);
     }, { passive: true });
 }
 
