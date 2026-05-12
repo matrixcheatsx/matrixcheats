@@ -346,121 +346,172 @@ body {
 .auth-box {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 8px 16px;
-    background: rgba(0,0,0,0.6);
-    border: 1px solid #ff0040;
+    gap: 12px;
+    padding: 10px 20px;
+    background: linear-gradient(135deg, rgba(255,0,64,0.08) 0%, rgba(255,0,64,0.02) 100%);
+    border: 1px solid rgba(255,0,64,0.4);
     cursor: pointer;
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
+    border-radius: 6px;
+    backdrop-filter: blur(4px);
 }
 
 .auth-box::before {
     content: '';
     position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,0,64,0.3), transparent);
-    transition: left 0.5s ease;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,0,64,0.15), transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.auth-box::after {
+    content: '';
+    position: absolute;
+    top: -1px;
+    left: -1px;
+    right: -1px;
+    bottom: -1px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, rgba(255,0,64,0.6), rgba(255,0,64,0.1), rgba(255,0,64,0.6));
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.3s ease;
 }
 
 .auth-box:hover::before {
-    left: 100%;
+    opacity: 1;
+}
+
+.auth-box:hover::after {
+    opacity: 1;
 }
 
 .auth-box:hover {
-    background: rgba(255,0,64,0.2);
-    box-shadow: 0 0 20px rgba(255,0,64,0.4);
-    transform: translateY(-2px);
+    border-color: rgba(255,0,64,0.8);
+    box-shadow: 0 0 25px rgba(255,0,64,0.3), inset 0 0 15px rgba(255,0,64,0.05);
+    transform: translateY(-1px);
 }
 
 .auth-box-icon {
+    position: relative;
+    z-index: 1;
     color: #ff0040;
-    font-size: 1.2rem;
-    animation: pulse 2s infinite;
+    font-size: 1.3rem;
+    text-shadow: 0 0 10px rgba(255,0,64,0.5);
 }
 
 .auth-box-text {
+    position: relative;
+    z-index: 1;
     display: flex;
     flex-direction: column;
-    line-height: 1.2;
+    line-height: 1.15;
 }
 
 .auth-box-title {
     color: #fff;
     font-family: 'Orbitron', sans-serif;
-    font-size: 0.75rem;
-    font-weight: 600;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-shadow: 0 0 8px rgba(255,0,64,0.2);
 }
 
 .auth-box-subtitle {
-    color: #ff0040;
+    color: rgba(255,0,64,0.8);
     font-family: 'Share Tech Mono', monospace;
     font-size: 0.65rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
 }
 
 .order-confirm-box {
     display: none;
     align-items: center;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 14px;
-    background: rgba(0,0,0,0.6);
-    border: 1px solid #00ff41;
+    gap: 10px;
+    padding: 10px 18px;
+    background: linear-gradient(135deg, rgba(0,255,65,0.08) 0%, rgba(0,255,65,0.02) 100%);
+    border: 1px solid rgba(0,255,65,0.4);
     cursor: pointer;
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
+    border-radius: 6px;
+    backdrop-filter: blur(4px);
 }
 
 .order-confirm-box::before {
     content: '';
     position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(0,255,65,0.3), transparent);
-    transition: left 0.5s ease;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(0,255,65,0.15), transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.order-confirm-box::after {
+    content: '';
+    position: absolute;
+    top: -1px;
+    left: -1px;
+    right: -1px;
+    bottom: -1px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, rgba(0,255,65,0.6), rgba(0,255,65,0.1), rgba(0,255,65,0.6));
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.3s ease;
 }
 
 .order-confirm-box:hover::before {
-    left: 100%;
+    opacity: 1;
+}
+
+.order-confirm-box:hover::after {
+    opacity: 1;
 }
 
 .order-confirm-box:hover {
-    background: rgba(0,255,65,0.2);
-    box-shadow: 0 0 20px rgba(0,255,65,0.4);
-    transform: translateY(-2px);
+    border-color: rgba(0,255,65,0.8);
+    box-shadow: 0 0 25px rgba(0,255,65,0.3), inset 0 0 15px rgba(0,255,65,0.05);
+    transform: translateY(-1px);
 }
 
 .order-confirm-icon {
+    position: relative;
+    z-index: 1;
     color: #00ff41;
-    font-size: 1rem;
+    font-size: 1.1rem;
     font-weight: 700;
-    animation: pulse 2s infinite;
+    text-shadow: 0 0 10px rgba(0,255,65,0.5);
 }
 
 .order-confirm-text {
+    position: relative;
+    z-index: 1;
     display: flex;
     flex-direction: column;
-    line-height: 1.2;
+    line-height: 1.15;
 }
 
 .order-confirm-title {
     color: #fff;
     font-family: 'Orbitron', sans-serif;
-    font-size: 0.7rem;
-    font-weight: 600;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-shadow: 0 0 8px rgba(0,255,65,0.2);
 }
 
 .order-confirm-subtitle {
-    color: #00ff41;
+    color: rgba(0,255,65,0.8);
     font-family: 'Share Tech Mono', monospace;
     font-size: 0.6rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
 }
 
 .btn-glitch {
