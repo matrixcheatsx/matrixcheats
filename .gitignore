@@ -1,0 +1,22 @@
+# Dependencies
+node_modules/
+
+# Local storage
+localStorage/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Cache
+*.log
+*.cache
+
+# Firebase config (gizli bilgi)
+firebase-config.js
+# Visual Studio
+.vs/
