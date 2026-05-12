@@ -1,4 +1,4 @@
-const { db, ORDERS_COLLECTION } = require('../../lib/firebase-admin');
+const { listDocuments, COLLECTION } = require('../../lib/firebase');
 
 module.exports = async (req, res) => {
   if (req.method !== 'GET') {
@@ -6,14 +6,13 @@ module.exports = async (req, res) => {
   }
 
   try {
-    const tumu = await db.collection(ORDERS_COLLECTION).get();
-    const tumSiparisler = tumu.docs.map(d => d.data());
+    const docs = await listDocuments();
 
-    const bekleyen = tumSiparisler.filter(s => s.durum === 'odeme_bekliyor').length;
-    const odendi = tumSiparisler.filter(s => s.durum === 'odendi_key_bekliyor').length;
-    const teslim = tumSiparisler.filter(s => s.durum === 'teslim_edildi').length;
-    const toplam = tumSiparisler.length;
-    const toplamGelir = tumSiparisler
+    const bekleyen = docs.filter(s => s.durum === 'odeme_bekliyor').length;
+    const odendi = docs.filter(s => s.durum === 'odendi_key_bekliyor').length;
+    const teslim = docs.filter(s => s.durum === 'teslim_edildi').length;
+    const toplam = docs.length;
+    const toplamGelir = docs
       .filter(s => s.durum === 'teslim_edildi')
       .reduce((t, s) => t + (parseFloat(s.urunFiyat) || 0), 0);
 
@@ -23,7 +22,7 @@ module.exports = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Istatistik hatasi:', error);
+    console.error('Istatistik hatasi:', error.message);
     res.status(500).json({ durum: 'hata', mesaj: 'Veritabani hatasi' });
   }
 };

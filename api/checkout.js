@@ -1,5 +1,4 @@
-const parseBody = require('../lib/body-parser');
-const { db, ORDERS_COLLECTION } = require('../lib/firebase-admin');
+const { setDocument, updateDocument, getDocument, queryDocuments, listDocuments, COLLECTION } = require('../lib/firebase');
 
 module.exports = async (req, res) => {
   if (req.method !== 'POST') {
@@ -7,8 +6,12 @@ module.exports = async (req, res) => {
   }
 
   try {
-    const body = await parseBody(req);
-    const { urun_id, urun_adi, urun_fiyat, musteri_adi, musteri_soyadi, musteri_email, musteri_telefon, paket } = body;
+    let body = '';
+    req.on('data', chunk => body += chunk);
+    await new Promise(resolve => req.on('end', resolve));
+    const data = JSON.parse(body || '{}');
+
+    const { urun_id, urun_adi, urun_fiyat, musteri_adi, musteri_soyadi, musteri_email, musteri_telefon, paket } = data;
 
     if (!urun_adi || !musteri_email || !urun_fiyat) {
       return res.status(400).json({ durum: 'hata', mesaj: 'Eksik bilgiler' });
@@ -16,7 +19,7 @@ module.exports = async (req, res) => {
 
     const siparisId = 'MC-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).substr(2, 6).toUpperCase();
 
-    await db.collection(ORDERS_COLLECTION).doc(siparisId).set({
+    await setDocument(siparisId, {
       siparisId,
       urunId: urun_id || 0,
       urunAdi,
@@ -53,7 +56,7 @@ module.exports = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Checkout hatasi:', error);
-    res.status(500).json({ durum: 'hata', mesaj: 'Sunucu hatasi' });
+    console.error('Checkout hatasi:', error.message);
+    res.status(500).json({ durum: 'hata', mesaj: error.message || 'Sunucu hatasi' });
   }
 };

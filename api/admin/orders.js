@@ -1,4 +1,4 @@
-const { db, ORDERS_COLLECTION } = require('../../lib/firebase-admin');
+const { queryDocuments, listDocuments, updateDocument, COLLECTION } = require('../../lib/firebase');
 
 module.exports = async (req, res) => {
   if (req.method !== 'GET') {
@@ -7,24 +7,21 @@ module.exports = async (req, res) => {
 
   try {
     const { durum } = req.query;
-    let snapshot;
+    let docs;
 
     if (durum) {
-      snapshot = await db.collection(ORDERS_COLLECTION)
-        .where('durum', '==', durum)
-        .get();
+      docs = await queryDocuments('durum', 'EQUAL', durum);
     } else {
-      snapshot = await db.collection(ORDERS_COLLECTION)
-        .get();
+      docs = await listDocuments();
     }
 
-    const siparisler = snapshot.docs
-      .map(doc => ({ id: doc.id, ...doc.data() }))
-      .sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+    docs.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+
+    const siparisler = docs.map(d => ({ id: d.siparisId, ...d }));
     res.json({ durum: 'basarili', siparisler });
 
   } catch (error) {
-    console.error('Admin siparis listesi hatasi:', error);
+    console.error('Admin siparis listesi hatasi:', error.message);
     res.status(500).json({ durum: 'hata', mesaj: 'Veritabani hatasi' });
   }
 };

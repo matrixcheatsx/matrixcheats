@@ -1,5 +1,4 @@
-const parseBody = require('../../lib/body-parser');
-const { db, ORDERS_COLLECTION } = require('../../lib/firebase-admin');
+const { setDocument, updateDocument, getDocument, COLLECTION } = require('../../lib/firebase');
 
 module.exports = async (req, res) => {
   if (req.method !== 'POST') {
@@ -7,29 +6,31 @@ module.exports = async (req, res) => {
   }
 
   try {
-    const body = await parseBody(req);
-    const { siparis_id, lisans_anahtari } = body;
+    let body = '';
+    req.on('data', chunk => body += chunk);
+    await new Promise(resolve => req.on('end', resolve));
+    const data = JSON.parse(body || '{}');
+
+    const { siparis_id, lisans_anahtari } = data;
 
     if (!siparis_id || !lisans_anahtari) {
       return res.status(400).json({ durum: 'hata', mesaj: 'Siparis ID ve lisans anahtari gerekli' });
     }
 
-    const siparisDoc = await db.collection(ORDERS_COLLECTION).doc(siparis_id).get();
+    const mevcut = await getDocument(siparis_id);
 
-    if (!siparisDoc.exists) {
+    if (!mevcut) {
       return res.status(404).json({ durum: 'hata', mesaj: 'Siparis bulunamadi' });
     }
 
-    const siparis = siparisDoc.data();
-
-    if (siparis.durum !== 'odendi_key_bekliyor') {
+    if (mevcut.durum !== 'odendi_key_bekliyor') {
       return res.status(400).json({
         durum: 'hata',
-        mesaj: `Bu siparis teslim edilmeye uygun degil. Mevcut durum: ${siparis.durum}`
+        mesaj: `Bu siparis teslim edilmeye uygun degil. Mevcut durum: ${mevcut.durum}`
       });
     }
 
-    await db.collection(ORDERS_COLLECTION).doc(siparis_id).update({
+    await updateDocument(siparis_id, {
       lisansAnahtari,
       durum: 'teslim_edildi',
       teslimTarihi: new Date().toISOString(),
@@ -40,7 +41,7 @@ module.exports = async (req, res) => {
     res.json({ durum: 'basarili', mesaj: 'Lisans anahtari basariyla teslim edildi' });
 
   } catch (error) {
-    console.error('Teslim hatasi:', error);
+    console.error('Teslim hatasi:', error.message);
     res.status(500).json({ durum: 'hata', mesaj: 'Sunucu hatasi' });
   }
 };

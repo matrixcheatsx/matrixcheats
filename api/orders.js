@@ -1,4 +1,4 @@
-const { db, ORDERS_COLLECTION } = require('../lib/firebase-admin');
+const { queryDocuments, listDocuments, COLLECTION } = require('../lib/firebase');
 
 module.exports = async (req, res) => {
   if (req.method !== 'GET') {
@@ -12,29 +12,24 @@ module.exports = async (req, res) => {
       return res.status(400).json({ durum: 'hata', mesaj: 'E-posta gerekli' });
     }
 
-    const snapshot = await db.collection(ORDERS_COLLECTION)
-      .where('musteriEmail', '==', email)
-      .get();
+    const docs = await queryDocuments('musteriEmail', 'EQUAL', email);
 
-    const siparisler = snapshot.docs.map(doc => {
-      const data = doc.data();
-      return {
-        siparis_id: data.siparisId,
-        urun_adi: data.urunAdi,
-        urun_fiyat: data.urunFiyat,
-        paket: data.paket || '',
-        durum: data.durum,
-        lisans_anahtari: data.lisansAnahtari || '',
-        odeme_tarihi: data.odemeTarihi || '',
-        teslim_tarihi: data.teslimTarihi || '',
-        created_at: data.createdAt || ''
-      };
-    });
+    const siparisler = docs.map(d => ({
+      siparis_id: d.siparisId,
+      urun_adi: d.urunAdi,
+      urun_fiyat: d.urunFiyat,
+      paket: d.paket || '',
+      durum: d.durum,
+      lisans_anahtari: d.lisansAnahtari || '',
+      odeme_tarihi: d.odemeTarihi || '',
+      teslim_tarihi: d.teslimTarihi || '',
+      created_at: d.createdAt || ''
+    }));
 
     res.json({ durum: 'basarili', siparisler });
 
   } catch (error) {
-    console.error('Siparis sorgulama hatasi:', error);
+    console.error('Siparis sorgulama hatasi:', error.message);
     res.status(500).json({ durum: 'hata', mesaj: 'Veritabani hatasi' });
   }
 };

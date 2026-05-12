@@ -1,6 +1,5 @@
 const crypto = require('crypto');
-const parseBody = require('../../lib/body-parser');
-const { db, ORDERS_COLLECTION } = require('../../lib/firebase-admin');
+const { setDocument, updateDocument, getDocument, COLLECTION } = require('../../lib/firebase');
 
 module.exports = async (req, res) => {
   if (req.method !== 'POST') {
@@ -8,7 +7,11 @@ module.exports = async (req, res) => {
   }
 
   try {
-    const body = await parseBody(req);
+    let body = '';
+    req.on('data', chunk => body += chunk);
+    await new Promise(resolve => req.on('end', resolve));
+    const data = JSON.parse(body || '{}');
+
     const {
       random_numarasi,
       sipariss_id,
@@ -21,7 +24,7 @@ module.exports = async (req, res) => {
       payment_tutar,
       payment_type,
       urunler
-    } = body;
+    } = data;
 
     if (!hash || !random_numarasi || !sipariss_id || !random_str) {
       console.log('Shopier callback: Eksik parametreler');
@@ -58,8 +61,7 @@ module.exports = async (req, res) => {
       }
     } catch (e) {}
 
-    const siparisDoc = await db.collection(ORDERS_COLLECTION).doc(sipariss_id).get();
-
+    const mevcut = await getDocument(sipariss_id);
     const guncelData = {
       musteriAdi: buyer_name || '',
       musteriSoyadi: buyer_surname || '',
@@ -77,8 +79,8 @@ module.exports = async (req, res) => {
     if (urunFiyat) guncelData.urunFiyat = urunFiyat;
     if (buyer_email) guncelData.musteriEmail = buyer_email;
 
-    if (siparisDoc.exists) {
-      await db.collection(ORDERS_COLLECTION).doc(sipariss_id).update(guncelData);
+    if (mevcut) {
+      await updateDocument(sipariss_id, guncelData);
     } else {
       guncelData.siparisId = sipariss_id;
       guncelData.urunId = 0;
@@ -87,14 +89,14 @@ module.exports = async (req, res) => {
       guncelData.musteriEmail = buyer_email || '';
       guncelData.lisansAnahtari = '';
       guncelData.createdAt = new Date().toISOString();
-      await db.collection(ORDERS_COLLECTION).doc(sipariss_id).set(guncelData);
+      await setDocument(sipariss_id, guncelData);
     }
 
     console.log(`Shopier callback: Odeme kaydedildi - #${sipariss_id}`);
     res.status(200).send('OK');
 
   } catch (error) {
-    console.error('Shopier callback hatasi:', error);
+    console.error('Shopier callback hatasi:', error.message);
     res.status(500).send('Sunucu hatasi');
   }
 };
