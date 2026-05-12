@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopier Admin - MATRIXCHEATS</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Share Tech Mono', monospace;
+            background: #050505;
+            color: #00ff41;
+            min-height: 100vh;
+        }
+        .header {
+            background: rgba(0,10,0,0.95);
+            border-bottom: 1px solid #00ff41;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 { font-family: 'Orbitron', sans-serif; font-size: 1.2rem; text-shadow: 0 0 10px #00ff41; }
+        .header a { color: #ff0040; text-decoration: none; font-size: 0.9rem; }
+        .header a:hover { text-shadow: 0 0 10px #ff0040; }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            padding: 20px 30px;
+        }
+        .stat-card {
+            background: rgba(0,20,0,0.8);
+            border: 1px solid #00ff41;
+            padding: 18px;
+            border-radius: 6px;
+            text-align: center;
+        }
+        .stat-card .num { font-size: 2rem; color: #00ffff; font-family: 'Orbitron', sans-serif; }
+        .stat-card .lbl { color: #808080; font-size: 0.8rem; margin-top: 4px; }
+
+        .filters {
+            padding: 0 30px 20px;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .filters button {
+            padding: 8px 16px;
+            background: transparent;
+            border: 1px solid #00ff41;
+            color: #00ff41;
+            font-family: inherit;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+        .filters button:hover, .filters button.active {
+            background: #00ff41;
+            color: #000;
+        }
+
+        .table-wrap {
+            margin: 0 30px 30px;
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+        th, td {
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(0,255,65,0.15);
+        }
+        th { color: #00ffff; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; }
+        td { color: #c0c0c0; }
+
+        .badge {
+            display: inline-block; padding: 3px 8px; border-radius: 3px; font-size: 0.75rem;
+        }
+        .badge-yellow { background: rgba(255,255,0,0.15); color: #ffc107; border: 1px solid #ffc107; }
+        .badge-green { background: rgba(0,255,65,0.15); color: #00ff41; border: 1px solid #00ff41; }
+        .badge-cyan { background: rgba(0,255,255,0.15); color: #00ffff; border: 1px solid #00ffff; }
+        .badge-red { background: rgba(255,0,64,0.15); color: #ff0040; border: 1px solid #ff0040; }
+
+        .key-input { display: flex; gap: 6px; }
+        .key-input input {
+            flex: 1; min-width: 160px; padding: 6px 10px;
+            background: rgba(0,30,0,0.3); border: 1px solid #00ff41;
+            color: #00ff41; font-family: inherit; border-radius: 3px; font-size: 0.8rem; outline: none;
+        }
+        .key-input input:focus { box-shadow: 0 0 8px rgba(0,255,65,0.4); }
+        .key-input button {
+            padding: 6px 12px; background: transparent; border: 1px solid #00ff41;
+            color: #00ff41; font-family: inherit; cursor: pointer; border-radius: 3px;
+            font-size: 0.8rem; transition: all 0.2s; white-space: nowrap;
+        }
+        .key-input button:hover { background: #00ff41; color: #000; }
+        .key-delivered { color: #00ffff; }
+
+        .empty { text-align: center; padding: 40px; color: #404040; }
+
+        .toast {
+            position: fixed; top: 20px; right: 20px; padding: 12px 20px;
+            border-radius: 4px; font-family: inherit; z-index: 9999;
+            opacity: 0; transform: translateX(50px); transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+        .toast.show { opacity: 1; transform: translateX(0); }
+        .toast.success { background: rgba(0,255,65,0.9); color: #000; border: 1px solid #00ff41; }
+        .toast.error { background: rgba(255,0,64,0.9); color: #fff; border: 1px solid #ff0040; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>◈ SHOPIER ADMIN</h1>
+        <a href="admin.html">← Ana Admin</a>
+    </div>
+
+    <div class="stats" id="stats"></div>
+
+    <div class="filters">
+        <button class="active" data-filter="">Tümü</button>
+        <button data-filter="odeme_bekliyor">Ödeme Bekliyor</button>
+        <button data-filter="odendi_key_bekliyor">Ödendi - Key Bekliyor</button>
+        <button data-filter="teslim_edildi">Teslim Edildi</button>
+    </div>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Sipariş ID</th>
+                    <th>Ürün</th>
+                    <th>Tutar</th>
+                    <th>Müşteri</th>
+                    <th>E-posta</th>
+                    <th>Tarih</th>
+                    <th>Durum</th>
+                    <th>İşlem</th>
+                </tr>
+            </thead>
+            <tbody id="ordersBody"></tbody>
+        </table>
+    </div>
+
+    <script>
+        let allOrders = [];
+
+        function toast(msg, type = 'success') {
+            const t = document.createElement('div');
+            t.className = `toast ${type}`;
+            t.textContent = msg;
+            document.body.appendChild(t);
+            setTimeout(() => t.classList.add('show'), 50);
+            setTimeout(() => {
+                t.classList.remove('show');
+                setTimeout(() => t.remove(), 300);
+            }, 3000);
+        }
+
+        async function loadStats() {
+            try {
+                const r = await fetch('/api/admin/stats');
+                const d = await r.json();
+                if (d.durum !== 'basarili') return;
+                document.getElementById('stats').innerHTML = `
+                    <div class="stat-card"><div class="num">${d.istatistik.bekleyen}</div><div class="lbl">Ödeme Bekliyor</div></div>
+                    <div class="stat-card"><div class="num">${d.istatistik.odendi}</div><div class="lbl">Ödendi - Key Bekliyor</div></div>
+                    <div class="stat-card"><div class="num">${d.istatistik.teslim}</div><div class="lbl">Teslim Edildi</div></div>
+                    <div class="stat-card"><div class="num">${d.istatistik.toplam}</div><div class="lbl">Toplam</div></div>
+                    <div class="stat-card"><div class="num">₺${d.istatistik.toplamGelir.toFixed(2)}</div><div class="lbl">Toplam Gelir</div></div>
+                `;
+            } catch (e) { console.error('Stats error:', e); }
+        }
+
+        async function loadOrders(filtre = '') {
+            const url = filtre ? `/api/admin/orders?durum=${filtre}` : '/api/admin/orders';
+            try {
+                const r = await fetch(url);
+                const d = await r.json();
+                if (d.durum !== 'basarili') return;
+                allOrders = d.siparisler;
+                renderOrders();
+            } catch (e) { console.error('Orders error:', e); }
+        }
+
+        function renderOrders() {
+            const tbody = document.getElementById('ordersBody');
+            if (!allOrders.length) {
+                tbody.innerHTML = '<tr><td colspan="8" class="empty">Sipariş bulunmuyor</td></tr>';
+                return;
+            }
+            tbody.innerHTML = allOrders.map(o => {
+                const durumText = {
+                    'odeme_bekliyor': 'Ödeme Bekliyor',
+                    'odendi_key_bekliyor': 'Ödendi - Key Bekliyor',
+                    'teslim_edildi': 'Teslim Edildi'
+                }[o.durum] || o.durum;
+
+                const badge = {
+                    'odeme_bekliyor': 'badge-yellow',
+                    'odendi_key_bekliyor': 'badge-green',
+                    'teslim_edildi': 'badge-cyan'
+                }[o.durum] || 'badge-red';
+
+                const islem = o.durum === 'odendi_key_bekliyor' ? `
+                    <div class="key-input">
+                        <input type="text" id="key-${o.siparisId}" placeholder="Lisans anahtarı...">
+                        <button onclick="deliver('${o.siparisId}')">Teslim Et</button>
+                    </div>
+                ` : o.durum === 'teslim_edildi' ? `<span class="key-delivered">✓ ${o.lisansAnahtari}</span>` : '-';
+
+                return `<tr>
+                    <td style="color:#00ff41;">${o.siparisId}</td>
+                    <td>${o.urunAdi || '-'}${o.paket ? ' ('+o.paket+')' : ''}</td>
+                    <td>₺${(parseFloat(o.urunFiyat) || 0).toFixed(2)}</td>
+                    <td>${o.musteriAdi || ''} ${o.musteriSoyadi || ''}</td>
+                    <td>${o.musteriEmail || '-'}</td>
+                    <td>${o.odemeTarihi ? new Date(o.odemeTarihi).toLocaleDateString('tr-TR') : (o.createdAt ? new Date(o.createdAt).toLocaleDateString('tr-TR') : '-')}</td>
+                    <td><span class="badge ${badge}">${durumText}</span></td>
+                    <td>${islem}</td>
+                </tr>`;
+            }).join('');
+        }
+
+        async function deliver(siparisId) {
+            const input = document.getElementById(`key-${siparisId}`);
+            const anahtar = input.value.trim();
+            if (!anahtar) { toast('Lisans anahtarı girin!', 'error'); return; }
+
+            try {
+                const r = await fetch('/api/admin/deliver', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ siparis_id: siparisId, lisans_anahtari: anahtar })
+                });
+                const d = await r.json();
+                if (d.durum === 'basarili') {
+                    toast('Lisans anahtarı teslim edildi!');
+                    loadOrders(document.querySelector('.filters .active')?.dataset?.filter || '');
+                    loadStats();
+                } else {
+                    toast(d.mesaj || 'Hata', 'error');
+                }
+            } catch (e) {
+                toast('Sunucu hatası', 'error');
+            }
+        }
+
+        document.querySelectorAll('.filters button').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filters button').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                loadOrders(btn.dataset.filter);
+            });
+        });
+
+        loadStats();
+        loadOrders();
+        setInterval(loadStats, 15000);
+    </script>
+</body>
+</html>

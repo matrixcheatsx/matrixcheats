@@ -1,0 +1,12 @@
+{
+  "name": "matrix-cheats",
+  "version": "2.0.0",
+  "description": "Matrix Cheats - Shopier Entegrasyonlu Oyun Lisans Satışı",
+  "scripts": {
+    "vercel-build": "echo 'Static site, no build required'"
+  },
+  "dependencies": {
+    "firebase-admin": "^11.11.0",
+    "md5": "^2.3.0"
+  }
+}

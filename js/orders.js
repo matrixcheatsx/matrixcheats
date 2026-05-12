@@ -35,6 +35,32 @@ function setSort(value) {
     renderOrders();
 }
 
+async function fetchShopierOrders(email) {
+    try {
+        const res = await fetch(`/api/orders?email=${encodeURIComponent(email)}`);
+        const data = await res.json();
+        if (data.durum === 'basarili' && data.siparisler) {
+            return data.siparisler.map(s => ({
+                id: s.siparis_id,
+                productName: s.urun_adi,
+                product: s.urun_adi,
+                totalPrice: s.urun_fiyat.toString(),
+                price: s.urun_fiyat.toString(),
+                duration: s.paket || '-',
+                status: s.durum === 'odeme_bekliyor' ? 'Beklemede' :
+                        s.durum === 'odendi_key_bekliyor' ? 'İşleniyor' :
+                        s.durum === 'teslim_edildi' ? 'Tamamlandı' : s.durum,
+                licenseKey: s.lisans_anahtari || '',
+                createdAt: s.odeme_tarihi || s.created_at,
+                isShopier: true
+            }));
+        }
+    } catch (e) {
+        console.error('Shopier siparişleri yüklenemedi:', e);
+    }
+    return [];
+}
+
 async function renderOrders() {
     const container = document.getElementById('orderList');
     if (!container) return;
@@ -43,40 +69,28 @@ async function renderOrders() {
     const user = storedUser ? JSON.parse(storedUser) : null;
     
     const userUid = user?.uid || user?._delegate?.uid || user?.user?.uid;
+    const userEmail = user?.email || user?._delegate?.email || '';
     
-    if (!user || !userUid) {
+    if (!user || (!userUid && !userEmail)) {
         showAuthRequired(container);
         return;
     }
     
-    if (typeof getOrdersByUser === 'function') {
-        userOrders = await getOrdersByUser(userUid);
-    }
-    
-    const displayOrders = filterAndSortOrders();
-    
-    if (displayOrders.length === 0) {
-        const filterMsg = currentFilter !== 'all' ? '<p style="margin-top:10px;">Seçili durumda sipariş bulunamadı.</p>' : '';
-        container.innerHTML = `
-            <div class="empty-orders">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
-                    <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
-                </svg>
-                <p>Siparişiniz bulunmuyor.</p>
-                ${filterMsg}
-            </div>
-        `;
-        return;
-    }
-    
-    container.innerHTML = displayOrders.map(order => {
-                <p>Henüz bir siparişiniz bulunmuyor.</p>
-            </div>
-        `;
-        return;
+    userOrders = [];
+
+    if (typeof getOrdersByUser === 'function' && userUid) {
+        try {
+            const fbOrders = await getOrdersByUser(userUid);
+            userOrders = userOrders.concat(fbOrders);
+        } catch (e) {}
     }
 
-    container.innerHTML = userOrders.map(order => {
+    if (userEmail) {
+        const shopierOrders = await fetchShopierOrders(userEmail);
+        userOrders = userOrders.concat(shopierOrders);
+    }
+
+    const displayOrders = filterAndSortOrders();
         const statusClass = order.status === 'Tamamlandı' || order.status === 'completed' ? 'status-completed' : 
                           order.status === 'Beklemede' || order.status === 'pending' ? 'status-pending' : 'status-processing';
         

@@ -145,13 +145,78 @@ async function buyProduct() {
         showMessage('Ürün bulunamadı!', 'error');
         return;
     }
-    
-    const paymentLinks = currentProduct.paymentLinks || {};
-    const paymentLink = paymentLinks[selectedPackage];
-    
-    if (paymentLink && paymentLink.trim() !== '') {
-        window.open(paymentLink, '_blank');
-    } else {
-        showMessage('Bu paket için ödeme linki henüz ayarlanmamış!', 'warning');
+
+    const storedUser = localStorage.getItem('matrixUser');
+    const user = storedUser ? JSON.parse(storedUser) : null;
+    const userEmail = user?.email || user?._delegate?.email || '';
+
+    if (!userEmail) {
+        showMessage('Ödeme yapmak için giriş yapmalısınız!', 'warning');
+        openAuth();
+        return;
+    }
+
+    const prices = currentProduct.prices || { day: 49, week: 149, month: 299 };
+    const priceMap = { day: prices.day, week: prices.week, month: prices.month };
+    const fiyat = priceMap[selectedPackage] || prices.month;
+
+    showMessage('Shopier\'a yönlendiriliyorsunuz...', 'info', 3000);
+
+    try {
+        const res = await fetch('/api/checkout', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                urun_id: currentProduct.id,
+                urun_adi: currentProduct.title,
+                urun_fiyat: fiyat,
+                musteri_adi: user.displayName || userEmail.split('@')[0],
+                musteri_soyadi: '',
+                musteri_email: userEmail,
+                musteri_telefon: '',
+                paket: selectedPackage
+            })
+        });
+
+        const result = await res.json();
+
+        if (result.durum !== 'basarili') {
+            showMessage(result.mesaj || 'Bir hata oluştu!', 'error');
+            return;
+        }
+
+        const yon = result.yonlendirme;
+        const form = document.createElement('form');
+        form.action = 'https://www.shopier.com/odeme.php';
+        form.method = 'POST';
+        form.style.display = 'none';
+
+        const params = {
+            'shopier_osb_kullanici': 'ced46b9eccc1b9b34cace5ce159c6897',
+            'shopier_siparis_id': yon.siparis_id,
+            'shopier_urun_adi': yon.urun_adi,
+            'shopier_urun_fiyat': yon.urun_fiyat.toString(),
+            'shopier_alinacak_urun_tipi': 'dijital',
+            'shopier_musteri_adi': yon.musteri_adi,
+            'shopier_musteri_soyadi': yon.musteri_soyadi || '',
+            'shopier_musteri_email': yon.musteri_email,
+            'shopier_musteri_telefon': yon.musteri_telefon || '',
+            'shopier_callback_url': yon.callback_url
+        };
+
+        for (const [key, val] of Object.entries(params)) {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = key;
+            input.value = val;
+            form.appendChild(input);
+        }
+
+        document.body.appendChild(form);
+        form.submit();
+
+    } catch (e) {
+        console.error('Ödeme hatası:', e);
+        showMessage('Sunucuya bağlanılamadı!', 'error');
     }
 }

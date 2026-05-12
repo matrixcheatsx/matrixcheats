@@ -16,10 +16,20 @@ Thumbs.db
 *.log
 *.cache
 
-# Firebase config (gizli bilgi)
+# Firebase config
 firebase-config.js
+
 # Visual Studio
 .vs/
+
 # OS junk
 *.swp
 *.swo
+
+# Service account (asla git'e ekleme!)
+firebase-service-account.json
+*.service-account.json
+
+# Env
+.env
+.env.local
