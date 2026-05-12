@@ -250,17 +250,6 @@ function updateTrackingTimeline(order) {
         </div>
     `).join('');
 }
-        if (deliveryIcon) {
-            deliveryIcon.textContent = '3';
-            deliveryIcon.style.background = '#ffc107';
-            deliveryIcon.style.color = '#000';
-        }
-        if (deliveryTitle) deliveryTitle.textContent = 'Beklemede';
-        if (deliveryDesc) deliveryDesc.textContent = 'Ödeme onayı bekleniyor.';
-    }
-    
-    resultDiv.classList.add('active');
-}
 
 function viewOrder(orderId) {
     const order = userOrders.find(o => o.id === orderId);
