@@ -923,6 +923,22 @@ function openOrderConfirmModal() {
         return;
     }
     
+    const sel = document.getElementById('confirmProduct');
+    if (sel) {
+        sel.innerHTML = '<option value="">Ürün Seçin</option>';
+        loadProductsFromStorage();
+        (products || []).forEach(p => {
+            const opt = document.createElement('option');
+            opt.value = p.title;
+            opt.textContent = p.icon + ' ' + p.title;
+            sel.appendChild(opt);
+        });
+        const other = document.createElement('option');
+        other.value = 'Diğer';
+        other.textContent = 'Diğer';
+        sel.appendChild(other);
+    }
+    
     document.getElementById('orderConfirmModal').classList.add('active');
 }
 
@@ -947,7 +963,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             const orderNumber = document.getElementById('confirmOrderNumber').value.trim();
-            const name = document.getElementById('confirmName').value.trim();
+            const gmail = document.getElementById('confirmGmail').value.trim();
             const product = document.getElementById('confirmProduct').value;
             const note = document.getElementById('confirmNote').value.trim();
             
@@ -956,16 +972,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
-            if (!name) {
-                showMessage('Adınızı ve soyadınızı girin!', 'warning');
+            if (!gmail) {
+                showMessage('Gmail adresinizi girin!', 'warning');
+                return;
+            }
+            
+            if (!product) {
+                showMessage('Ürün seçin!', 'warning');
                 return;
             }
             
             const confirmData = {
                 userId: userUid || '',
                 userEmail: userEmail,
+                gmail: sanitizeInput(gmail),
                 orderNumber: sanitizeInput(orderNumber),
-                fullName: sanitizeInput(name),
                 product: sanitizeInput(product),
                 note: sanitizeInput(note)
             };

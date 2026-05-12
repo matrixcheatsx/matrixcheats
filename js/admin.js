@@ -484,7 +484,7 @@ function renderConfirmations(confirmations) {
             </div>
             <div class="order-card-grid">
                 <div class="order-card-field"><label>Sipariş No</label><span style="color:#00ff41;">${req.orderNumber || '-'}</span></div>
-                <div class="order-card-field"><label>Müşteri</label><span>${req.fullName || '-'}</span></div>
+                <div class="order-card-field"><label>Gmail</label><span style="color:#00ff41;">${req.gmail || '-'}</span></div>
                 <div class="order-card-field"><label>E-posta</label><span>${req.userEmail || '-'}</span></div>
                 <div class="order-card-field"><label>Ürün</label><span>${req.product || '-'}</span></div>
                 <div class="order-card-field"><label>Durum</label><span class="badge ${badgeClass}">${req.status || 'Onay Bekliyor'}</span></div>
