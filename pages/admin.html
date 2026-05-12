@@ -3,94 +3,192 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://apis.google.com https://accounts.google.com https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://oauth2.googleapis.com https://www.googleapis.com; frame-ancestors 'none'; frame-src https://accounts.google.com/;">
     <meta name="robots" content="noindex, nofollow">
     <title>Admin Panel - MATRIXCHEATS</title>
-    <link rel="stylesheet" href="../css/style.css">
-    <link rel="stylesheet" href="../css/pages.css">
-    <link rel="stylesheet" href="../css/admin.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Share+Tech+Mono&display=swap">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🟢</text></svg>">
-    <link rel="preconnect" href="https://www.gstatic.com">
-    <link rel="preconnect" href="https://firebase.googleapis.com">
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js" defer crossorigin="anonymous"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js" defer crossorigin="anonymous"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js" defer crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="../css/admin.css">
 </head>
 <body>
-    <div class="admin-overlay" id="adminOverlay">
-        <div class="admin-panel">
-            <div class="admin-sidebar">
-                <div class="admin-logo">
-                    <span>◈</span> ADMIN PANEL
-                </div>
-                <nav class="admin-nav">
-                    <button class="admin-nav-item active" onclick="showAdminSection('dashboard')">📊 Dashboard</button>
-                    <button class="admin-nav-item" onclick="showAdminSection('products')">🎮 Ürünler</button>
-                    <button class="admin-nav-item" onclick="showAdminSection('orders')">📦 Siparişler</button>
-                    <button class="admin-nav-item" onclick="showAdminSection('users')">👥 Kullanıcılar</button>
-                </nav>
-                <div style="margin-top: auto;">
-                    <button class="admin-nav-item" onclick="closeAdmin()">❌ Çıkış</button>
+
+<div class="admin-sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+<div class="admin-wrap">
+    <!-- SIDEBAR -->
+    <aside class="admin-sidebar" id="adminSidebar">
+        <div class="admin-brand">
+            <span class="admin-brand-icon">◈</span>
+            MATRIX<span>ADMIN</span>
+        </div>
+        <nav class="admin-nav">
+            <button class="admin-nav-item active" onclick="showSection('dashboard', this)">
+                <span class="nav-icon">📊</span> Dashboard
+            </button>
+            <button class="admin-nav-item" onclick="showSection('products', this)">
+                <span class="nav-icon">🎮</span> Ürünler
+            </button>
+            <button class="admin-nav-item" onclick="showSection('orders', this)">
+                <span class="nav-icon">📦</span> Siparişler
+            </button>
+            <button class="admin-nav-item" onclick="showSection('users', this)">
+                <span class="nav-icon">👥</span> Kullanıcılar
+            </button>
+            <button class="admin-nav-item" onclick="showSection('settings', this)">
+                <span class="nav-icon">⚙️</span> Ayarlar
+            </button>
+        </nav>
+        <div class="admin-nav-bottom">
+            <button class="admin-nav-item" onclick="goBack()">
+                <span class="nav-icon">←</span> Siteye Dön
+            </button>
+        </div>
+    </aside>
+
+    <!-- MAIN -->
+    <div class="admin-main">
+        <!-- HEADER -->
+        <header class="admin-header">
+            <div style="display:flex;align-items:center;gap:12px;">
+                <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
+                <h1 class="admin-header-title">◈ <span id="pageTitle">Dashboard</span></h1>
+            </div>
+            <div class="admin-header-actions">
+                <div class="admin-header-badge">
+                    <span class="badge-dot"></span>
+                    <span id="headerStatus">Sistem Aktif</span>
                 </div>
             </div>
-            <div class="admin-content">
-                <div class="admin-header">
-                    <h1 class="admin-title">Dashboard</h1>
-                    <button class="admin-close" onclick="closeAdmin()">✕ Kapat</button>
+        </header>
+
+        <!-- CONTENT -->
+        <div class="admin-content">
+
+            <!-- DASHBOARD -->
+            <section class="admin-section active" id="secDashboard">
+                <div class="admin-stats" id="statsContainer">
+                    <div class="stat-card">
+                        <div class="stat-card-label">Toplam Sipariş</div>
+                        <div class="stat-card-value" id="statOrders">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-label">Bekleyen</div>
+                        <div class="stat-card-value pending" id="statPending">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-label">Bugünkü Sipariş</div>
+                        <div class="stat-card-value pending" id="statToday">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-label">Toplam Ürün</div>
+                        <div class="stat-card-value users" id="statProducts">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-label">Kullanıcılar</div>
+                        <div class="stat-card-value users" id="statUsers">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-label">Toplam Gelir</div>
+                        <div class="stat-card-value revenue" id="statRevenue">₺0</div>
+                    </div>
                 </div>
-                
-                <div class="admin-section active" id="dashboard">
-                    <div class="admin-stats">
-                        <div class="admin-stat-card">
-                            <div class="admin-stat-label">Toplam Sipariş</div>
-                            <div class="admin-stat-value" id="statOrders">0</div>
+            </section>
+
+            <!-- PRODUCTS -->
+            <section class="admin-section" id="secProducts">
+                <div class="quick-actions">
+                    <button class="btn btn-primary" onclick="addNewProduct()">➕ Yeni Ürün</button>
+                    <button class="btn btn-primary" onclick="saveAllAdminProducts()">💾 Tümünü Kaydet</button>
+                </div>
+                <div id="productsEditList"></div>
+            </section>
+
+            <!-- ORDERS -->
+            <section class="admin-section" id="secOrders">
+                <div class="admin-card">
+                    <div class="admin-card-header">📦 Sipariş Talepleri</div>
+                    <div class="admin-card-body">
+                        <div id="ordersSummary"></div>
+                        <div id="ordersList" class="order-card-list"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- USERS -->
+            <section class="admin-section" id="secUsers">
+                <div class="admin-card">
+                    <div class="admin-card-header">👥 Kullanıcılar</div>
+                    <div class="admin-card-body">
+                        <div id="usersList"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SETTINGS -->
+            <section class="admin-section" id="secSettings">
+                <div class="settings-group">
+                    <div class="settings-title">◈ LINK AYARLARI</div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">💳 Ödeme Linki</label>
+                            <input type="text" class="form-input" id="paymentLink" placeholder="https://...">
                         </div>
-                        <div class="admin-stat-card">
-                            <div class="admin-stat-label">Bekleyen Sipariş</div>
-                            <div class="admin-stat-value" id="statPending">0</div>
+                        <div class="form-group">
+                            <label class="form-label">🎮 Discord Sunucu Linki</label>
+                            <input type="text" class="form-input" id="discordLinkInput" placeholder="https://discord.gg/...">
                         </div>
-                        <div class="admin-stat-card">
-                            <div class="admin-stat-label">Toplam Kullanıcı</div>
-                            <div class="admin-stat-value" id="statUsers">0</div>
-                        </div>
-                        <div class="admin-stat-card">
-                            <div class="admin-stat-label">Toplam Gelir</div>
-                            <div class="admin-stat-value" id="statRevenue">₺0</div>
+                        <div>
+                            <button class="btn btn-primary" onclick="saveSettings()">💾 Kaydet</button>
                         </div>
                     </div>
                 </div>
-                
-                <div class="admin-section" id="products">
-                    <div class="quick-actions">
-                        <button class="btn-save" onclick="addNewProduct()">➕ Yeni Ürün Ekle</button>
-                        <button class="btn-save danger" onclick="saveAllAdminProducts()">💾 Tüm Değişiklikleri Kaydet</button>
-                    </div>
-                    <div id="productsEditList"></div>
-                </div>
-                
-                <div class="admin-section" id="orders">
-                    <div class="orders-list" id="ordersList"></div>
-                </div>
-                
-                <div class="admin-section" id="users">
-                    <div class="orders-list" id="usersList"></div>
-                </div>
-            </div>
+            </section>
+
         </div>
     </div>
+</div>
 
-    <script src="../js/firebase.js" defer></script>
-    <script src="../js/script.js" defer></script>
-    <script src="../js/pages.js" defer></script>
-    <script src="../js/admin.js" defer></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            loadAdminData();
-        });
-    </script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<script src="../js/firebase.js"></script>
+<script src="../js/admin.js"></script>
+<script>
+    function toggleSidebar() {
+        document.getElementById('adminSidebar').classList.toggle('open');
+        document.getElementById('sidebarOverlay').classList.toggle('active');
+    }
+
+    function showSection(name, btn) {
+        document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.admin-nav-item').forEach(b => b.classList.remove('active'));
+        document.getElementById('sec' + name.charAt(0).toUpperCase() + name.slice(1)).classList.add('active');
+        if (btn) btn.classList.add('active');
+
+        const titles = { dashboard: 'Dashboard', products: 'Ürünler', orders: 'Siparişler', users: 'Kullanıcılar', settings: 'Ayarlar' };
+        document.getElementById('pageTitle').textContent = titles[name] || name;
+
+        if (name === 'dashboard') loadAdminData();
+        if (name === 'orders') loadSupportRequests();
+        if (name === 'settings') loadSettings();
+
+        if (window.innerWidth <= 768) toggleSidebar();
+    }
+
+    function goBack() {
+        window.location.href = '../index.html';
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        loadAdminData();
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && window.innerWidth <= 768) {
+            document.getElementById('adminSidebar').classList.remove('open');
+            document.getElementById('sidebarOverlay').classList.remove('active');
+        }
+    });
+</script>
 </body>
 </html>

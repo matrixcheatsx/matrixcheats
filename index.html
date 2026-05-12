@@ -142,12 +142,12 @@
                 <h2 class="section-title">ÜRÜNLERİMİZ</h2>
                 <div class="section-line"></div>
             </div>
-            <div class="products-grid" id="productsGrid">
+            <div class="products-grid fade-in-up" id="productsGrid">
             </div>
         </section>
 
         <section id="about" class="about">
-            <div class="about-content">
+            <div class="about-content fade-in-up">
                 <div class="section-header">
                     <span class="section-badge">◈ ABOUT US ◈</span>
                     <h2 class="section-title">HAKKIMIZDA</h2>
@@ -172,7 +172,7 @@
                     </div>
                 </div>
             </div>
-            <div class="about-visual">
+            <div class="about-visual fade-in-right">
                 <div class="code-block">
                     <div class="code-header">
                         <span class="code-dot red"></span>
@@ -203,7 +203,7 @@
                 <div class="section-line"></div>
             </div>
             <div class="contact-container">
-                <div class="contact-form">
+                <div class="contact-form fade-in-up">
                     <form id="contactForm">
                         <div class="form-group">
                             <input type="text" id="contactName" required placeholder=" ">
@@ -220,7 +220,7 @@
                         <button type="submit" class="btn-submit">◈ GÖNDER ◈</button>
                     </form>
                 </div>
-                <div class="contact-info">
+                <div class="contact-info fade-in-up">
                     <div class="contact-item">
                         <span class="contact-icon">📧</span>
                         <div>
@@ -271,7 +271,7 @@
                 <a href="pages/faq.html">SSS (FAQ)</a>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2024 MATRIXCHEATS. Tüm hakları saklıdır.</p>
+                <p>&copy; 2024-2026 MATRIXCHEATS. Tüm hakları saklıdır.</p>
                 <div class="footer-status">
                     <span class="status-dot"></span>
                     <span>Sistem Aktif</span>
@@ -280,47 +280,6 @@
         </div>
     </footer>
 
-    <div id="adminPanel" style="display:none;">
-        <div style="position:fixed;top:0;left:0;width:100%;height:100%;background:#050505;z-index:9999;overflow-y:auto;padding:20px;">
-            <div style="max-width:1200px;margin:0 auto;">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:30px;border-bottom:1px solid #1a1a1a;padding-bottom:20px;">
-                    <h2 style="color:#00ff41;font-family:'Orbitron',sans-serif;font-size:1.8rem;margin:0;">◈ ADMIN PANEL</h2>
-                    <button id="closeAdminBtn" style="background:transparent;border:1px solid #00ff41;color:#00ff41;padding:10px 20px;cursor:pointer;font-family:'Share Tech Mono',monospace;">✕ Kapat</button>
-                </div>
-                <div style="display:flex;gap:15px;margin-bottom:30px;">
-                    <button id="btnProducts" style="background:#00ff41;border:none;color:#050505;padding:12px 25px;font-family:'Orbitron',sans-serif;font-weight:600;cursor:pointer;">ÜRÜNLER</button>
-                    <button id="btnSupport" style="background:transparent;border:1px solid #00ff41;color:#00ff41;padding:12px 25px;font-family:'Orbitron',sans-serif;font-weight:600;cursor:pointer;">📋 SİPARİŞ TALEPLERİ</button>
-                    <button id="btnSettings" style="background:transparent;border:1px solid #00ff41;color:#00ff41;padding:12px 25px;font-family:'Orbitron',sans-serif;font-weight:600;cursor:pointer;">⚙️ AYARLAR</button>
-                </div>
-                <div id="adminProductsTab">
-                    <div style="display:flex;gap:15px;margin-bottom:20px;">
-                        <button id="addProductBtn" style="background:#00ff41;border:none;color:#050505;padding:12px 25px;font-family:'Orbitron',sans-serif;font-weight:600;cursor:pointer;">➕ YENİ ÜRÜN</button>
-                        <button id="saveProductsBtn" style="background:#00ff41;border:none;color:#050505;padding:12px 25px;font-family:'Orbitron',sans-serif;font-weight:600;cursor:pointer;">💾 KAYDET</button>
-                        <button id="resetProductsBtn" style="background:#ff5252;border:none;color:#fff;padding:12px 25px;font-family:'Orbitron',sans-serif;font-weight:600;cursor:pointer;">🔄 SIFIRLA</button>
-                    </div>
-                    <div id="adminProductsList"></div>
-                </div>
-                <div id="adminSupportTab" style="display:none;">
-                    <div id="adminSupportList"></div>
-                </div>
-                <div id="adminSettingsTab" style="display:none;">
-                    <div style="background:transparent;border:1px solid #00ff41;padding:30px;border-radius:8px;max-width:600px;margin-bottom:20px;">
-                        <h3 style="color:#00ff41;font-family:'Orbitron',sans-serif;margin-bottom:25px;">◈ LİNK AYARLARI</h3>
-                        <div style="margin-bottom:20px;">
-                            <label style="display:block;color:#808080;margin-bottom:8px;">💳 Ödeme Linki</label>
-                            <input type="text" id="paymentLink" placeholder="https://..." style="width:100%;padding:12px;background:#050505;border:1px solid #1a1a1a;color:#e0e0e0;">
-                        </div>
-                        <div style="margin-bottom:20px;">
-                            <label style="display:block;color:#808080;margin-bottom:8px;">🎮 Discord Sunucu Linki</label>
-                            <input type="text" id="discordLinkInput" placeholder="https://discord.gg/..." style="width:100%;padding:12px;background:#050505;border:1px solid #1a1a1a;color:#e0e0e0;">
-                        </div>
-                        <button onclick="saveSettings()" style="background:#00ff41;border:none;color:#050505;padding:12px 30px;font-family:'Orbitron',sans-serif;font-weight:600;cursor:pointer;">💾 KAYDET</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
     
 
     <div class="modal" id="authModal" role="dialog" aria-modal="true" aria-labelledby="authModalTitle">
@@ -399,40 +358,17 @@
     <script src="js/firebase.js" defer></script>
     <script src="js/script.js" defer></script>
     <script>
-        // Firebase bağlantısını kontrol et
         window.addEventListener('load', function() {
             setTimeout(function() {
                 if (window.firebaseReady) {
                     console.log('✅ Firebase bağlandı');
                 } else {
                     console.log('❌ Firebase bağlanamadı');
-                    if(typeof showMessage === 'function') {
+                    if (typeof showMessage === 'function') {
                         showMessage('Firebase bağlantısı yok! Lütfen konsolu kontrol edin.', 'error');
                     }
                 }
             }, 1000);
-        });
-        
-        window.addEventListener('load', function() {
-            if (typeof closeAdminPanel === 'function') {
-                document.getElementById('closeAdminBtn').addEventListener('click', closeAdminPanel);
-            }
-            if (typeof addNewProduct === 'function') {
-                document.getElementById('addProductBtn').addEventListener('click', addNewProduct);
-            }
-            if (typeof saveAllProducts === 'function') {
-                document.getElementById('saveProductsBtn').addEventListener('click', saveAllProducts);
-            }
-            if (typeof resetProducts === 'function') {
-                document.getElementById('resetProductsBtn').addEventListener('click', resetProducts);
-            }
-            document.getElementById('btnProducts').addEventListener('click', function() { showAdminTab('products'); });
-            document.getElementById('btnSupport').addEventListener('click', function() { showAdminTab('support'); });
-            document.getElementById('btnSettings').addEventListener('click', function() { showAdminTab('settings'); });
-            
-            document.getElementById('btnSupport').addEventListener('click', function() {
-                loadSupportRequests();
-            });
         });
     </script>
 
@@ -461,11 +397,11 @@
                         <span>Sipariş Talebi Gönder</span>
                         <span class="profile-arrow">›</span>
                     </a>
-                    <div class="profile-menu-item" onclick="openAdminFromProfile()" id="adminMenuItem" style="display:none;">
+                    <a href="pages/admin.html" class="profile-menu-item" id="adminMenuItem" style="display:none;">
                         <span class="profile-icon">⚙️</span>
                         <span>Admin Panel</span>
                         <span class="profile-arrow">›</span>
-                    </div>
+                    </a>
                 </div>
                 <div class="profile-footer">
                     <button class="btn-logout" onclick="handleLogout()">

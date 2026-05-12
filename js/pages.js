@@ -17,9 +17,7 @@ function toggleFaq(element) {
 function toggleMobileMenu() {
     const nav = document.querySelector('.nav');
     const toggle = document.querySelector('.mobile-toggle');
-    if (nav) {
-        nav.classList.toggle('active');
-    }
+    if (nav) nav.classList.toggle('active');
     if (toggle) {
         toggle.classList.toggle('active');
         const isExpanded = toggle.getAttribute('aria-expanded') === 'true';
@@ -52,132 +50,124 @@ function initMatrixCanvas() {
     if (!canvas) return;
     
     const ctx = canvas.getContext('2d');
-    
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    
+    let animId, cw, ch, cols, drops;
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*()';
     const fontSize = 14;
-    const columns = canvas.width / fontSize;
-    const drops = [];
     
-    for (let i = 0; i < columns; i++) {
-        drops[i] = Math.random() * canvas.height;
+    function resize() {
+        cw = window.innerWidth;
+        ch = window.innerHeight;
+        canvas.width = cw;
+        canvas.height = ch;
+        cols = Math.ceil(cw / fontSize);
+        drops = [];
+        for (let i = 0; i < cols; i++) drops[i] = Math.random() * ch;
     }
     
-    function drawMatrix() {
-        ctx.fillStyle = 'rgba(5, 5, 5, 0.05)';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
-        for (let i = 0; i < drops.length; i++) {
-            const char = chars[Math.floor(Math.random() * chars.length)];
-            const y = drops[i] * fontSize;
-            const isGreen = Math.random() > 0.7;
-            const color = isGreen ? `rgba(0, 255, 65, ${Math.random() * 0.5 + 0.5})` : `rgba(255, 0, 64, ${Math.random() * 0.5 + 0.5})`;
-            ctx.fillStyle = color;
-            ctx.font = fontSize + 'px monospace';
-            ctx.fillText(char, i * fontSize, y);
+    resize();
+    
+    let lastTime = 0;
+    const interval = 50;
+    
+    function draw(timestamp) {
+        if (timestamp - lastTime >= interval) {
+            lastTime = timestamp;
+            ctx.fillStyle = 'rgba(5, 5, 5, 0.05)';
+            ctx.fillRect(0, 0, cw, ch);
             
-            if (y > canvas.height && Math.random() > 0.975) {
-                drops[i] = 0;
+            const rd = Math.random();
+            for (let i = 0; i < drops.length; i++) {
+                const char = chars[Math.floor(Math.random() * chars.length)];
+                const y = drops[i] * fontSize;
+                ctx.fillStyle = rd > 0.3
+                    ? `rgba(0, 255, 65, ${0.3 + Math.random() * 0.3})`
+                    : `rgba(255, 0, 64, ${0.3 + Math.random() * 0.3})`;
+                ctx.font = fontSize + 'px monospace';
+                ctx.fillText(char, i * fontSize, y);
+                
+                if (y > ch && Math.random() > 0.975) drops[i] = 0;
+                drops[i]++;
             }
-            drops[i]++;
         }
+        animId = requestAnimationFrame(draw);
     }
     
-    setInterval(drawMatrix, 50);
+    animId = requestAnimationFrame(draw);
     
-    window.addEventListener('resize', function() {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-    });
+    let rt;
+    window.addEventListener('resize', () => {
+        clearTimeout(rt);
+        rt = setTimeout(resize, 100);
+    }, { passive: true });
 }
 
 function handleAccountClick() {
     const storedUser = localStorage.getItem('matrixUser');
     const user = storedUser ? JSON.parse(storedUser) : null;
-    
     const userEmail = user?.email || (user?._delegate?.email);
     
-    if (!userEmail) {
-        openAuth();
-        return;
-    }
-    
+    if (!userEmail) { openAuth(); return; }
     openProfileModal();
 }
 
 function openAuth() {
-    document.getElementById('authModal').classList.add('active');
+    document.getElementById('authModal')?.classList.add('active');
 }
 
 function closeAuth() {
-    document.getElementById('authModal').classList.remove('active');
+    document.getElementById('authModal')?.classList.remove('active');
 }
 
 function closeProfileModal() {
-    const modal = document.getElementById('profileModal');
-    if (modal) {
-        modal.classList.remove('active');
-    }
+    document.getElementById('profileModal')?.classList.remove('active');
 }
 
 function openProfileModal() {
     const storedUser = localStorage.getItem('matrixUser');
     const user = storedUser ? JSON.parse(storedUser) : null;
-    
     const userEmail = user && (user.email || (user._delegate && user._delegate.email));
     
-    if (!userEmail) {
-        openAuth();
-        return;
-    }
+    if (!userEmail) { openAuth(); return; }
     
     const profileEmailEl = document.getElementById('profileEmail');
-    if (profileEmailEl) {
-        profileEmailEl.textContent = userEmail;
-    }
+    if (profileEmailEl) profileEmailEl.textContent = userEmail;
     
     const isAdmin = user?.isAdmin === true;
     const adminMenuItem = document.getElementById('adminMenuItem');
-    if (adminMenuItem) {
-        adminMenuItem.style.display = isAdmin ? 'flex' : 'none';
-    }
+    if (adminMenuItem) adminMenuItem.style.display = isAdmin ? 'flex' : 'none';
     
-    document.getElementById('profileModal').classList.add('active');
+    document.getElementById('profileModal')?.classList.add('active');
 }
 
 function openSupportModal() {
     const storedUser = localStorage.getItem('matrixUser');
     const user = storedUser ? JSON.parse(storedUser) : null;
-    
     const userUid = user?.uid || user?._delegate?.uid;
     
     if (!user || !userUid) {
-        if (typeof showMessage === 'function') {
-            showMessage('Önce giriş yapmalısınız!', 'warning');
-        }
+        if (typeof showMessage === 'function') showMessage('Önce giriş yapmalısınız!', 'warning');
         openAuth();
         return;
     }
     
+    const profileModal = document.getElementById('profileModal');
+    if (profileModal) profileModal.classList.remove('active');
+    
     const supportModal = document.getElementById('supportModal');
-    if (supportModal) {
-        supportModal.classList.add('active');
-    }
+    if (supportModal) supportModal.classList.add('active');
+}
+
+function closeSupportModal() {
+    document.getElementById('supportModal')?.classList.remove('active');
 }
 
 function openAdminFromProfile() {
     closeProfileModal();
-    if (typeof openAdminPanel === 'function') {
-        openAdminPanel();
-    }
+    if (typeof openAdminPanel === 'function') openAdminPanel();
 }
 
 async function handleLogout() {
-    if (typeof logoutUser === 'function') {
-        await logoutUser();
-    }
+    if (typeof logoutUser === 'function') await logoutUser();
     
     const authBox = document.querySelector('.auth-box');
     if (authBox) {
@@ -191,9 +181,7 @@ async function handleLogout() {
         authBox.onclick = openAuth;
     }
     
-    if (typeof showMessage === 'function') {
-        showMessage('Çıkış yapıldı.', 'info');
-    }
+    if (typeof showMessage === 'function') showMessage('Çıkış yapıldı.', 'info');
 }
 
 function switchAuthTab(tab) {
@@ -207,13 +195,8 @@ function switchAuthTab(tab) {
         registerTab.classList.toggle('active', tab === 'register');
     }
     
-    if (authSubmitBtn) {
-        authSubmitBtn.textContent = tab === 'login' ? 'GİRİŞ YAP' : 'KAYIT OL';
-    }
-    
-    if (authOptions) {
-        authOptions.style.display = tab === 'login' ? 'flex' : 'none';
-    }
+    if (authSubmitBtn) authSubmitBtn.textContent = tab === 'login' ? 'GİRİŞ YAP' : 'KAYIT OL';
+    if (authOptions) authOptions.style.display = tab === 'login' ? 'flex' : 'none';
     
     const authForm = document.getElementById('authForm');
     const forgotPasswordForm = document.getElementById('forgotPasswordForm');
@@ -221,33 +204,15 @@ function switchAuthTab(tab) {
     if (forgotPasswordForm) forgotPasswordForm.style.display = 'none';
 }
 
-window.addEventListener('click', function(e) {
-    const authModal = document.getElementById('authModal');
-    if (e.target === authModal) {
-        closeAuth();
-    }
+document.addEventListener('click', function(e) {
+    if (e.target === document.getElementById('authModal')) closeAuth();
+    if (e.target === document.getElementById('supportModal')) closeSupportModal();
 });
 
-window.addEventListener('keydown', function(e) {
+document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
         closeAuth();
         closeProfileModal();
-        closeSupportModal();
-    }
-});
-
-function openSupportModal() {
-    document.getElementById('supportModal').classList.add('active');
-    document.getElementById('profileModal').classList.remove('active');
-}
-
-function closeSupportModal() {
-    document.getElementById('supportModal').classList.remove('active');
-}
-
-window.addEventListener('click', function(e) {
-    const supportModal = document.getElementById('supportModal');
-    if (e.target === supportModal) {
         closeSupportModal();
     }
 });
