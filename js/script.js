@@ -707,7 +707,7 @@ function initMatrixCanvas() {
     
     let animFrameId;
     let canvasWidth, canvasHeight;
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*()';
+    const chars = '01';
     const fontSize = 14;
     let columns, drops;
     
@@ -738,17 +738,15 @@ function initMatrixCanvas() {
         ctx.fillStyle = 'rgba(5, 5, 5, 0.05)';
         ctx.fillRect(0, 0, canvasWidth, canvasHeight);
         
-        ctx.fillStyle = '#00ff41';
         ctx.font = fontSize + 'px monospace';
         
-        const reds = Math.random();
         for (let i = 0; i < drops.length; i++) {
             const char = chars[Math.floor(Math.random() * chars.length)];
             const y = drops[i] * fontSize;
-            const isGreen = reds > 0.3;
-            ctx.fillStyle = isGreen
-                ? `rgba(0, 255, 65, ${0.3 + Math.random() * 0.3})`
-                : `rgba(255, 0, 64, ${0.3 + Math.random() * 0.3})`;
+            const useRed = Math.random() > 0.5;
+            ctx.fillStyle = useRed
+                ? `rgba(255, 0, 64, ${0.3 + Math.random() * 0.4})`
+                : `rgba(0, 255, 65, ${0.3 + Math.random() * 0.4})`;
             ctx.fillText(char, i * fontSize, y);
             
             if (y > canvasHeight && Math.random() > 0.975) {
@@ -771,68 +769,10 @@ function initMatrixCanvas() {
 
 function initLoader() {
     const loader = document.getElementById('loader');
-    const loaderCanvas = document.getElementById('loaderCanvas');
-    
-    if (loaderCanvas) {
-        const ctx = loaderCanvas.getContext('2d');
-        let lw, lh, lColumns, lDrops, lAnimId;
-        const lChars = 'MATRIX0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ@#$%^&*';
-        const lFontSize = 14;
-        
-        function resizeLoaderCanvas() {
-            lw = window.innerWidth;
-            lh = window.innerHeight;
-            loaderCanvas.width = lw;
-            loaderCanvas.height = lh;
-            lColumns = Math.ceil(lw / lFontSize);
-            lDrops = [];
-            for (let i = 0; i < lColumns; i++) {
-                lDrops[i] = Math.random() * lh;
-            }
-        }
-        
-        resizeLoaderCanvas();
-        
-        function drawLoaderMatrix() {
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
-            ctx.fillRect(0, 0, lw, lh);
-            
-            ctx.font = lFontSize + 'px monospace';
-            
-            const redRandom = Math.random();
-            for (let i = 0; i < lDrops.length; i += 2) {
-                const char = lChars[Math.floor(Math.random() * lChars.length)];
-                const y = lDrops[i] * lFontSize;
-                ctx.fillStyle = redRandom > 0.85 ? '#ff0040' : '#00ff41';
-                ctx.fillText(char, i * lFontSize, y);
-                
-                if (y > lh && Math.random() > 0.975) {
-                    lDrops[i] = 0;
-                }
-                lDrops[i]++;
-            }
-            
-            lAnimId = requestAnimationFrame(drawLoaderMatrix);
-        }
-        
-        lAnimId = requestAnimationFrame(drawLoaderMatrix);
-        
-        let lResizeTimer;
-        window.addEventListener('resize', function() {
-            clearTimeout(lResizeTimer);
-            lResizeTimer = setTimeout(resizeLoaderCanvas, 100);
-        }, { passive: true });
-        
-        if (loader) {
-            setTimeout(function() {
-                cancelAnimationFrame(lAnimId);
-                loader.classList.add('hidden');
-            }, 2000);
-        }
-    } else if (loader) {
+    if (loader) {
         setTimeout(function() {
             loader.classList.add('hidden');
-        }, 2000);
+        }, 1800);
     }
 }
 

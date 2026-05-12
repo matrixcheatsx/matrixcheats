@@ -51,7 +51,7 @@ function initMatrixCanvas() {
     
     const ctx = canvas.getContext('2d');
     let animId, cw, ch, cols, drops;
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*()';
+    const chars = '01';
     const fontSize = 14;
     
     function resize() {
@@ -75,14 +75,14 @@ function initMatrixCanvas() {
             ctx.fillStyle = 'rgba(5, 5, 5, 0.05)';
             ctx.fillRect(0, 0, cw, ch);
             
-            const rd = Math.random();
+            ctx.font = fontSize + 'px monospace';
             for (let i = 0; i < drops.length; i++) {
                 const char = chars[Math.floor(Math.random() * chars.length)];
                 const y = drops[i] * fontSize;
-                ctx.fillStyle = rd > 0.3
-                    ? `rgba(0, 255, 65, ${0.3 + Math.random() * 0.3})`
-                    : `rgba(255, 0, 64, ${0.3 + Math.random() * 0.3})`;
-                ctx.font = fontSize + 'px monospace';
+                const useRed = Math.random() > 0.5;
+                ctx.fillStyle = useRed
+                    ? `rgba(255, 0, 64, ${0.3 + Math.random() * 0.4})`
+                    : `rgba(0, 255, 65, ${0.3 + Math.random() * 0.4})`;
                 ctx.fillText(char, i * fontSize, y);
                 
                 if (y > ch && Math.random() > 0.975) drops[i] = 0;
