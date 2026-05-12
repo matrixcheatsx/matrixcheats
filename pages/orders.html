@@ -20,7 +20,7 @@
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content="Siparişlerim | MATRIXCHEATS">
     <meta name="twitter:description" content="Siparişlerinizi görüntüleyin ve takip edin.">
-    <title>Siparişlerim | MATRIXCHEATS</title>
+    <title>Satın Aldıklarım | MATRIXCHEATS</title>
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="../css/pages.css">
     <link rel="stylesheet" href="../css/orders.css">
@@ -102,56 +102,14 @@
         <a href="../index.html" class="back-link">← ANA SAYFA</a>
         
         <div class="orders-header">
-            <h1>◈ SİPARİŞLERİM ◈</h1>
+            <h1>◈ SATIN ALDIKLARIM ◈</h1>
         </div>
 
         <div class="order-filter">
-            <select id="statusFilter" onchange="setFilter(this.value)">
-                <option value="all">Tüm Siparişler</option>
-                <option value="Beklemede">Beklemede</option>
-                <option value="İşleniyor">İşleniyor</option>
-                <option value="Tamamlandı">Tamamlandı</option>
-            </select>
             <select id="sortOrder" onchange="setSort(this.value)">
                 <option value="newest">En Yeni</option>
                 <option value="oldest">En Eski</option>
             </select>
-        </div>
-
-        <div class="track-order-box">
-            <h2>◈ SİPARİŞ TAKİP ◈</h2>
-            <div class="track-form">
-                <input type="text" class="track-input" id="orderSearchInput" placeholder="Sipariş Numarası (ORD-001)">
-                <button class="track-btn" onclick="trackOrder()">TAKİP ET</button>
-            </div>
-            
-            <div class="tracking-result" id="trackingResult">
-                <h3 style="color: #00ff41; font-family: 'Orbitron', sans-serif; margin-bottom: 10px;">Sipariş Detayları</h3>
-                <div id="trackingDetails"></div>
-                <div class="tracking-steps">
-                    <div class="tracking-step">
-                        <div class="step-icon">✓</div>
-                        <div class="step-content">
-                            <h4>Sipariş Alındı</h4>
-                            <p>Siparişiniz sistemimize başarıyla kaydedildi.</p>
-                        </div>
-                    </div>
-                    <div class="tracking-step">
-                        <div class="step-icon">✓</div>
-                        <div class="step-content">
-                            <h4>Ödeme Onaylandı</h4>
-                            <p>Ödeme işleminiz başarıyla tamamlandı.</p>
-                        </div>
-                    </div>
-                    <div class="tracking-step">
-                        <div class="step-icon" id="deliveryIcon">2</div>
-                        <div class="step-content">
-                            <h4 id="deliveryTitle">Hazırlanıyor</h4>
-                            <p id="deliveryDesc">Ürününüz hazırlanıp teslim edilmek üzere.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
 
         <div class="order-list" id="orderList">
@@ -203,15 +161,6 @@
             initAuth();
             checkRememberMe();
             renderOrders();
-            
-            const searchInput = document.getElementById('orderSearchInput');
-            if (searchInput) {
-                searchInput.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        trackOrder();
-                    }
-                });
-            }
         });
     </script>
 
@@ -232,7 +181,7 @@
                 <div class="profile-menu">
                     <a href="orders.html" class="profile-menu-item">
                         <span class="profile-icon">📦</span>
-                        <span>Siparişlerim</span>
+                        <span>Satın Aldıklarım</span>
                         <span class="profile-arrow">›</span>
                     </a>
                     <a href="#" class="profile-menu-item" onclick="openSupportModal(); return false;">
