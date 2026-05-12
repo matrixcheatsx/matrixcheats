@@ -146,6 +146,12 @@ async function buyProduct() {
         return;
     }
 
+    const paymentLink = currentProduct.paymentLinks?.[selectedPackage];
+    if (paymentLink && paymentLink.trim() !== '') {
+        window.location.href = paymentLink;
+        return;
+    }
+
     const storedUser = localStorage.getItem('matrixUser');
     const user = storedUser ? JSON.parse(storedUser) : null;
     const userEmail = user?.email || user?._delegate?.email || '';
