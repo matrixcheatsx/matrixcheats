@@ -1,3 +1,4 @@
+const parseBody = require('../lib/body-parser');
 const { db, ORDERS_COLLECTION } = require('../lib/firebase-admin');
 
 module.exports = async (req, res) => {
@@ -6,7 +7,8 @@ module.exports = async (req, res) => {
   }
 
   try {
-    const { urun_id, urun_adi, urun_fiyat, musteri_adi, musteri_soyadi, musteri_email, musteri_telefon, paket } = req.body;
+    const body = await parseBody(req);
+    const { urun_id, urun_adi, urun_fiyat, musteri_adi, musteri_soyadi, musteri_email, musteri_telefon, paket } = body;
 
     if (!urun_adi || !musteri_email || !urun_fiyat) {
       return res.status(400).json({ durum: 'hata', mesaj: 'Eksik bilgiler' });

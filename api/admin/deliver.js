@@ -1,3 +1,4 @@
+const parseBody = require('../../lib/body-parser');
 const { db, ORDERS_COLLECTION } = require('../../lib/firebase-admin');
 
 module.exports = async (req, res) => {
@@ -6,7 +7,8 @@ module.exports = async (req, res) => {
   }
 
   try {
-    const { siparis_id, lisans_anahtari } = req.body;
+    const body = await parseBody(req);
+    const { siparis_id, lisans_anahtari } = body;
 
     if (!siparis_id || !lisans_anahtari) {
       return res.status(400).json({ durum: 'hata', mesaj: 'Siparis ID ve lisans anahtari gerekli' });

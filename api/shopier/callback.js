@@ -1,4 +1,5 @@
 const crypto = require('crypto');
+const parseBody = require('../../lib/body-parser');
 const { db, ORDERS_COLLECTION } = require('../../lib/firebase-admin');
 
 module.exports = async (req, res) => {
@@ -7,6 +8,7 @@ module.exports = async (req, res) => {
   }
 
   try {
+    const body = await parseBody(req);
     const {
       random_numarasi,
       sipariss_id,
@@ -19,7 +21,7 @@ module.exports = async (req, res) => {
       payment_tutar,
       payment_type,
       urunler
-    } = req.body;
+    } = body;
 
     if (!hash || !random_numarasi || !sipariss_id || !random_str) {
       console.log('Shopier callback: Eksik parametreler');
