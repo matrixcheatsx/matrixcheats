@@ -33,7 +33,7 @@ async function loadProduct() {
     if (mainImage && currentProduct) {
         if (currentProduct.image && currentProduct.image.trim() !== '') {
             console.log('Resim gösteriliyor:', currentProduct.image);
-            mainImage.innerHTML = `<img id="detailProductImg" src="${currentProduct.image}" alt="${currentProduct.title}" loading="lazy" style="width: 100%; height: 100%; object-fit: contain; object-position: center;" onerror="this.style.display = 'none'; this.parentNode.innerHTML = '<div style=\'font-size: 80px; text-align: center; line-height: 200px;\'>${currentProduct.icon}</div>';">`;
+            mainImage.innerHTML = `<img id="detailProductImg" src="${currentProduct.image}" alt="${currentProduct.title}" style="width: 100%; height: 100%; object-fit: contain; object-position: center;" onerror="this.style.display = 'none'; this.parentNode.innerHTML = '<div style=\'font-size: 80px; text-align: center; line-height: 200px;\'>${currentProduct.icon}</div>';">`;
         } else {
             console.log('Emoji gösteriliyor:', currentProduct.icon);
             mainImage.innerHTML = `<div style="font-size: 80px; text-align: center; line-height: 200px;">${currentProduct.icon}</div>`;

@@ -1,475 +1,245 @@
-let adminProducts = [];
-let refreshInterval = null;
+const ADMIN_FIREBASE_CONFIG = {
+    apiKey: "AIzaSyCIdRKoALvfMgIRlYjvpckRQzyWGYXSu4w",
+    authDomain: "matrixcheat-0011.firebaseapp.com",
+    projectId: "matrixcheat-0011",
+    storageBucket: "matrixcheat-0011.firebasestorage.app",
+    messagingSenderId: "398069626242",
+    appId: "1:398069626242:web:7979c93b79b40b95138b9b"
+};
 
-function waitForFirebase(retries = 20) {
-    return new Promise((resolve) => {
-        if (window.firebaseReady) return resolve(true);
-        let c = 0;
-        const iv = setInterval(() => {
-            c++;
-            if (window.firebaseReady) { clearInterval(iv); resolve(true); }
-            else if (c >= retries) { clearInterval(iv); resolve(false); }
-        }, 250);
-    });
+let adminDb, adminAuth, adminFirebaseReady;
+
+if (typeof firebase !== 'undefined') {
+    firebase.initializeApp(ADMIN_FIREBASE_CONFIG);
+    adminDb = firebase.firestore();
+    adminAuth = firebase.auth();
+    adminFirebaseReady = true;
+} else {
+    console.log('Firebase not loaded in admin context');
 }
 
-async function initAdmin() {
-    const ready = await waitForFirebase();
-    if (!ready) console.warn('Firebase not available, using local data only');
+let adminProducts = [];
 
+function openAdmin() {
+    document.getElementById('adminOverlay').classList.add('active');
+}
+
+function closeAdmin() {
+    document.getElementById('adminOverlay').classList.remove('active');
+}
+
+function showAdminSection(section) {
+    document.querySelectorAll('.admin-nav-item').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.admin-section').forEach(sec => sec.classList.remove('active'));
+    
+    const clickedBtn = event.target;
+    if (clickedBtn) {
+        clickedBtn.classList.add('active');
+    }
+    
+    const sectionEl = document.getElementById(section);
+    if (sectionEl) {
+        sectionEl.classList.add('active');
+    }
+    
+    const titles = {
+        dashboard: 'Dashboard',
+        products: 'Ürün Yönetimi',
+        orders: 'Siparişler',
+        users: 'Kullanıcılar'
+    };
+    const titleEl = document.querySelector('.admin-title');
+    if (titleEl) {
+        titleEl.textContent = titles[section] || 'Admin Panel';
+    }
+}
+
+async function loadAdminProducts() {
     const stored = localStorage.getItem('matrixProducts');
     if (stored) {
-        try {
-            const parsed = JSON.parse(stored);
-            if (Array.isArray(parsed) && parsed.length > 0) {
-                adminProducts = parsed;
-                renderProductsEdit();
-            }
-        } catch (e) {}
-    }
-
-    if (adminProducts.length === 0 && ready && window.getProductsFromDB) {
-        try {
-            const dbProducts = await window.getProductsFromDB();
-            if (dbProducts && Array.isArray(dbProducts) && dbProducts.length > 0) {
-                adminProducts = dbProducts;
-                renderProductsEdit();
-            }
-        } catch (e) {}
-    }
-
-    loadAdminData();
-    startAutoRefresh();
-}
-
-function startAutoRefresh() {
-    if (refreshInterval) clearInterval(refreshInterval);
-    refreshInterval = setInterval(() => {
-        const active = document.querySelector('.admin-section.active');
-        if (active) {
-            const id = active.id;
-            if (id === 'secDashboard') loadAdminData();
-            if (id === 'secOrders') loadSupportRequests();
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+            adminProducts = parsed;
+            renderProductsEdit();
+            return;
         }
-    }, 30000);
+    }
+    if (window.firebaseReady && window.db) {
+        try {
+            const doc = await window.db.collection('products').doc('products_list').get();
+            if (doc.exists) {
+                adminProducts = doc.data().products || [];
+                renderProductsEdit();
+                return;
+            }
+        } catch (e) {
+            console.log('Firebase load error');
+        }
+    }
+    adminProducts = [];
+    renderProductsEdit();
 }
 
 async function loadAdminData() {
-    setLastUpdated();
-    setLoading('statsContainer', true);
-
-    const productCount = adminProducts.length || (() => {
-        try {
-            const s = localStorage.getItem('matrixProducts');
-            return s ? JSON.parse(s).length : 0;
-        } catch { return 0; }
-    })();
-
-    if (!window.firebaseReady || !window.db) {
+    if (!adminFirebaseReady) {
         document.getElementById('statOrders').textContent = '-';
         document.getElementById('statPending').textContent = '-';
         document.getElementById('statUsers').textContent = '-';
-        document.getElementById('statRevenue').textContent = '₺0';
-        document.getElementById('statProducts') && (document.getElementById('statProducts').textContent = productCount);
-        document.getElementById('statToday') && (document.getElementById('statToday').textContent = '-');
-        setLoading('statsContainer', false);
+        document.getElementById('statRevenue').textContent = '-';
         return;
     }
-
+    
     try {
-        const [supportSnap, usersSnap] = await Promise.all([
-            window.db.collection('support_requests').get(),
-            window.db.collection('users').get()
+        const [supportSnapshot, usersSnapshot, ordersSnapshot] = await Promise.all([
+            adminDb.collection('support_requests').get(),
+            adminDb.collection('users').get(),
+            adminDb.collection('orders').get()
         ]);
-
-        const requests = supportSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-        const users = usersSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-        const total = requests.length;
-        const pending = requests.filter(r => r.status === 'Yeni' || r.status === 'İnceleniyor').length;
-
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const todayOrders = requests.filter(r => {
-            const d = r.createdAt?.seconds ? new Date(r.createdAt.seconds * 1000) : new Date(r.createdAt);
-            return d >= today;
-        }).length;
-
+        
+        const requests = supportSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const users = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        
+        const totalOrders = requests.length;
+        const pendingOrders = requests.filter(r => r.status === 'Yeni' || r.status === 'İnceleniyor').length;
+        const totalUsers = users.length;
+        
         let revenue = 0;
-        requests.forEach(r => {
-            const pkg = r.package || '';
-            if (pkg.includes('Ay') || pkg === 'month') revenue += 299;
-            else if (pkg.includes('Hafta') || pkg === 'week') revenue += 149;
-            else if (pkg.includes('Gün') || pkg === 'day') revenue += 49;
+        requests.forEach(req => {
+            const priceMap = { '1 Gün': 49, '1 Hafta': 149, '1 Ay': 299, 'day': 49, 'week': 149, 'month': 299 };
+            const price = priceMap[req.package] || 0;
+            revenue += price;
         });
-
-        document.getElementById('statOrders').textContent = total;
-        document.getElementById('statPending').textContent = pending;
-        document.getElementById('statUsers').textContent = users.length;
+        
+        document.getElementById('statOrders').textContent = totalOrders;
+        document.getElementById('statPending').textContent = pendingOrders;
+        document.getElementById('statUsers').textContent = totalUsers;
         document.getElementById('statRevenue').textContent = '₺' + revenue.toLocaleString('tr-TR');
-        document.getElementById('statProducts') && (document.getElementById('statProducts').textContent = productCount);
-        document.getElementById('statToday') && (document.getElementById('statToday').textContent = todayOrders);
+        
+        renderProductsEdit();
+        renderRequests(requests);
+        renderUsers(users);
     } catch (e) {
-        console.error('Admin load error:', e);
+        console.error('Admin data load error:', e);
+        showMessage('Veriler yüklenirken hata oluştu!', 'error');
     }
-    setLoading('statsContainer', false);
-}
-
-function setLoading(id, loading) {
-    const el = document.getElementById(id);
-    if (!el) return;
-    if (loading) {
-        el.style.opacity = '0.5';
-        el.style.pointerEvents = 'none';
-    } else {
-        el.style.opacity = '1';
-        el.style.pointerEvents = 'auto';
-    }
-}
-
-function setLastUpdated() {
-    const el = document.getElementById('headerStatus');
-    if (el) el.textContent = 'Son: ' + new Date().toLocaleTimeString('tr-TR');
-}
-
-function renderProductsEdit() {
-    const container = document.getElementById('productsEditList');
-    if (!container) return;
-    if (adminProducts.length === 0) {
-        container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📦</div><div class="empty-state-text">Henüz ürün yok. "Yeni Ürün" ekleyin.</div></div>';
-        return;
-    }
-    container.innerHTML = adminProducts.map((p, idx) => `
-        <div class="product-card-edit">
-            <div class="product-card-edit-header" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
-                <div class="product-card-edit-title">
-                    <span>${p.icon || '🎮'}</span>
-                    <span id="editTitle_${p.id}">${p.title || 'Ürün'}</span>
-                </div>
-                <button class="btn btn-danger btn-xs" onclick="event.stopPropagation();deleteAdminProduct(${p.id})">🗑️ Sil</button>
-            </div>
-            <div class="product-card-edit-body">
-                <div class="form-grid">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label class="form-label">İkon</label>
-                            <input type="text" class="form-input form-input-sm" id="icon_${p.id}" value="${p.icon || '🎮'}">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Ürün Adı</label>
-                            <input type="text" class="form-input" id="title_${p.id}" value="${p.title || ''}">
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Açıklama</label>
-                        <textarea class="form-textarea" id="desc_${p.id}">${p.desc || ''}</textarea>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">🖼️ Görsel URL</label>
-                        <input type="text" class="form-input" id="image_${p.id}" value="${p.image || ''}" placeholder="https://ornek.com/resim.jpg" oninput="previewImage(${p.id})">
-                        <div class="image-preview" id="preview_${p.id}">${p.image ? `<img src="${p.image}" onerror="this.parentElement.style.display='none'">` : ''}</div>
-                    </div>
-                    <div class="form-row-3">
-                        <div class="form-group">
-                            <label class="form-label">1 Gün (₺)</label>
-                            <input type="number" class="form-input form-input-sm" id="price_day_${p.id}" value="${p.prices?.day || 0}">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">1 Hafta (₺)</label>
-                            <input type="number" class="form-input form-input-sm" id="price_week_${p.id}" value="${p.prices?.week || 0}">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">1 Ay (₺)</label>
-                            <input type="number" class="form-input form-input-sm" id="price_month_${p.id}" value="${p.prices?.month || 0}">
-                        </div>
-                    </div>
-                    <div class="form-section">
-                        <div class="form-section-title">◈ ÖZELLİKLER</div>
-                        <div class="features-list" id="features_${p.id}">
-                            ${(p.features || []).map((f, fi) => `
-                                <div class="feature-item">
-                                    <input type="text" class="form-input form-input-sm feature-input" id="feature_${p.id}_${fi}" value="${f}">
-                                    <button class="btn btn-danger btn-xs" onclick="removeFeature(${p.id}, ${fi})">✕</button>
-                                </div>
-                            `).join('')}
-                        </div>
-                        <button class="btn btn-ghost btn-sm" onclick="addFeature(${p.id})" style="margin-top:6px;">+ Özellik Ekle</button>
-                    </div>
-                    <div class="form-section" style="border-color:rgba(255,0,64,0.2);">
-                        <div class="form-section-title red">◈ SİSTEM GEREKSİNİMLERİ</div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label class="form-label">İşletim Sistemi</label>
-                                <input type="text" class="form-input form-input-sm" id="sys_os_${p.id}" value="${p.systemReq?.os || 'Windows 10/11'}">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">İşlemci</label>
-                                <input type="text" class="form-input form-input-sm" id="sys_cpu_${p.id}" value="${p.systemReq?.processor || 'Intel Core i5'}">
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label class="form-label">RAM</label>
-                                <input type="text" class="form-input form-input-sm" id="sys_ram_${p.id}" value="${p.systemReq?.ram || '8GB'}">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Ekran Kartı</label>
-                                <input type="text" class="form-input form-input-sm" id="sys_gpu_${p.id}" value="${p.systemReq?.gpu || 'GTX 1050'}">
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Depolama</label>
-                            <input type="text" class="form-input form-input-sm" id="sys_storage_${p.id}" value="${p.systemReq?.storage || '500MB'}">
-                        </div>
-                        <div class="form-row-3" style="margin-top:8px;">
-                            <div class="form-group">
-                                <label class="form-label">💳 1 Gün Linki</label>
-                                <input type="text" class="form-input form-input-sm" id="payment_day_${p.id}" value="${(p.paymentLinks?.day) || ''}">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">💳 1 Hafta Linki</label>
-                                <input type="text" class="form-input form-input-sm" id="payment_week_${p.id}" value="${(p.paymentLinks?.week) || ''}">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">💳 1 Ay Linki</label>
-                                <input type="text" class="form-input form-input-sm" id="payment_month_${p.id}" value="${(p.paymentLinks?.month) || ''}">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `).join('');
-    adminProducts.forEach(p => { if (p.image) { const el = document.getElementById('preview_' + p.id); if (el) el.style.display = 'block'; } });
-}
-
-function previewImage(id) {
-    const url = document.getElementById('image_' + id).value;
-    const preview = document.getElementById('preview_' + id);
-    if (url && /^https?:\/\//.test(url)) {
-        preview.innerHTML = `<img src="${url}" onerror="this.parentElement.style.display='none'">`;
-        preview.style.display = 'block';
-    } else {
-        preview.style.display = 'none';
-        preview.innerHTML = '';
-    }
-}
-
-function addNewProduct() {
-    const newId = Math.max(...adminProducts.map(p => p.id), 0) + 1;
-    adminProducts.push({
-        id: newId, icon: '🎮', image: '', title: 'YENİ ÜRÜN', desc: 'Ürün açıklaması',
-        features: ['Aim Assist - Hassas nişan', 'ESP - Oyuncu görünürlüğü', 'Anti-Ban koruma'],
-        prices: { day: 99, week: 249, month: 399 },
-        systemReq: { os: 'Windows 10/11', processor: 'Intel Core i5', ram: '8GB', gpu: 'GTX 1050', storage: '500MB' },
-        paymentLinks: { day: '', week: '', month: '' }
-    });
-    renderProductsEdit();
-    setTimeout(() => {
-        const cards = document.querySelectorAll('.product-card-edit');
-        if (cards.length > 0) cards[cards.length - 1].scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }, 100);
-}
-
-function deleteAdminProduct(id) {
-    adminProducts = adminProducts.filter(p => p.id !== id);
-    renderProductsEdit();
-}
-
-function addFeature(id) {
-    const p = adminProducts.find(x => x.id === id);
-    if (!p) return;
-    if (!p.features) p.features = [];
-    p.features.push('Yeni özellik');
-    renderProductsEdit();
-    setTimeout(() => {
-        const inputs = document.querySelectorAll(`#features_${id} .feature-input`);
-        if (inputs.length > 0) inputs[inputs.length - 1].focus();
-    }, 50);
-}
-
-function removeFeature(id, idx) {
-    const p = adminProducts.find(x => x.id === id);
-    if (!p || !p.features) return;
-    p.features.splice(idx, 1);
-    renderProductsEdit();
-}
-
-function validateImageUrl(url) {
-    if (typeof url !== 'string' || !url.trim()) return '';
-    try { const u = new URL(url.trim()); return (u.protocol === 'http:' || u.protocol === 'https:') ? url.trim() : ''; }
-    catch { return ''; }
-}
-
-async function saveAllAdminProducts() {
-    const updated = adminProducts.map(p => {
-        const g = id => document.getElementById(id);
-        const fc = document.getElementById('features_' + p.id);
-        let features = p.features || [];
-        if (fc) features = Array.from(fc.querySelectorAll('.feature-input')).map(i => i.value.trim()).filter(f => f.length > 0);
-        return {
-            ...p,
-            icon: g('icon_' + p.id)?.value || p.icon,
-            title: g('title_' + p.id)?.value || p.title,
-            image: validateImageUrl(g('image_' + p.id)?.value || p.image || ''),
-            desc: g('desc_' + p.id)?.value || p.desc,
-            features,
-            prices: {
-                day: parseInt(g('price_day_' + p.id)?.value) || p.prices?.day || 0,
-                week: parseInt(g('price_week_' + p.id)?.value) || p.prices?.week || 0,
-                month: parseInt(g('price_month_' + p.id)?.value) || p.prices?.month || 0
-            },
-            paymentLinks: {
-                day: g('payment_day_' + p.id)?.value || '',
-                week: g('payment_week_' + p.id)?.value || '',
-                month: g('payment_month_' + p.id)?.value || ''
-            },
-            systemReq: {
-                os: g('sys_os_' + p.id)?.value || 'Windows 10/11',
-                processor: g('sys_cpu_' + p.id)?.value || 'Intel Core i5',
-                ram: g('sys_ram_' + p.id)?.value || '8GB',
-                gpu: g('sys_gpu_' + p.id)?.value || 'GTX 1050',
-                storage: g('sys_storage_' + p.id)?.value || '500MB'
-            }
-        };
-    });
-    localStorage.setItem('matrixProducts', JSON.stringify(updated));
-    adminProducts = updated;
-    if (window.firebaseReady && window.db) {
-        try {
-            await window.db.collection('products').doc('products_list').set({ products: updated, updatedAt: new Date() });
-        } catch (e) { console.error('Firebase save error:', e); }
-    }
-    renderProductsEdit();
-    showMessage(updated.length + ' ürün kaydedildi!', 'success');
-}
-
-function loadSettings() {
-    const s = JSON.parse(localStorage.getItem('matrixSettings') || '{}');
-    const pl = document.getElementById('paymentLink');
-    const dl = document.getElementById('discordLinkInput');
-    if (pl) pl.value = s.paymentLink || '';
-    if (dl) dl.value = s.discordLink || '';
-}
-
-function saveSettings() {
-    const s = {
-        paymentLink: document.getElementById('paymentLink')?.value || '',
-        discordLink: document.getElementById('discordLinkInput')?.value || ''
-    };
-    localStorage.setItem('matrixSettings', JSON.stringify(s));
-    showMessage('Ayarlar kaydedildi!', 'success');
 }
 
 function renderRequests(requests) {
     const container = document.getElementById('ordersList');
     if (!container) return;
-
-    const total = requests.length;
-    const pending = requests.filter(r => r.status === 'Yeni' || r.status === 'İnceleniyor').length;
-    const completed = requests.filter(r => r.status === 'Tamamlandı').length;
-
-    const summary = document.getElementById('ordersSummary');
-    if (summary) {
-        summary.innerHTML = `
-            <div style="display:flex;gap:15px;flex-wrap:wrap;margin-bottom:16px;padding:12px 16px;background:rgba(0,255,65,0.03);border:1px solid var(--admin-border);border-radius:8px;">
-                <span style="color:var(--admin-muted);font-size:0.8rem;">Toplam: <strong style="color:var(--admin-text);">${total}</strong></span>
-                <span style="color:var(--admin-muted);font-size:0.8rem;">Bekleyen: <strong style="color:#ffc107;">${pending}</strong></span>
-                <span style="color:var(--admin-muted);font-size:0.8rem;">Tamamlanan: <strong style="color:var(--admin-primary);">${completed}</strong></span>
-            </div>
-        `;
-    }
-
+    
     if (!requests || requests.length === 0) {
-        container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📋</div><div class="empty-state-text">Henüz sipariş talebi yok.</div></div>';
+        container.innerHTML = '<div style="text-align: center; padding: 40px; color: #808080;">Henüz sipariş talebi yok.</div>';
         return;
     }
+    
     container.innerHTML = requests.map(req => {
+        const statusClass = req.status === 'Yeni' ? 'pending' : req.status === 'İnceleniyor' ? 'pending' : req.status === 'Tamamlandı' ? 'completed' : 'cancelled';
         const date = req.createdAt ? new Date(req.createdAt.seconds ? req.createdAt.seconds * 1000 : req.createdAt).toLocaleDateString('tr-TR') : '-';
-        const time = req.createdAt ? new Date(req.createdAt.seconds ? req.createdAt.seconds * 1000 : req.createdAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) : '';
-        const badgeClass = req.status === 'Tamamlandı' ? 'badge-green' : req.status === 'İptal' ? 'badge-red' : req.status === 'İnceleniyor' ? 'badge-yellow' : 'badge-blue';
+        
         return `
         <div class="order-card">
-            <div class="order-card-top">
-                <span class="order-card-id">#${req.id.slice(0, 8).toUpperCase()}</span>
-                <span class="order-card-date">${date} ${time}</span>
+            <div class="order-header">
+                <span class="order-id">#${req.id.slice(0, 8).toUpperCase()}</span>
+                <span class="order-date">${date}</span>
             </div>
-            <div class="order-card-grid">
-                <div class="order-card-field"><label>Oyun</label><span>${req.game || '-'}</span></div>
-                <div class="order-card-field"><label>Paket</label><span>${req.package || '-'}</span></div>
-                <div class="order-card-field"><label>Sipariş No</label><span style="color:#00ff41;">${req.orderNumber || '-'}</span></div>
-                <div class="order-card-field"><label>Müşteri</label><span>${req.userEmail || '-'}</span></div>
-                <div class="order-card-field"><label>Durum</label><span class="badge ${badgeClass}">${req.status || 'Yeni'}</span></div>
+            <div class="order-details">
+                <div class="order-detail-item">
+                    <label>Oyun</label>
+                    <span>${req.game || '-'}</span>
+                </div>
+                <div class="order-detail-item">
+                    <label>Paket</label>
+                    <span>${req.package || '-'}</span>
+                </div>
+                <div class="order-detail-item">
+                    <label>Sipariş No</label>
+                    <span>${req.orderNumber || '-'}</span>
+                </div>
             </div>
-            ${req.note ? `<div style="padding:10px;background:rgba(0,0,0,0.3);border-radius:6px;margin-bottom:10px;"><span style="color:#808080;font-size:0.75rem;">Not:</span><p style="color:#c0c0d0;margin-top:4px;font-size:0.85rem;">${req.note}</p></div>` : ''}
-            <div class="order-card-actions">
-                <button class="btn btn-ghost btn-xs" onclick="updateRequestStatus('${req.id}', 'İnceleniyor')">⏳ İnceleniyor</button>
-                <button class="btn btn-primary btn-xs" onclick="updateRequestStatus('${req.id}', 'Tamamlandı')">✓ Tamamlandı</button>
-                <button class="btn btn-danger btn-xs" onclick="updateRequestStatus('${req.id}', 'İptal')">✕ İptal</button>
+            <div class="order-details">
+                <div class="order-detail-item">
+                    <label>Müşteri</label>
+                    <span>${req.userEmail || '-'}</span>
+                </div>
+                <div class="order-detail-item">
+                    <label>Durum</label>
+                    <span class="status-badge status-${statusClass}">${req.status || 'Yeni'}</span>
+                </div>
             </div>
-        </div>`;
-    }).join('');
+            ${req.note ? `<div style="padding: 10px; background: rgba(0,0,0,0.3); border-radius: 5px; margin-top: 10px;"><label style="color: #808080; font-size: 0.8rem;">Not:</label><p style="color: #e0e0e0; margin-top: 5px;">${req.note}</p></div>` : ''}
+            <div class="order-actions">
+                <button class="action-btn" onclick="updateRequestStatus('${req.id}', 'İnceleniyor')">⏳ İnceleniyor</button>
+                <button class="action-btn" onclick="updateRequestStatus('${req.id}', 'Tamamlandı')">✓ Tamamlandı</button>
+                <button class="action-btn danger" onclick="updateRequestStatus('${req.id}', 'İptal')">✕ İptal</button>
+            </div>
+        </div>
+    `}).join('');
 }
 
-async function updateRequestStatus(id, status) {
-    if (!window.firebaseReady || !window.db) { showMessage('Firebase bağlı değil!', 'error'); return; }
+async function updateRequestStatus(requestId, status) {
+    if (!adminFirebaseReady) {
+        showMessage('Firebase bağlı değil!', 'error');
+        return;
+    }
     try {
-        await window.db.collection('support_requests').doc(id).update({ status });
+        await adminDb.collection('support_requests').doc(requestId).update({ status: status });
         showMessage('Durum güncellendi!', 'success');
-        const requests = await window.getSupportRequests();
-        renderRequests(requests);
         loadAdminData();
     } catch (e) {
         showMessage('Hata: ' + e.message, 'error');
     }
 }
 
-async function loadSupportRequests() {
-    if (typeof getSupportRequests !== 'function') { showMessage('Sipariş sistemi yüklenemedi!', 'error'); return; }
-    try {
-        const requests = await getSupportRequests();
-        renderRequests(requests);
-    } catch (e) {
-        showMessage('Siparişler yüklenirken hata: ' + e.message, 'error');
-    }
-}
-
 function renderUsers(users) {
     const container = document.getElementById('usersList');
     if (!container) return;
+    
     if (!users || users.length === 0) {
-        container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">👥</div><div class="empty-state-text">Henüz kullanıcı yok.</div></div>';
+        container.innerHTML = '<div style="text-align: center; padding: 40px; color: #808080;">Henüz kullanıcı yok.</div>';
         return;
     }
+    
     container.innerHTML = `
-        <div class="data-table-wrap">
         <table class="data-table">
-            <thead><tr>
-                <th>E-posta</th>
-                <th>İsim</th>
-                <th>Rol</th>
-                <th>Kayıt</th>
-                <th>İşlem</th>
-            </tr></thead>
-            <tbody>${users.map(u => {
-                const date = u.createdAt ? new Date(u.createdAt.seconds ? u.createdAt.seconds * 1000 : u.createdAt).toLocaleDateString('tr-TR') : '-';
-                return `<tr>
-                    <td>${u.email || '-'}</td>
-                    <td>${u.displayName || '-'}</td>
-                    <td><span class="badge ${u.isAdmin ? 'badge-green' : 'badge-blue'}">${u.isAdmin ? 'Admin' : 'Kullanıcı'}</span></td>
-                    <td>${date}</td>
-                    <td><button class="btn btn-ghost btn-xs" onclick="toggleUserAdmin('${u.email}', ${!u.isAdmin})">${u.isAdmin ? 'Admin Kaldır' : 'Admin Yap'}</button></td>
-                </tr>`;
-            }).join('')}</tbody>
+            <thead>
+                <tr>
+                    <th>E-posta</th>
+                    <th>İsim</th>
+                    <th>Admin</th>
+                    <th>Kayıt Tarihi</th>
+                    <th>İşlemler</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${users.map(user => {
+                    const date = user.createdAt ? new Date(user.createdAt.seconds ? user.createdAt.seconds * 1000 : user.createdAt).toLocaleDateString('tr-TR') : '-';
+                    return `
+                    <tr>
+                        <td>${user.email || '-'}</td>
+                        <td>${user.displayName || '-'}</td>
+                        <td><span class="status-badge status-${user.isAdmin ? 'completed' : 'cancelled'}">${user.isAdmin ? 'Admin' : 'Kullanıcı'}</span></td>
+                        <td>${date}</td>
+                        <td>
+                            <button class="action-btn" onclick="toggleUserAdmin('${user.email}', ${!user.isAdmin})">${user.isAdmin ? 'Admin Kaldır' : 'Admin Yap'}</button>
+                        </td>
+                    </tr>
+                `;
+                }).join('')}
+            </tbody>
         </table>
-        </div>`;
+    `;
 }
 
 async function toggleUserAdmin(email, makeAdmin) {
-    if (!window.firebaseReady || !window.db) return;
+    if (!adminFirebaseReady) {
+        showMessage('Firebase bağlı değil!', 'error');
+        return;
+    }
     try {
-        const snap = await window.db.collection('users').where('email', '==', email).get();
-        if (!snap.empty) {
-            await window.db.collection('users').doc(snap.docs[0].id).update({ isAdmin: makeAdmin });
+        const snapshot = await adminDb.collection('users').where('email', '==', email).get();
+        if (!snapshot.empty) {
+            await adminDb.collection('users').doc(snapshot.docs[0].id).update({ isAdmin: makeAdmin });
             showMessage(makeAdmin ? 'Kullanıcı admin yapıldı!' : 'Admin yetkisi kaldırıldı!', 'success');
             loadAdminData();
         }
@@ -478,20 +248,194 @@ async function toggleUserAdmin(email, makeAdmin) {
     }
 }
 
-function showMessage(text, type) {
-    const container = document.querySelector('.matrix-message-container') || (() => {
-        const c = document.createElement('div');
-        c.className = 'matrix-message-container';
-        c.style.cssText = 'position:fixed;top:80px;right:20px;z-index:99999;display:flex;flex-direction:column;gap:10px;max-width:350px;';
-        document.body.appendChild(c);
-        return c;
-    })();
-    const msg = document.createElement('div');
-    msg.className = `matrix-message ${type || 'info'}`;
-    msg.innerHTML = `<span class="msg-content">${text}</span><button class="close-msg" onclick="this.parentElement.remove()">×</button>`;
-    container.appendChild(msg);
-    setTimeout(() => msg.classList.add('hiding'), 3000);
-    setTimeout(() => msg.remove(), 3300);
+function renderProductsEdit() {
+    const container = document.getElementById('productsEditList');
+    if (!container) return;
+    
+    if (adminProducts.length === 0) {
+        container.innerHTML = '<div style="text-align: center; padding: 40px; color: #808080;">Ürün yok. "Yeni Ürün" butonuna tıklayarak ekleyin.</div>';
+        return;
+    }
+    
+    container.innerHTML = adminProducts.map((product, index) => `
+        <div class="product-edit-card">
+            <div class="product-edit-header">
+                <div class="product-edit-title">${product.icon || '🎮'} ${product.title || 'Ürün'}</div>
+                <button class="action-btn danger" onclick="deleteAdminProduct(${product.id})">🗑️ Sil</button>
+            </div>
+            <div class="form-row">
+                <div class="admin-form-group">
+                    <label>İkon (Emoji)</label>
+                    <input type="text" id="icon_${product.id}" value="${product.icon || '🎮'}" style="width: 60px; text-align: center; font-size: 1.5rem;">
+                </div>
+                <div class="admin-form-group">
+                    <label>Başlık</label>
+                    <input type="text" id="title_${product.id}" value="${product.title || ''}">
+                </div>
+            </div>
+            <div class="admin-form-group">
+                <label>Açıklama</label>
+                <textarea id="desc_${product.id}">${product.desc || ''}</textarea>
+            </div>
+            <div class="form-row-3">
+                <div class="admin-form-group">
+                    <label>1 Gün Fiyatı (₺)</label>
+                    <input type="number" id="price_day_${product.id}" value="${product.prices?.day || 0}">
+                </div>
+                <div class="admin-form-group">
+                    <label>1 Hafta Fiyatı (₺)</label>
+                    <input type="number" id="price_week_${product.id}" value="${product.prices?.week || 0}">
+                </div>
+                <div class="admin-form-group">
+                    <label>1 Ay Fiyatı (₺)</label>
+                    <input type="number" id="price_month_${product.id}" value="${product.prices?.month || 0}">
+                </div>
+            </div>
+            
+            <div class="admin-form-group">
+                <label>◈ ÖZELLİKLER ◈</label>
+                <div id="features_${product.id}" class="features-edit-list">
+                    ${(product.features || []).map((f, fi) => `
+                        <div class="feature-edit-item">
+                            <input type="text" class="feature-input" id="feature_${product.id}_${fi}" value="${f}">
+                            <button class="action-btn danger small" onclick="removeFeature(${product.id}, ${fi})">✕</button>
+                        </div>
+                    `).join('')}
+                </div>
+                <button class="action-btn" onclick="addFeature(${product.id})" style="margin-top: 10px;">+ Özellik Ekle</button>
+            </div>
+            
+            <div class="admin-form-group" style="margin-top: 20px;">
+                <label>◈ SİSTEM GEREKSİNİMLERİ ◈</label>
+                <div class="form-row" style="margin-top: 10px;">
+                    <input type="text" id="sys_os_${product.id}" value="${product.systemReq?.os || 'Windows 10/11'}" placeholder="İşletim Sistemi">
+                    <input type="text" id="sys_cpu_${product.id}" value="${product.systemReq?.processor || 'Intel Core i5'}" placeholder="İşlemci">
+                </div>
+                <div class="form-row">
+                    <input type="text" id="sys_ram_${product.id}" value="${product.systemReq?.ram || '8GB'}" placeholder="RAM">
+                    <input type="text" id="sys_gpu_${product.id}" value="${product.systemReq?.gpu || 'GTX 1050'}" placeholder="Ekran Kartı">
+                </div>
+                <input type="text" id="sys_storage_${product.id}" value="${product.systemReq?.storage || '500MB'}" placeholder="Depolama" style="margin-top: 10px;">
+            </div>
+        </div>
+    `).join('');
 }
 
-document.addEventListener('DOMContentLoaded', initAdmin);
+function addNewProduct() {
+    const newId = Math.max(...adminProducts.map(p => p.id), 0) + 1;
+    const newProduct = {
+        id: newId,
+        icon: '🎮',
+        image: '',
+        title: 'YENİ ÜRÜN',
+        desc: 'Ürün açıklaması',
+        features: ['Aim Assist - Hassas nişan sistemi', 'ESP - Oyuncu görünürlüğü', 'Skin Changer - Karakter görünümü', 'Anti-Ban koruma'],
+        prices: { day: 99, week: 249, month: 399 },
+        systemReq: { os: 'Windows 10/11', processor: 'Intel Core i5', ram: '8GB', gpu: 'GTX 1050', storage: '500MB' }
+    };
+    adminProducts.push(newProduct);
+    renderProductsEdit();
+    showMessage('Yeni ürün eklendi! Düzenle ve kaydet.', 'success');
+}
+
+function deleteAdminProduct(productId) {
+    showConfirm('ÜRÜN SİL', 'Bu ürünü silmek istediğinizden emin misiniz?', () => {
+        adminProducts = adminProducts.filter(p => p.id !== productId);
+        renderProductsEdit();
+    });
+}
+
+function addFeature(productId) {
+    const product = adminProducts.find(p => p.id === productId);
+    if (!product) return;
+    
+    if (!product.features) {
+        product.features = [];
+    }
+    product.features.push('Yeni özellik');
+    renderProductsEdit();
+    
+    setTimeout(() => {
+        const newInput = document.getElementById(`feature_${productId}_${product.features.length - 1}`);
+        if (newInput) newInput.focus();
+    }, 50);
+}
+
+function removeFeature(productId, featureIndex) {
+    const product = adminProducts.find(p => p.id === productId);
+    if (!product || !product.features) return;
+    
+    product.features.splice(featureIndex, 1);
+    renderProductsEdit();
+}
+
+async function saveAllAdminProducts() {
+    if (adminProducts.length === 0) {
+        showMessage('Kaydedilecek ürün yok!', 'warning');
+        return;
+    }
+    
+    const updatedProducts = adminProducts.map(product => {
+        const iconEl = document.getElementById(`icon_${product.id}`);
+        const titleEl = document.getElementById(`title_${product.id}`);
+        const descEl = document.getElementById(`desc_${product.id}`);
+        const dayPriceEl = document.getElementById(`price_day_${product.id}`);
+        const weekPriceEl = document.getElementById(`price_week_${product.id}`);
+        const monthPriceEl = document.getElementById(`price_month_${product.id}`);
+        const featuresContainer = document.getElementById(`features_${product.id}`);
+        
+        const sysOsEl = document.getElementById(`sys_os_${product.id}`);
+        const sysCpuEl = document.getElementById(`sys_cpu_${product.id}`);
+        const sysRamEl = document.getElementById(`sys_ram_${product.id}`);
+        const sysGpuEl = document.getElementById(`sys_gpu_${product.id}`);
+        const sysStorageEl = document.getElementById(`sys_storage_${product.id}`);
+        
+        let features = product.features || [];
+        if (featuresContainer) {
+            const featureInputs = featuresContainer.querySelectorAll('.feature-input');
+            features = Array.from(featureInputs).map(input => input.value.trim()).filter(f => f.length > 0);
+        }
+        
+        return {
+            ...product,
+            icon: iconEl ? iconEl.value : product.icon,
+            title: titleEl ? titleEl.value : product.title,
+            desc: descEl ? descEl.value : product.desc,
+            features: features,
+            prices: {
+                day: parseInt(dayPriceEl?.value) || product.prices?.day || 0,
+                week: parseInt(weekPriceEl?.value) || product.prices?.week || 0,
+                month: parseInt(monthPriceEl?.value) || product.prices?.month || 0
+            },
+            systemReq: {
+                os: sysOsEl?.value || 'Windows 10/11',
+                processor: sysCpuEl?.value || 'Intel Core i5',
+                ram: sysRamEl?.value || '8GB',
+                gpu: sysGpuEl?.value || 'GTX 1050',
+                storage: sysStorageEl?.value || '500MB'
+            }
+        };
+    });
+    
+    localStorage.setItem('matrixProducts', JSON.stringify(updatedProducts));
+    adminProducts = updatedProducts;
+    
+    if (adminFirebaseReady && adminDb) {
+        try {
+            await adminDb.collection('products').doc('products_list').set({
+                products: updatedProducts,
+                updatedAt: new Date()
+            });
+            showMessage(`${adminProducts.length} ürün başarıyla kaydedildi!`, 'success');
+        } catch (e) {
+            console.error('Firebase save error:', e);
+            showMessage('Ürünler kaydedildi ama Firebase\'e yüklenirken hata oldu.', 'warning');
+        }
+    } else {
+        showMessage(`${adminProducts.length} ürün başarıyla kaydedildi!`, 'success');
+    }
+}
+
+window.addEventListener('load', function() {
+    loadAdminProducts();
+});

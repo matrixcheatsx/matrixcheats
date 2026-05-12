@@ -18,5 +18,3 @@ Thumbs.db
 
 # Firebase config (gizli bilgi)
 firebase-config.js
-# Visual Studio
-.vs/

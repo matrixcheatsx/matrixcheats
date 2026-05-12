@@ -113,32 +113,39 @@ function validateImageUrl(url) {
 let products = [];
 
 async function loadProductsFromStorage() {
-    const stored = localStorage.getItem('matrixProducts');
-    if (stored) {
-        try {
-            const parsed = JSON.parse(stored);
-            if (Array.isArray(parsed) && parsed.length > 0) {
-                products = parsed;
-                console.log('localStorage\'dan yüklendi:', products.length, 'ürün');
-                syncToFirebase();
-                return;
-            }
-        } catch (e) {
-            products = [];
-        }
-    }
+    console.log('loadProductsFromStorage - başladı');
     
     if (window.firebaseReady && window.getProductsFromDB) {
+        console.log('Firebase\'den ürünler çekiliyor...');
         try {
             const dbProducts = await window.getProductsFromDB();
+            console.log('Firebase ürünleri:', dbProducts);
             if (dbProducts && Array.isArray(dbProducts) && dbProducts.length > 0) {
                 products = dbProducts;
                 localStorage.setItem('matrixProducts', JSON.stringify(products));
                 console.log('Firebase\'den yüklendi:', products.length, 'ürün');
                 return;
             }
+            console.log('Firebase\'de ürün yok veya boş array');
         } catch (e) {
             console.log('Firebase hatası:', e);
+        }
+    } else {
+        console.log('Firebase hazır değil veya getProductsFromDB yok');
+    }
+    
+    const stored = localStorage.getItem('matrixProducts');
+    console.log('localStorage products:', stored);
+    if (stored) {
+        try {
+            const parsed = JSON.parse(stored);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+                products = parsed;
+                console.log('localStorage\'dan yüklendi:', products.length, 'ürün');
+                return;
+            }
+        } catch (e) {
+            products = [];
         }
     }
     
@@ -178,29 +185,7 @@ async function loadProductsFromStorage() {
     console.log('Varsayılan ürünler yüklendi:', products.length);
 }
 
-async function syncToFirebase() {
-    if (!window.firebaseReady || !window.db) return;
-    try {
-        const dbSnap = await window.getProductsFromDB();
-        if (!dbSnap || dbSnap.length === 0) {
-            await window.db.collection('products').doc('products_list').set({
-                products: products,
-                updatedAt: new Date()
-            });
-        }
-    } catch (e) {
-        console.log('Firebase sync hatası:', e);
-    }
-}
-
 async function syncProductsFromFirebase() {
-    const stored = localStorage.getItem('matrixProducts');
-    if (stored) {
-        try {
-            const parsed = JSON.parse(stored);
-            if (Array.isArray(parsed) && parsed.length > 0) return;
-        } catch (e) {}
-    }
     if (!window.firebaseReady || !window.getProductsFromDB) return;
     try {
         const dbProducts = await window.getProductsFromDB();
@@ -411,7 +396,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function openAdminFromProfile() {
     closeProfileModal();
-    window.location.href = 'pages/admin.html';
+    openAdminPanel();
 }
 
 async function handleLogin(email, password) {
@@ -649,8 +634,8 @@ function initActiveUsers() {
     if (activeUsersEl) {
         activeUsersEl.textContent = Math.floor(Math.random() * 101);
         setInterval(() => {
-            activeUsersEl.textContent = Math.floor(Math.random() * 85 + 15);
-        }, 45000);
+            activeUsersEl.textContent = Math.floor(Math.random() * 101);
+        }, 35000);
     }
 }
 
@@ -659,12 +644,12 @@ function initProducts() {
     if (!grid) return;
     grid.innerHTML = '';
     
+    console.log('initProducts - ürün sayısı:', products.length);
+    
     if (products.length === 0) {
         grid.innerHTML = '<div style="text-align:center;padding:50px;color:#808080;font-family:\'Share Tech Mono\',monospace;"><p style="font-size:1.2rem;margin-bottom:10px;">◈</p><p>Henüz ürün eklenmemiş.</p></div>';
         return;
     }
-    
-    const fragment = document.createDocumentFragment();
     
     products.forEach(product => {
         const card = document.createElement('div');
@@ -676,7 +661,7 @@ function initProducts() {
         if (product.image && product.image.trim() !== '') {
             const validUrl = validateImageUrl(product.image);
             if (validUrl) {
-                imageHTML = `<div class="product-image"><img src="${validUrl}" alt="${sanitizeInput(product.title)}" loading="lazy" onerror="this.style.display='none';this.parentNode.innerHTML='<div class=product-icon>${product.icon}</div>'"></div>`;
+                imageHTML = `<div class="product-image"><img src="${validUrl}" alt="${sanitizeInput(product.title)}" onerror="this.style.display='none';"></div>`;
             }
         }
         if (!imageHTML) {
@@ -694,79 +679,53 @@ function initProducts() {
             <button class="btn-product" onclick="viewProduct(${product.id})">DETAYLI İNCELE</button>
         `;
         
-        fragment.appendChild(card);
+        grid.appendChild(card);
     });
-    
-    grid.appendChild(fragment);
 }
 
 function initMatrixCanvas() {
     const canvas = document.getElementById('matrixCanvas');
-    if (!canvas) return;
     const ctx = canvas.getContext('2d');
     
-    let animFrameId;
-    let canvasWidth, canvasHeight;
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*()';
     const fontSize = 14;
-    let columns, drops;
+    const columns = canvas.width / fontSize;
+    const drops = [];
     
-    function resizeCanvas() {
-        canvasWidth = window.innerWidth;
-        canvasHeight = window.innerHeight;
-        canvas.width = canvasWidth;
-        canvas.height = canvasHeight;
-        columns = Math.ceil(canvasWidth / fontSize);
-        drops = [];
-        for (let i = 0; i < columns; i++) {
-            drops[i] = Math.random() * canvasHeight;
-        }
+    for(let i = 0; i < columns; i++) {
+        drops[i] = Math.random() * canvas.height;
     }
     
-    resizeCanvas();
-    
-    let lastTime = 0;
-    const interval = 50;
-    
-    function drawMatrix(timestamp) {
-        if (timestamp - lastTime < interval) {
-            animFrameId = requestAnimationFrame(drawMatrix);
-            return;
-        }
-        lastTime = timestamp;
-        
+    function drawMatrix() {
         ctx.fillStyle = 'rgba(5, 5, 5, 0.05)';
-        ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
         
         ctx.fillStyle = '#00ff41';
         ctx.font = fontSize + 'px monospace';
         
-        const reds = Math.random();
-        for (let i = 0; i < drops.length; i++) {
+        for(let i = 0; i < drops.length; i++) {
             const char = chars[Math.floor(Math.random() * chars.length)];
             const y = drops[i] * fontSize;
-            const isGreen = reds > 0.3;
-            ctx.fillStyle = isGreen
-                ? `rgba(0, 255, 65, ${0.3 + Math.random() * 0.3})`
-                : `rgba(255, 0, 64, ${0.3 + Math.random() * 0.3})`;
+            const isGreen = Math.random() > 0.7;
+            const color = isGreen ? `rgba(0, 255, 65, ${Math.random() * 0.5 + 0.5})` : `rgba(255, 0, 0, ${Math.random() * 0.5 + 0.5})`;
+            ctx.fillStyle = color;
             ctx.fillText(char, i * fontSize, y);
             
-            if (y > canvasHeight && Math.random() > 0.975) {
+            if(y > canvas.height && Math.random() > 0.975) {
                 drops[i] = 0;
             }
             drops[i]++;
         }
-        
-        animFrameId = requestAnimationFrame(drawMatrix);
     }
     
-    animFrameId = requestAnimationFrame(drawMatrix);
-    
-    let resizeTimeout;
+    setInterval(drawMatrix, 50);
     window.addEventListener('resize', function() {
-        clearTimeout(resizeTimeout);
-        resizeTimeout = setTimeout(resizeCanvas, 100);
-    }, { passive: true });
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    });
 }
 
 function initLoader() {
@@ -775,57 +734,49 @@ function initLoader() {
     
     if (loaderCanvas) {
         const ctx = loaderCanvas.getContext('2d');
-        let lw, lh, lColumns, lDrops, lAnimId;
-        const lChars = 'MATRIX0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ@#$%^&*';
-        const lFontSize = 14;
+        loaderCanvas.width = window.innerWidth;
+        loaderCanvas.height = window.innerHeight;
         
-        function resizeLoaderCanvas() {
-            lw = window.innerWidth;
-            lh = window.innerHeight;
-            loaderCanvas.width = lw;
-            loaderCanvas.height = lh;
-            lColumns = Math.ceil(lw / lFontSize);
-            lDrops = [];
-            for (let i = 0; i < lColumns; i++) {
-                lDrops[i] = Math.random() * lh;
-            }
+        const chars = 'MATRIX0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ@#$%^&*';
+        const fontSize = 14;
+        const columns = loaderCanvas.width / fontSize;
+        const drops = [];
+        
+        for (let i = 0; i < columns; i++) {
+            drops[i] = Math.random() * loaderCanvas.height;
         }
         
-        resizeLoaderCanvas();
-        
-        function drawLoaderMatrix() {
+        function drawMatrix() {
             ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
-            ctx.fillRect(0, 0, lw, lh);
+            ctx.fillRect(0, 0, loaderCanvas.width, loaderCanvas.height);
             
-            ctx.font = lFontSize + 'px monospace';
+            ctx.fillStyle = '#00ff41';
+            ctx.font = fontSize + 'px monospace';
             
-            const redRandom = Math.random();
-            for (let i = 0; i < lDrops.length; i += 2) {
-                const char = lChars[Math.floor(Math.random() * lChars.length)];
-                const y = lDrops[i] * lFontSize;
-                ctx.fillStyle = redRandom > 0.85 ? '#ff0040' : '#00ff41';
-                ctx.fillText(char, i * lFontSize, y);
+            for (let i = 0; i < drops.length; i++) {
+                const char = chars[Math.floor(Math.random() * chars.length)];
+                const y = drops[i] * fontSize;
+                const isRed = Math.random() > 0.85;
+                ctx.fillStyle = isRed ? '#ff0040' : '#00ff41';
+                ctx.fillText(char, i * fontSize, y);
                 
-                if (y > lh && Math.random() > 0.975) {
-                    lDrops[i] = 0;
+                if (y > loaderCanvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
                 }
-                lDrops[i]++;
+                drops[i]++;
             }
-            
-            lAnimId = requestAnimationFrame(drawLoaderMatrix);
         }
         
-        lAnimId = requestAnimationFrame(drawLoaderMatrix);
+        const matrixInterval = setInterval(drawMatrix, 50);
         
-        let lResizeTimer;
         window.addEventListener('resize', function() {
-            clearTimeout(lResizeTimer);
-            lResizeTimer = setTimeout(resizeLoaderCanvas, 100);
-        }, { passive: true });
+            loaderCanvas.width = window.innerWidth;
+            loaderCanvas.height = window.innerHeight;
+        });
         
         if (loader) {
             setTimeout(function() {
-                cancelAnimationFrame(lAnimId);
+                clearInterval(matrixInterval);
                 loader.classList.add('hidden');
             }, 2000);
         }
@@ -876,37 +827,22 @@ function initSmoothScroll() {
             if (href && href !== '#' && !href.startsWith('http')) {
                 const target = document.querySelector(href);
                 if(target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                const nav = document.querySelector('.nav');
-                if (nav && nav.classList.contains('active')) {
-                    nav.classList.remove('active');
-                    document.querySelector('.mobile-toggle')?.classList.remove('active');
-                }
             }
         });
     });
     
-    let ticking = false;
-    const sections = document.querySelectorAll('section[id]');
-    const navLinks = document.querySelectorAll('.nav-link[href^="#"]');
-    
     window.addEventListener('scroll', () => {
-        if (!ticking) {
-            requestAnimationFrame(() => {
-                let current = '';
-                const scrollY = window.scrollY;
-                sections.forEach(section => {
-                    if (scrollY >= section.offsetTop - 200) {
-                        current = section.getAttribute('id');
-                    }
-                });
-                navLinks.forEach(link => {
-                    link.classList.toggle('active', link.getAttribute('href') === '#' + current);
-                });
-                ticking = false;
-            });
-            ticking = true;
-        }
-    }, { passive: true });
+        let current = '';
+        document.querySelectorAll('section').forEach(section => {
+            if(window.scrollY >= section.offsetTop - 200) {
+                current = section.getAttribute('id');
+            }
+        });
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.classList.remove('active');
+            if(link.getAttribute('href') === '#' + current) link.classList.add('active');
+        });
+    });
 }
 
 function initScrollAnimations() {
@@ -914,16 +850,13 @@ function initScrollAnimations() {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
                 entry.target.classList.add('visible');
-                observer.unobserve(entry.target);
             }
         });
     }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
     
-    const animEls = document.querySelectorAll(
-        '.fade-in, .fade-in-up, .fade-in-left, .fade-in-right, .scale-in, ' +
-        '.product-card, .about-feature, .contact-item, .pricing-card, .section-header'
-    );
-    animEls.forEach(el => observer.observe(el));
+    document.querySelectorAll('.fade-in, .fade-in-up, .fade-in-left, .fade-in-right, .scale-in').forEach(el => {
+        observer.observe(el);
+    });
 }
 
 function initForm() {
@@ -963,7 +896,171 @@ function viewProduct(productId) {
 }
 
 async function openAdminPanel() {
-    window.location.href = 'pages/admin.html';
+    const storedUser = localStorage.getItem('matrixUser');
+    const user = storedUser ? JSON.parse(storedUser) : null;
+    
+    if (!user) {
+        showMessage('Admin girişi için önce giriş yapmalısınız!', 'warning');
+        openAuth();
+        return;
+    }
+    
+    const userEmail = user.email || (user._delegate && user._delegate.email);
+    const userUid = user.uid || (user._delegate && user._delegate.uid);
+    
+    if (!userEmail || !userUid) {
+        showMessage('Admin girişi için önce giriş yapmalısınız!', 'warning');
+        openAuth();
+        return;
+    }
+    
+    const isAdminByEmail = ADMIN_EMAILS.includes(userEmail.toLowerCase());
+    
+    if (!isAdminByEmail) {
+        const hasAdminFlag = user.isAdmin === true;
+        if (!hasAdminFlag) {
+            showMessage('Bu sayfaya erişim yetkiniz yok!', 'error');
+            return;
+        }
+        const isVerifiedAdmin = await verifyAdminStatus(userUid);
+        if (!isVerifiedAdmin) {
+            showMessage('Bu sayfaya erişim yetkiniz yok!', 'error');
+            return;
+        }
+    }
+    
+    document.querySelectorAll('.modal').forEach(m => m.classList.remove('active'));
+    document.getElementById('authModal').style.display = 'none';
+    document.getElementById('profileModal').style.display = 'none';
+    
+    loadProductsFromStorage();
+    renderAdminProducts();
+    renderAdminOrders();
+    document.getElementById('adminPanel').style.display = 'block';
+    showAdminTab('products');
+}
+
+function closeAdminPanel() {
+    document.getElementById('adminPanel').style.display = 'none';
+    
+    // Auth modal'ı kapat
+    const authModal = document.getElementById('authModal');
+    if (authModal) {
+        authModal.classList.remove('active');
+    }
+    
+    // AuthBox onclick yeniden kontrol et
+    const storedUser = localStorage.getItem('matrixUser');
+    if (storedUser) {
+        const user = JSON.parse(storedUser);
+        updateAuthUI(user);
+    }
+}
+
+function showAdminTab(tab) {
+    document.getElementById('adminProductsTab').style.display = tab === 'products' ? 'block' : 'none';
+    document.getElementById('adminSupportTab').style.display = tab === 'support' ? 'block' : 'none';
+    document.getElementById('adminSettingsTab').style.display = tab === 'settings' ? 'block' : 'none';
+    document.getElementById('btnProducts').style.background = tab === 'products' ? '#00ff41' : 'transparent';
+    document.getElementById('btnProducts').style.color = tab === 'products' ? '#050505' : '#00ff41';
+    document.getElementById('btnSupport').style.background = tab === 'support' ? '#00ff41' : 'transparent';
+    document.getElementById('btnSupport').style.color = tab === 'support' ? '#050505' : '#00ff41';
+    document.getElementById('btnSettings').style.background = tab === 'settings' ? '#00ff41' : 'transparent';
+    document.getElementById('btnSettings').style.color = tab === 'settings' ? '#050505' : '#00ff41';
+    if (tab === 'settings') loadSettings();
+    if (tab === 'support') loadSupportRequests();
+}
+
+async function loadSupportRequests() {
+    console.log('loadSupportRequests çalıştı');
+    const container = document.getElementById('adminSupportList');
+    if (!container) {
+        return;
+    }
+    
+    if (typeof getSupportRequests !== 'function') {
+        console.log('getSupportRequests fonksiyonu yok:', typeof getSupportRequests);
+        container.innerHTML = '<p style="color:#ff0040;">Sipariş talepleri yüklenemedi!</p>';
+        return;
+    }
+    
+    console.log('getSupportRequests çağrılıyor...');
+    const requests = await getSupportRequests();
+    
+    if (requests.length === 0) {
+        container.innerHTML = '<div style="text-align:center;padding:40px;color:#808080;">Henüz sipariş talebi bulunmuyor.</div>';
+        return;
+    }
+    
+    container.innerHTML = requests.map(req => {
+        const statusColor = req.status === 'Yeni' ? '#ff0040' : req.status === 'İnceleniyor' ? '#ffc107' : '#00ff41';
+        const date = req.createdAt ? new Date(req.createdAt).toLocaleDateString('tr-TR') : '-';
+        
+        return `
+            <div style="background:rgba(255,0,64,0.1);border:1px solid #ff0040;padding:20px;margin-bottom:15px;border-radius:8px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
+                    <span style="color:#ff0040;font-family:'Orbitron',sans-serif;">${req.game || 'Oyun'}</span>
+                    <span style="color:${statusColor};font-weight:bold;">${req.status}</span>
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:15px;font-size:0.9rem;color:#ccc;">
+                    <div><span style="color:#808080;">Paket:</span> ${req.package || '-'}</div>
+                    <div><span style="color:#808080;">Sipariş No:</span> <span style="color:#00ff41;">${req.orderNumber || '-'}</span></div>
+                    <div><span style="color:#808080;">Tarih:</span> ${date}</div>
+                </div>
+                <div style="margin-top:10px;font-size:0.85rem;color:#808080;">
+                    <span style="color:#808080;">Email:</span> ${req.userEmail || '-'}
+                </div>
+                ${req.note ? `<div style="margin-top:10px;font-size:0.85rem;color:#aaa;"><span style="color:#808080;">Not:</span> ${req.note}</div>` : ''}
+                <div style="margin-top:15px;display:flex;gap:10px;">
+                    <button onclick="updateSupportStatus('${req.id}', 'İnceleniyor')" style="background:#ffc107;border:none;color:#000;padding:8px 15px;cursor:pointer;border-radius:4px;font-size:0.8rem;">İnceleniyor</button>
+                    <button onclick="updateSupportStatus('${req.id}', 'Tamamlandı')" style="background:#00ff41;border:none;color:#000;padding:8px 15px;cursor:pointer;border-radius:4px;font-size:0.8rem;">Tamamlandı</button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function loadSettings() {
+    const settings = JSON.parse(localStorage.getItem('matrixSettings') || '{}');
+    const paymentLinkEl = document.getElementById('paymentLink');
+    const supportLinkEl = document.getElementById('supportLink');
+    const discordLinkEl = document.getElementById('discordLinkInput');
+    
+    if (paymentLinkEl) paymentLinkEl.value = settings.paymentLink || '';
+    if (supportLinkEl) supportLinkEl.value = settings.supportLink || '';
+    if (discordLinkEl) discordLinkEl.value = settings.discordLink || '';
+}
+
+function saveSettings() {
+    const settings = {
+        paymentLink: document.getElementById('paymentLink')?.value || '',
+        supportLink: document.getElementById('supportLink')?.value || '',
+        discordLink: document.getElementById('discordLinkInput')?.value || ''
+    };
+    localStorage.setItem('matrixSettings', JSON.stringify(settings));
+    applySettings();
+    showMessage('Ayarlar kaydedildi!', 'success');
+}
+
+async function manageUserRole() {
+    const email = document.getElementById('adminUserEmail')?.value || '';
+    const isAdmin = document.getElementById('adminRoleSelect')?.value === 'admin';
+    
+    if (!email) {
+        showMessage('Lütfen bir e-posta adresi girin!', 'warning');
+        return;
+    }
+    
+    if (typeof setUserAdmin === 'function') {
+        const result = await setUserAdmin(email, isAdmin);
+        if (result.success) {
+            showMessage(isAdmin ? 'Kullanıcı admin yapıldı!' : 'Kullanıcının admin yetkisi kaldırıldı!', 'success');
+        } else {
+            showMessage('Hata: ' + result.error, 'error');
+        }
+    } else {
+        showMessage('Firebase bağlantısı yok!', 'error');
+    }
 }
 
 function applySettings() {
@@ -979,14 +1076,337 @@ function applySettings() {
     }
 }
 
+function renderAdminOrders() {
+    const orders = [
+        { id: 'ORD-001', product: 'VALORANT CHEAT', duration: '1 Ay', price: 299, status: 'Beklemede', date: '08.05.2026', customer: 'test@email.com' },
+        { id: 'ORD-002', product: 'CS2 CHEAT', duration: '1 Hafta', price: 179, status: 'Tamamlandı', date: '07.05.2026', customer: 'user@email.com' }
+    ];
+    const container = document.getElementById('adminOrdersList');
+    if (container) {
+        container.innerHTML = orders.map(o => `
+            <div style="background:transparent;border:1px solid #1a1a1a;padding:20px;margin-bottom:15px;border-radius:8px;">
+                <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
+                    <span style="color:#00ff41;font-family:'Orbitron',sans-serif;">${o.id}</span>
+                    <span style="color:${o.status==='Tamamlandı'?'#00ff41':'#ffc107'}">${o.status}</span>
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:15px;font-size:0.9rem;">
+                    <div><span style="color:#808080">Ürün:</span> ${o.product}</div>
+                    <div><span style="color:#808080">Paket:</span> ${o.duration}</div>
+                    <div><span style="color:#808080">Fiyat:</span> ₺${o.price}</div>
+                    <div><span style="color:#808080">Tarih:</span> ${o.date}</div>
+                </div>
+            </div>
+        `).join('');
+    }
+}
+
+function renderAdminProducts() {
+    const container = document.getElementById('adminProductsList');
+    if (!container) {
+        console.log('adminProductsList container not found');
+        return;
+    }
+    
+    console.log('renderAdminProducts - products:', products);
+    
+    if (products.length === 0) {
+        container.innerHTML = '<div style="text-align:center;padding:40px;color:#808080;">Ürün yok. "Yeni Ürün" butonuna tıklayarak ekleyin.</div>';
+        return;
+    }
+    
+    const paymentLinks = p => p.paymentLinks || { day: '', week: '', month: '' };
+    container.innerHTML = products.map(p => {
+        const features = p.features || [];
+        const sysReq = p.systemReq || { os: 'Windows 10/11', processor: 'Intel Core i5', ram: '8GB', gpu: 'GTX 1050', storage: '500MB' };
+        
+        return `
+        <div style="background:transparent;border:1px solid #00ff41;padding:20px;margin-bottom:20px;border-radius:8px;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:15px;">
+                <span style="color:#00ff41;font-family:'Orbitron',sans-serif;">${p.icon || '🎮'} ${p.title}</span>
+                <button onclick="deleteProduct(${p.id})" style="background:#ff5252;border:none;color:white;padding:8px 15px;cursor:pointer;border-radius:4px;">Sil</button>
+            </div>
+            <div style="margin-bottom:10px;">
+                <input type="text" id="title_${p.id}" value="${p.title}" placeholder="Ürün Adı" style="width:100%;padding:8px;background:#050505;border:1px solid #1a1a1a;color:#e0e0e0;">
+            </div>
+            <input type="text" id="image_${p.id}" value="${p.image || ''}" placeholder="🖼️ Resim URL (opsiyonel)" style="width:100%;padding:8px;margin-bottom:10px;background:#050505;border:1px solid #1a1a1a;color:#e0e0e0;">
+            <textarea id="desc_${p.id}" style="width:100%;padding:8px;margin-bottom:10px;background:#050505;border:1px solid #1a1a1a;color:#e0e0e0;min-height:50px;">${p.desc || ''}</textarea>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px;">
+                <input type="number" id="price_day_${p.id}" value="${p.prices?.day || 0}" placeholder="1 Gün - Fiyat" style="padding:8px;background:#050505;border:1px solid #1a1a1a;color:#e0e0e0;">
+                <input type="number" id="price_week_${p.id}" value="${p.prices?.week || 0}" placeholder="1 Hafta - Fiyat" style="padding:8px;background:#050505;border:1px solid #1a1a1a;color:#e0e0e0;">
+                <input type="number" id="price_month_${p.id}" value="${p.prices?.month || 0}" placeholder="1 Ay - Fiyat" style="padding:8px;background:#050505;border:1px solid #1a1a1a;color:#e0e0e0;">
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:15px;">
+                <input type="text" id="payment_day_${p.id}" value="${paymentLinks(p).day}" placeholder="1 Gün - Ödeme Linki" style="padding:8px;background:#050505;border:1px solid #ff0040;color:#ff0040;">
+                <input type="text" id="payment_week_${p.id}" value="${paymentLinks(p).week}" placeholder="1 Hafta - Ödeme Linki" style="padding:8px;background:#050505;border:1px solid #ff0040;color:#ff0040;">
+                <input type="text" id="payment_month_${p.id}" value="${paymentLinks(p).month}" placeholder="1 Ay - Ödeme Linki" style="padding:8px;background:#050505;border:1px solid #ff0040;color:#ff0040;">
+            </div>
+            
+            <!-- ÖZELLİKLER -->
+            <div style="margin-bottom:15px;padding:15px;background:rgba(0,255,65,0.05);border:1px solid #1a1a1a;border-radius:5px;">
+                <div style="color:#00ff41;font-family:'Orbitron',sans-serif;margin-bottom:10px;font-size:0.9rem;">◈ ÖZELLİKLER ◈</div>
+                <div id="features_list_${p.id}">
+                    ${features.map((f, fi) => `
+                        <div style="display:flex;gap:5px;margin-bottom:5px;">
+                            <input type="text" class="feature-input" data-pid="${p.id}" data-fi="${fi}" value="${f}" style="flex:1;padding:8px;background:#050505;border:1px solid #1a1a1a;color:#e0e0e0;">
+                            <button onclick="removeProductFeature(${p.id}, ${fi})" style="background:#ff5252;border:none;color:white;padding:8px 12px;cursor:pointer;border-radius:4px;">✕</button>
+                        </div>
+                    `).join('')}
+                </div>
+                <button onclick="addProductFeature(${p.id})" style="background:transparent;border:1px solid #00ff41;color:#00ff41;padding:8px 15px;cursor:pointer;border-radius:4px;font-size:0.8rem;margin-top:5px;">+ Özellik Ekle</button>
+            </div>
+            
+            <!-- SİSTEM GEREKSİNİMLERİ -->
+            <div style="padding:15px;background:rgba(255,0,64,0.05);border:1px solid #1a1a1a;border-radius:5px;">
+                <div style="color:#ff0040;font-family:'Orbitron',sans-serif;margin-bottom:10px;font-size:0.9rem;">◈ SİSTEM GEREKSİNİMLERİ ◈</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                    <input type="text" id="sys_os_${p.id}" value="${sysReq.os}" placeholder="İşletim Sistemi" style="padding:8px;background:#050505;border:1px solid #1a1a1a;color:#e0e0e0;">
+                    <input type="text" id="sys_cpu_${p.id}" value="${sysReq.processor}" placeholder="İşlemci" style="padding:8px;background:#050505;border:1px solid #1a1a1a;color:#e0e0e0;">
+                    <input type="text" id="sys_ram_${p.id}" value="${sysReq.ram}" placeholder="RAM" style="padding:8px;background:#050505;border:1px solid #1a1a1a;color:#e0e0e0;">
+                    <input type="text" id="sys_gpu_${p.id}" value="${sysReq.gpu}" placeholder="Ekran Kartı" style="padding:8px;background:#050505;border:1px solid #1a1a1a;color:#e0e0e0;">
+                </div>
+                <input type="text" id="sys_storage_${p.id}" value="${sysReq.storage}" placeholder="Depolama" style="width:100%;padding:8px;margin-top:10px;background:#050505;border:1px solid #1a1a1a;color:#e0e0e0;">
+            </div>
+        </div>
+    `;
+    }).join('');
+}
+
+function addProduct() {
+    const newId = Math.max(...products.map(p => p.id), 0) + 1;
+    products.push({
+        id: newId,
+        icon: '🎮',
+        image: '',
+        title: 'YENİ ÜRÜN',
+        desc: 'Ürün açıklaması',
+        features: ['Aimbot - Hassas nişan', 'ESP - Oyuncu görünürlüğü', 'Anti-Ban koruma'],
+        prices: { day: 99, week: 249, month: 399 },
+        systemReq: { os: 'Windows 10/11', processor: 'Intel Core i5', ram: '8GB', gpu: 'GTX 1050', storage: '500MB' }
+    });
+    renderAdminProducts();
+}
+
+function addProductFeature(productId) {
+    const product = products.find(p => p.id === productId);
+    if (!product) return;
+    if (!product.features) product.features = [];
+    product.features.push('Yeni özellik');
+    renderAdminProducts();
+    setTimeout(() => {
+        const inputs = document.querySelectorAll(`#features_list_${productId} .feature-input`);
+        if (inputs.length > 0) inputs[inputs.length - 1].focus();
+    }, 50);
+}
+
+function removeProductFeature(productId, featureIndex) {
+    const product = products.find(p => p.id === productId);
+    if (!product || !product.features) return;
+    product.features.splice(featureIndex, 1);
+    renderAdminProducts();
+}
+
+function deleteProduct(id) {
+    showConfirm('ÜRÜN SİL', 'Bu ürünü silmek istediğinize emin misiniz?', () => {
+        products = products.filter(p => p.id !== id);
+        saveProductsToStorage();
+        renderAdminProducts();
+        initProducts();
+        showMessage('Ürün silindi!', 'success');
+    });
+}
+
+async function saveProductInputs() {
+    products = products.map(p => {
+        const featuresContainer = document.getElementById(`features_list_${p.id}`);
+        let features = p.features || [];
+        if (featuresContainer) {
+            const inputs = featuresContainer.querySelectorAll('.feature-input');
+            features = Array.from(inputs).map(input => input.value.trim()).filter(f => f.length > 0);
+        }
+        
+        return {
+            ...p,
+            title: sanitizeInput(document.getElementById('title_' + p.id)?.value || p.title),
+            image: validateImageUrl(document.getElementById('image_' + p.id)?.value || p.image || ''),
+            desc: sanitizeInput(document.getElementById('desc_' + p.id)?.value || p.desc),
+            features: features,
+            prices: {
+                day: parseInt(document.getElementById('price_day_' + p.id)?.value) || p.prices.day,
+                week: parseInt(document.getElementById('price_week_' + p.id)?.value || p.prices.week),
+                month: parseInt(document.getElementById('price_month_' + p.id)?.value || p.prices.month)
+            },
+            paymentLinks: {
+                day: document.getElementById('payment_day_' + p.id)?.value || '',
+                week: document.getElementById('payment_week_' + p.id)?.value || '',
+                month: document.getElementById('payment_month_' + p.id)?.value || ''
+            },
+            systemReq: {
+                os: document.getElementById(`sys_os_${p.id}`)?.value || p.systemReq?.os || 'Windows 10/11',
+                processor: document.getElementById(`sys_cpu_${p.id}`)?.value || p.systemReq?.processor || 'Intel Core i5',
+                ram: document.getElementById(`sys_ram_${p.id}`)?.value || p.systemReq?.ram || '8GB',
+                gpu: document.getElementById(`sys_gpu_${p.id}`)?.value || p.systemReq?.gpu || 'GTX 1050',
+                storage: document.getElementById(`sys_storage_${p.id}`)?.value || p.systemReq?.storage || '500MB'
+            }
+        };
+    });
+    
+    saveProductsToStorage();
+    
+    if (window.firebaseReady && window.db) {
+        await window.db.collection('products').doc('products_list').set({
+            products: products,
+            updatedAt: new Date()
+        });
+    }
+    
+    initProducts();
+    renderAdminProducts();
+    showMessage('Ürünler kaydedildi!', 'success');
+}
+
 document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
+    if(e.key === 'Escape') {
+        closeAdminPanel();
         closeAuth();
-        closeProfileModal();
     }
 });
 
 window.addEventListener('click', function(e) {
-    if (e.target.id === 'authModal') closeAuth();
+    if(e.target.id === 'authModal') closeAuth();
 });
+
+function addNewProduct() {
+    const newProduct = {
+        id: products.length + 1,
+        icon: '🎮',
+        image: '',
+        title: 'Yeni Ürün',
+        desc: 'Ürün açıklaması',
+        features: ['Özellik 1', 'Özellik 2'],
+        prices: { day: 49, week: 149, month: 299 },
+        systemReq: { os: 'Windows 10/11', processor: 'Intel Core i5', ram: '8GB', gpu: 'GTX 1050' }
+    };
+    products.push(newProduct);
+    renderAdminProducts();
+}
+
+async function saveAllProducts() {
+    console.log('saveAllProducts - başladı, products:', products);
+    console.log('firebaseReady:', window.firebaseReady, 'db:', !!window.db);
+    
+    const updatedProducts = [];
+    
+    for (const p of products) {
+        const titleEl = document.getElementById('title_' + p.id);
+        const descEl = document.getElementById('desc_' + p.id);
+        const imgEl = document.getElementById('image_' + p.id);
+        const dayEl = document.getElementById('price_day_' + p.id);
+        const weekEl = document.getElementById('price_week_' + p.id);
+        const monthEl = document.getElementById('price_month_' + p.id);
+        const payDayEl = document.getElementById('payment_day_' + p.id);
+        const payWeekEl = document.getElementById('payment_week_' + p.id);
+        const payMonthEl = document.getElementById('payment_month_' + p.id);
+        
+        const sysOsEl = document.getElementById('sys_os_' + p.id);
+        const sysCpuEl = document.getElementById('sys_cpu_' + p.id);
+        const sysRamEl = document.getElementById('sys_ram_' + p.id);
+        const sysGpuEl = document.getElementById('sys_gpu_' + p.id);
+        const sysStorageEl = document.getElementById('sys_storage_' + p.id);
+        
+        const featuresContainer = document.getElementById('features_list_' + p.id);
+        let features = p.features || [];
+        if (featuresContainer) {
+            const inputs = featuresContainer.querySelectorAll('.feature-input');
+            features = Array.from(inputs).map(input => input.value.trim()).filter(f => f.length > 0);
+        }
+        
+        if (!titleEl) {
+            console.warn('title input not found for product:', p.id);
+        }
+        
+        updatedProducts.push({
+            id: p.id,
+            icon: p.icon || '🎮',
+            title: titleEl ? titleEl.value : (p.title || 'Yeni Ürün'),
+            image: validateImageUrl(imgEl?.value || p.image || ''),
+            desc: descEl ? descEl.value : (p.desc || ''),
+            features: features,
+            prices: {
+                day: parseInt(dayEl?.value) || p.prices?.day || 0,
+                week: parseInt(weekEl?.value) || p.prices?.week || 0,
+                month: parseInt(monthEl?.value) || p.prices?.month || 0
+            },
+            paymentLinks: {
+                day: payDayEl?.value || p.paymentLinks?.day || '',
+                week: payWeekEl?.value || p.paymentLinks?.week || '',
+                month: payMonthEl?.value || p.paymentLinks?.month || ''
+            },
+            systemReq: {
+                os: sysOsEl?.value || p.systemReq?.os || 'Windows 10/11',
+                processor: sysCpuEl?.value || p.systemReq?.processor || 'Intel Core i5',
+                ram: sysRamEl?.value || p.systemReq?.ram || '8GB',
+                gpu: sysGpuEl?.value || p.systemReq?.gpu || 'GTX 1050',
+                storage: sysStorageEl?.value || p.systemReq?.storage || '500MB'
+            }
+        });
+    }
+    
+    console.log('updatedProducts:', updatedProducts);
+    
+    if (updatedProducts.length === 0) {
+        showMessage('Kaydedilecek ürün bulunamadı!', 'warning');
+        return;
+    }
+    
+    products = updatedProducts;
+    saveProductsToStorage();
+    
+    if (window.firebaseReady && window.db && window.auth && window.auth.currentUser) {
+        const userEmail = window.auth.currentUser.email;
+        const isAdminEmail = ['ysufrakann@gmail.com', 'admin@matrixcheats.com', 'yusuf@matrixcheats.com'].includes(userEmail);
+        
+        console.log('Firebase\'ye kaydediliyor...', 'Kullanıcı:', userEmail, 'Admin:', isAdminEmail);
+        
+        if (isAdminEmail) {
+            try {
+                await window.db.collection('products').doc('products_list').set({
+                    products: products,
+                    updatedAt: new Date()
+                });
+                console.log('Firebase kaydetme başarılı!');
+            } catch (e) {
+                console.error('Firebase kaydetme hatası:', e);
+                showMessage('Firebase kaydetme hatası: ' + e.message, 'error');
+            }
+        } else {
+            console.warn('Admin değil!');
+            showMessage('Admin yetkiniz yok!', 'error');
+        }
+    } else {
+        console.warn('Firebase bağlı değil veya giriş yapılmamış');
+        showMessage('Giriş yapılmamış veya Firebase bağlı değil', 'warning');
+    }
+    
+    initProducts();
+    renderAdminProducts();
+    showMessage(updatedProducts.length + ' ürün kaydedildi!', 'success');
+}
+
+async function resetProducts() {
+    showConfirm('ÜRÜNLERİ SIFIRLA', 'Tüm ürünleri sıfırlamak istediğinize emin misiniz?', async () => {
+        localStorage.removeItem('matrixProducts');
+        products = [];
+        
+        if (window.firebaseReady && window.db) {
+            await window.db.collection('products').doc('products_list').set({
+                products: [],
+                updatedAt: new Date()
+            });
+        }
+        
+        initProducts();
+        renderAdminProducts();
+        showMessage('Ürünler sıfırlandı!', 'success');
+    });
+}
 

@@ -71,9 +71,9 @@
     </header>
 
     <main class="product-detail">
-        <a href="../index.html#products" class="back-link fade-in-up">← Ana Sayfaya Dön</a>
+        <a href="../index.html#products" class="back-link">← Ana Sayfaya Dön</a>
         
-        <div class="product-detail-header fade-in-up">
+        <div class="product-detail-header">
             <div class="product-image-container" id="productImage"></div>
             <div class="product-detail-info">
                 <h1 id="productTitle">VALORANT CHEAT</h1>
@@ -81,18 +81,18 @@
             </div>
         </div>
 
-        <section class="buy-section fade-in-up">
+        <section class="buy-section">
             <h3>◈ PAKET SEÇ ◈</h3>
             <div class="packages-grid" id="packagesGrid"></div>
             <button class="buy-btn" onclick="buyProduct()">◈ ŞİMDİ SATIN AL ◈</button>
         </section>
 
-        <section class="features-section fade-in-up">
+        <section class="features-section">
             <h2>◈ ÖZELLİKLER ◈</h2>
             <div class="features-grid" id="featuresGrid"></div>
         </section>
 
-        <section class="system-req-section fade-in-up">
+        <section class="system-req-section">
             <h2>◈ SİSTEM GEREKSİNİMLERİ ◈</h2>
             <div class="system-req-grid" id="systemReqGrid"></div>
         </section>
@@ -262,11 +262,11 @@
                         <span>Sipariş Talebi Gönder</span>
                         <span class="profile-arrow">›</span>
                     </a>
-                    <a href="admin.html" class="profile-menu-item" id="adminMenuItem" style="display: none;">
+                    <div class="profile-menu-item" onclick="openAdminFromProfile()" id="adminMenuItem" style="display: none;">
                         <span class="profile-icon">⚙️</span>
                         <span>Admin Panel</span>
                         <span class="profile-arrow">›</span>
-                    </a>
+                    </div>
                 </div>
                 <div class="profile-footer">
                     <button class="btn-logout" onclick="handleLogout()">
