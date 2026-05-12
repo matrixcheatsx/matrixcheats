@@ -913,14 +913,87 @@ function applySettings() {
     }
 }
 
+function openOrderConfirmModal() {
+    const storedUser = localStorage.getItem('matrixUser');
+    const user = storedUser ? JSON.parse(storedUser) : null;
+    
+    if (!user || !user.email) {
+        showMessage('Önce giriş yapmalısınız!', 'warning');
+        openAuth();
+        return;
+    }
+    
+    document.getElementById('orderConfirmModal').classList.add('active');
+}
+
+function closeOrderConfirmModal() {
+    document.getElementById('orderConfirmModal').classList.remove('active');
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const confirmForm = document.getElementById('orderConfirmForm');
+    if (confirmForm) {
+        confirmForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const storedUser = localStorage.getItem('matrixUser');
+            const user = storedUser ? JSON.parse(storedUser) : null;
+            const userEmail = user?.email || user?._delegate?.email || user?.user?.email;
+            const userUid = user?.uid || user?._delegate?.uid || user?.user?.uid;
+            
+            if (!userEmail) {
+                showMessage('Önce giriş yapmalısınız!', 'warning');
+                return;
+            }
+            
+            const orderNumber = document.getElementById('confirmOrderNumber').value.trim();
+            const name = document.getElementById('confirmName').value.trim();
+            const product = document.getElementById('confirmProduct').value;
+            const note = document.getElementById('confirmNote').value.trim();
+            
+            if (!orderNumber) {
+                showMessage('Sipariş numarası girin!', 'warning');
+                return;
+            }
+            
+            if (!name) {
+                showMessage('Adınızı ve soyadınızı girin!', 'warning');
+                return;
+            }
+            
+            const confirmData = {
+                userId: userUid || '',
+                userEmail: userEmail,
+                orderNumber: sanitizeInput(orderNumber),
+                fullName: sanitizeInput(name),
+                product: sanitizeInput(product),
+                note: sanitizeInput(note)
+            };
+            
+            if (typeof createOrderConfirmation === 'function') {
+                const result = await createOrderConfirmation(confirmData);
+                if (result.success) {
+                    showMessage('Sipariş onay talebiniz alındı! Admin onayından sonra aktif edilecektir.', 'success');
+                    closeOrderConfirmModal();
+                    document.getElementById('orderConfirmForm').reset();
+                } else {
+                    showMessage('Hata: ' + result.error, 'error');
+                }
+            }
+        });
+    }
+});
+
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
         closeAuth();
         closeProfileModal();
+        closeOrderConfirmModal();
     }
 });
 
 window.addEventListener('click', function(e) {
     if (e.target.id === 'authModal') closeAuth();
+    if (e.target.id === 'orderConfirmModal') closeOrderConfirmModal();
 });
 

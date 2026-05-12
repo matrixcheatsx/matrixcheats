@@ -34,6 +34,9 @@
             <button class="admin-nav-item" onclick="showSection('orders', this)">
                 <span class="nav-icon">📦</span> Siparişler
             </button>
+            <button class="admin-nav-item" onclick="showSection('confirmations', this)">
+                <span class="nav-icon">✓</span> Sipariş Onayları
+            </button>
             <button class="admin-nav-item" onclick="showSection('shopier', this)">
                 <span class="nav-icon">💳</span> Shopier Siparişler
             </button>
@@ -82,6 +85,10 @@
                         <div class="stat-card-value pending" id="statPending">-</div>
                     </div>
                     <div class="stat-card">
+                        <div class="stat-card-label">Onay Bekleyen</div>
+                        <div class="stat-card-value pending" id="statPendingConfirm">-</div>
+                    </div>
+                    <div class="stat-card">
                         <div class="stat-card-label">Bugünkü Sipariş</div>
                         <div class="stat-card-value pending" id="statToday">-</div>
                     </div>
@@ -116,6 +123,17 @@
                     <div class="admin-card-body">
                         <div id="ordersSummary"></div>
                         <div id="ordersList" class="order-card-list"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ORDER CONFIRMATIONS -->
+            <section class="admin-section" id="secConfirmations">
+                <div class="admin-card">
+                    <div class="admin-card-header">✓ Sipariş Onay Talepleri</div>
+                    <div class="admin-card-body">
+                        <div id="confirmationsSummary"></div>
+                        <div id="confirmationsList" class="order-card-list"></div>
                     </div>
                 </div>
             </section>
@@ -199,11 +217,12 @@
         document.getElementById('sec' + name.charAt(0).toUpperCase() + name.slice(1)).classList.add('active');
         if (btn) btn.classList.add('active');
 
-        const titles = { dashboard: 'Dashboard', products: 'Ürünler', orders: 'Siparişler', shopier: 'Shopier Siparişler', users: 'Kullanıcılar', settings: 'Ayarlar' };
+        const titles = { dashboard: 'Dashboard', products: 'Ürünler', orders: 'Siparişler', confirmations: 'Sipariş Onayları', shopier: 'Shopier Siparişler', users: 'Kullanıcılar', settings: 'Ayarlar' };
         document.getElementById('pageTitle').textContent = titles[name] || name;
 
         if (name === 'dashboard') loadAdminData();
         if (name === 'orders') loadSupportRequests();
+        if (name === 'confirmations') loadConfirmations();
         if (name === 'shopier') loadShopierOrders();
         if (name === 'settings') loadSettings();
 

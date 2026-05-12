@@ -50,6 +50,7 @@ function startAutoRefresh() {
             const id = active.id;
             if (id === 'secDashboard') loadAdminData();
             if (id === 'secOrders') loadSupportRequests();
+            if (id === 'secConfirmations') loadConfirmations();
         }
     }, 30000);
 }
@@ -77,15 +78,18 @@ async function loadAdminData() {
     }
 
     try {
-        const [supportSnap, usersSnap] = await Promise.all([
+        const [supportSnap, usersSnap, confirmSnap] = await Promise.all([
             window.db.collection('support_requests').get(),
-            window.db.collection('users').get()
+            window.db.collection('users').get(),
+            window.db.collection('order_confirmations').get()
         ]);
 
         const requests = supportSnap.docs.map(d => ({ id: d.id, ...d.data() }));
         const users = usersSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        const confirmations = confirmSnap.docs.map(d => ({ id: d.id, ...d.data() }));
         const total = requests.length;
         const pending = requests.filter(r => r.status === 'Yeni' || r.status === 'İnceleniyor').length;
+        const pendingConfirms = confirmations.filter(r => r.status === 'Onay Bekliyor' || r.status === 'İnceleniyor').length;
 
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -105,6 +109,7 @@ async function loadAdminData() {
         document.getElementById('statOrders').textContent = total;
         document.getElementById('statPending').textContent = pending;
         document.getElementById('statUsers').textContent = users.length;
+        document.getElementById('statPendingConfirm').textContent = pendingConfirms;
         document.getElementById('statRevenue').textContent = '₺' + revenue.toLocaleString('tr-TR');
         document.getElementById('statProducts') && (document.getElementById('statProducts').textContent = productCount);
         document.getElementById('statToday') && (document.getElementById('statToday').textContent = todayOrders);
@@ -430,6 +435,80 @@ async function loadSupportRequests() {
         renderRequests(requests);
     } catch (e) {
         showMessage('Siparişler yüklenirken hata: ' + e.message, 'error');
+    }
+}
+
+async function loadConfirmations() {
+    if (typeof getOrderConfirmations !== 'function') { showMessage('Onay sistemi yüklenemedi!', 'error'); return; }
+    try {
+        const confirmations = await getOrderConfirmations();
+        renderConfirmations(confirmations);
+    } catch (e) {
+        showMessage('Onaylar yüklenirken hata: ' + e.message, 'error');
+    }
+}
+
+function renderConfirmations(confirmations) {
+    const container = document.getElementById('confirmationsList');
+    if (!container) return;
+
+    const total = confirmations.length;
+    const pending = confirmations.filter(r => r.status === 'Onay Bekliyor' || r.status === 'İnceleniyor').length;
+    const approved = confirmations.filter(r => r.status === 'Onaylandı').length;
+
+    const summary = document.getElementById('confirmationsSummary');
+    if (summary) {
+        summary.innerHTML = `
+            <div style="display:flex;gap:15px;flex-wrap:wrap;margin-bottom:16px;padding:12px 16px;background:rgba(0,255,65,0.03);border:1px solid var(--admin-border);border-radius:8px;">
+                <span style="color:var(--admin-muted);font-size:0.8rem;">Toplam: <strong style="color:var(--admin-text);">${total}</strong></span>
+                <span style="color:var(--admin-muted);font-size:0.8rem;">Bekleyen: <strong style="color:#ffc107;">${pending}</strong></span>
+                <span style="color:var(--admin-muted);font-size:0.8rem;">Onaylanan: <strong style="color:var(--admin-primary);">${approved}</strong></span>
+            </div>
+        `;
+    }
+
+    if (!confirmations || confirmations.length === 0) {
+        container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">✓</div><div class="empty-state-text">Henüz sipariş onay talebi yok.</div></div>';
+        return;
+    }
+
+    container.innerHTML = confirmations.map(req => {
+        const date = req.createdAt ? new Date(req.createdAt.seconds ? req.createdAt.seconds * 1000 : req.createdAt).toLocaleDateString('tr-TR') : '-';
+        const time = req.createdAt ? new Date(req.createdAt.seconds ? req.createdAt.seconds * 1000 : req.createdAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) : '';
+        const badgeClass = req.status === 'Onaylandı' ? 'badge-green' : req.status === 'Reddedildi' ? 'badge-red' : req.status === 'İnceleniyor' ? 'badge-yellow' : 'badge-blue';
+        return `
+        <div class="order-card">
+            <div class="order-card-top">
+                <span class="order-card-id">#${req.id.slice(0, 8).toUpperCase()}</span>
+                <span class="order-card-date">${date} ${time}</span>
+            </div>
+            <div class="order-card-grid">
+                <div class="order-card-field"><label>Sipariş No</label><span style="color:#00ff41;">${req.orderNumber || '-'}</span></div>
+                <div class="order-card-field"><label>Müşteri</label><span>${req.fullName || '-'}</span></div>
+                <div class="order-card-field"><label>E-posta</label><span>${req.userEmail || '-'}</span></div>
+                <div class="order-card-field"><label>Ürün</label><span>${req.product || '-'}</span></div>
+                <div class="order-card-field"><label>Durum</label><span class="badge ${badgeClass}">${req.status || 'Onay Bekliyor'}</span></div>
+            </div>
+            ${req.note ? `<div style="padding:10px;background:rgba(0,0,0,0.3);border-radius:6px;margin-bottom:10px;"><span style="color:#808080;font-size:0.75rem;">Not:</span><p style="color:#c0c0d0;margin-top:4px;font-size:0.85rem;">${req.note}</p></div>` : ''}
+            <div class="order-card-actions">
+                <button class="btn btn-ghost btn-xs" onclick="updateConfirmation('${req.id}', 'İnceleniyor')">⏳ İnceleniyor</button>
+                <button class="btn btn-primary btn-xs" onclick="updateConfirmation('${req.id}', 'Onaylandı')">✓ Onayla</button>
+                <button class="btn btn-danger btn-xs" onclick="updateConfirmation('${req.id}', 'Reddedildi')">✕ Reddet</button>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+async function updateConfirmation(id, status) {
+    if (!window.firebaseReady || !window.db) { showMessage('Firebase bağlı değil!', 'error'); return; }
+    try {
+        await window.db.collection('order_confirmations').doc(id).update({ status });
+        showMessage('Durum güncellendi!', 'success');
+        const confirmations = await window.getOrderConfirmations();
+        renderConfirmations(confirmations);
+        loadAdminData();
+    } catch (e) {
+        showMessage('Hata: ' + e.message, 'error');
     }
 }
 

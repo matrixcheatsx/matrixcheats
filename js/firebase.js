@@ -32,6 +32,7 @@ const USERS_COLLECTION = 'users';
 const ORDERS_COLLECTION = 'orders';
 const PRODUCTS_COLLECTION = 'products';
 const SUPPORT_COLLECTION = 'support_requests';
+const CONFIRM_COLLECTION = 'order_confirmations';
 
 async function createUser(email, password, userData) {
     if (!firebaseReady || !auth || !db) {
@@ -346,6 +347,41 @@ async function updateSupportStatus(requestId, status) {
     }
 }
 
+async function createOrderConfirmation(data) {
+    if (!firebaseReady || !db) return { success: false, error: 'Firebase not connected!' };
+    try {
+        const docRef = await db.collection(CONFIRM_COLLECTION).add({
+            ...data,
+            status: 'Onay Bekliyor',
+            createdAt: new Date()
+        });
+        return { success: true, id: docRef.id };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+async function getOrderConfirmations() {
+    if (!firebaseReady || !db) return [];
+    try {
+        const snapshot = await db.collection(CONFIRM_COLLECTION).orderBy('createdAt', 'desc').get();
+        return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    } catch (error) {
+        console.error('Error getting confirmations:', error);
+        return [];
+    }
+}
+
+async function updateConfirmationStatus(id, status) {
+    if (!firebaseReady || !db) return { success: false };
+    try {
+        await db.collection(CONFIRM_COLLECTION).doc(id).update({ status });
+        return { success: true };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
 window.verifyAdminStatus = verifyAdminStatus;
 window.sanitizeInput = sanitizeInput;
 window.validateImageUrl = validateImageUrl;
@@ -355,4 +391,8 @@ window.updateUserPassword = updateUserPassword;
 window.createSupportRequest = createSupportRequest;
 window.getSupportRequests = getSupportRequests;
 window.updateSupportStatus = updateSupportStatus;
+window.createOrderConfirmation = createOrderConfirmation;
+window.getOrderConfirmations = getOrderConfirmations;
+window.updateConfirmationStatus = updateConfirmationStatus;
 window.SUPPORT_COLLECTION = SUPPORT_COLLECTION;
+window.CONFIRM_COLLECTION = CONFIRM_COLLECTION;

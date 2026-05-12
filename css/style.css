@@ -402,6 +402,66 @@ body {
     font-size: 0.65rem;
 }
 
+.order-confirm-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    background: rgba(0,0,0,0.6);
+    border: 1px solid #00ff41;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.order-confirm-box::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(0,255,65,0.3), transparent);
+    transition: left 0.5s ease;
+}
+
+.order-confirm-box:hover::before {
+    left: 100%;
+}
+
+.order-confirm-box:hover {
+    background: rgba(0,255,65,0.2);
+    box-shadow: 0 0 20px rgba(0,255,65,0.4);
+    transform: translateY(-2px);
+}
+
+.order-confirm-icon {
+    color: #00ff41;
+    font-size: 1rem;
+    font-weight: 700;
+    animation: pulse 2s infinite;
+}
+
+.order-confirm-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+}
+
+.order-confirm-title {
+    color: #fff;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+
+.order-confirm-subtitle {
+    color: #00ff41;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.6rem;
+}
+
 .btn-glitch {
     background: transparent;
     border: 1px solid var(--primary);
