@@ -37,17 +37,37 @@ async function renderOrders() {
 
     userOrders = [];
 
+    const promises = [];
+
     if (typeof getOrderConfirmations === 'function') {
-        try {
-            const allConfirmations = await getOrderConfirmations();
-            userOrders = allConfirmations.filter(c =>
-                c.status === 'Onaylandı' &&
-                (c.userEmail === userEmail || c.gmail === userEmail)
-            );
-        } catch (e) {
-            console.error('Onaylı siparişler yüklenemedi:', e);
-        }
+        promises.push(
+            getOrderConfirmations().then(all => {
+                const filtered = all.filter(c =>
+                    c.status === 'Onaylandı' &&
+                    (c.userEmail === userEmail || c.gmail === userEmail)
+                );
+                filtered.forEach(c => c._source = 'onay');
+                return filtered;
+            }).catch(() => [])
+        );
     }
+
+    if (typeof getSupportRequests === 'function' && window.db) {
+        promises.push(
+            getSupportRequests().then(all => {
+                const filtered = all.filter(r =>
+                    r.status === 'Tamamlandı' &&
+                    r.userEmail === userEmail &&
+                    r.licenseKey
+                );
+                filtered.forEach(r => r._source = 'talep');
+                return filtered;
+            }).catch(() => [])
+        );
+    }
+
+    const results = await Promise.all(promises);
+    userOrders = results.flat();
 
     if (userOrders.length === 0) {
         container.innerHTML = `
@@ -55,7 +75,7 @@ async function renderOrders() {
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
                     <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
                 </svg>
-                <p>Henüz onaylanmış siparişiniz bulunmuyor.</p>
+                <p>Henüz satın aldığınız ürün bulunmuyor.</p>
                 <p style="font-size:0.85rem;color:#666;margin-top:10px;">Sipariş onaylattıktan sonra admin tarafından onaylanan ürünleriniz burada görünecektir.</p>
             </div>
         `;
@@ -73,23 +93,28 @@ async function renderOrders() {
             ? new Date(order.createdAt.seconds ? order.createdAt.seconds * 1000 : order.createdAt).toLocaleDateString('tr-TR')
             : '-';
 
+        const licenseKey = order.licenseKey || '';
+        const product = order.product || order.game || '-';
+        const orderNumber = order.orderNumber || order.id || '-';
+
         return `
             <div class="order-card">
                 <div class="order-header">
-                    <span class="order-id">${escapeHTML(order.orderNumber)}</span>
+                    <span class="order-id">${escapeHTML(orderNumber)}</span>
                     <span class="order-status status-completed">ONAYLANDI</span>
                 </div>
                 <div class="order-body">
                     <div class="order-detail">
                         <span class="order-detail-label">Ürün</span>
-                        <span class="order-detail-value">${escapeHTML(order.product)}</span>
+                        <span class="order-detail-value">${escapeHTML(product)}</span>
                     </div>
+                    ${licenseKey ? `
                     <div class="order-detail">
-                        <span class="order-detail-label">Gmail</span>
-                        <span class="order-detail-value">${escapeHTML(order.gmail)}</span>
-                    </div>
+                        <span class="order-detail-label">Lisans Anahtarı</span>
+                        <span class="order-detail-value" style="color:#00ffff;font-family:monospace;font-size:1.1rem;letter-spacing:2px;">${escapeHTML(licenseKey)}</span>
+                    </div>` : ''}
                     <div class="order-detail">
-                        <span class="order-detail-label">Onay Tarihi</span>
+                        <span class="order-detail-label">Tarih</span>
                         <span class="order-detail-value">${orderDate}</span>
                     </div>
                 </div>
