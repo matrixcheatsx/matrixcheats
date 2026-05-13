@@ -838,7 +838,7 @@ section {
     height: 100%;
     color: #00ff41;
     opacity: 0;
-    animation: glitchOverlay 0.3s infinite;
+    animation: glitchOverlay 1.5s infinite;
 }
 
 @keyframes glitchMove {
@@ -849,9 +849,12 @@ section {
 }
 
 @keyframes glitchOverlay {
-    0%, 96%, 96.5%, 97.5%, 98%, 99%, 99.5%, 100% { opacity: 0; }
-    1%, 2%, 3.5%, 4.5%, 6%, 7% { opacity: 0.9; transform: translate(-10px, 0); clip-path: inset(15% 0 60% 0); }
-    96.25% { opacity: 0.9; transform: translate(8px, 0); clip-path: inset(50% 0 15% 0); }
+    0%, 85%, 88%, 91%, 94%, 97%, 100% { opacity: 0; transform: translate(0); }
+    86% { opacity: 0.8; transform: translate(-12px, 0); clip-path: inset(20% 0 60% 0); }
+    89% { opacity: 0.7; transform: translate(10px, 0); clip-path: inset(50% 0 30% 0); }
+    92% { opacity: 0.6; transform: translate(-8px, 0); clip-path: inset(10% 0 70% 0); }
+    95% { opacity: 0.7; transform: translate(6px, 0); clip-path: inset(40% 0 20% 0); }
+    98% { opacity: 0.8; transform: translate(-10px, 0); clip-path: inset(60% 0 10% 0); }
 }
 
 .scan-line {
