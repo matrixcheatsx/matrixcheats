@@ -857,6 +857,46 @@ section {
     98% { opacity: 0.8; transform: translate(-10px, 0); clip-path: inset(60% 0 10% 0); }
 }
 
+.glitch-sub {
+    font-family: 'Share Tech Mono', monospace;
+    color: #ff0040;
+    position: relative;
+    display: inline-block;
+}
+
+.glitch-sub:nth-child(3) {
+    opacity: 0.7;
+    font-size: 0.9rem;
+    margin-top: 10px;
+}
+
+.glitch-sub:nth-child(4) {
+    opacity: 0.5;
+    font-size: 0.75rem;
+}
+
+.glitch-sub::after {
+    content: attr(data-text);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    color: #00ff41;
+    opacity: 0;
+    animation: glitchSubOverlay 2s infinite;
+}
+
+@keyframes glitchSubOverlay {
+    0%, 80%, 83%, 86%, 89%, 92%, 95%, 100% { opacity: 0; transform: translate(0); }
+    81% { opacity: 0.6; transform: translate(-6px, 0); clip-path: inset(30% 0 50% 0); }
+    84% { opacity: 0.5; transform: translate(5px, 0); clip-path: inset(60% 0 20% 0); }
+    87% { opacity: 0.4; transform: translate(-4px, 0); clip-path: inset(10% 0 70% 0); }
+    90% { opacity: 0.5; transform: translate(3px, 0); clip-path: inset(50% 0 30% 0); }
+    93% { opacity: 0.6; transform: translate(-5px, 0); clip-path: inset(70% 0 10% 0); }
+    96% { opacity: 0.4; transform: translate(4px, 0); clip-path: inset(20% 0 60% 0); }
+}
+
 .scan-line {
     display: none;
 }
@@ -2192,6 +2232,7 @@ input:-webkit-autofill:focus {
     .stat-number { font-size: 1.5rem; }
     .cyber-frame { max-width: 240px; height: 180px; }
     .matrix-glitch { font-size: 1.1rem; }
+    .glitch-sub { font-size: 0.8rem; }
     .logo-text { font-size: 1rem; }
     .product-card { padding: 16px; }
     .product-title { font-size: 1rem; }
