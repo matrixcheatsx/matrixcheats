@@ -985,17 +985,11 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             const orderNumber = document.getElementById('confirmOrderNumber').value.trim();
-            const gmail = document.getElementById('confirmGmail').value.trim();
             const product = document.getElementById('confirmProduct').value;
             const note = document.getElementById('confirmNote').value.trim();
             
             if (!orderNumber) {
                 showMessage('Sipariş numarası girin!', 'warning');
-                return;
-            }
-            
-            if (!gmail) {
-                showMessage('Gmail adresinizi girin!', 'warning');
                 return;
             }
             
@@ -1007,7 +1001,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const confirmData = {
                 userId: userUid || '',
                 userEmail: userEmail,
-                gmail: sanitizeInput(gmail),
+                gmail: userEmail,
                 orderNumber: sanitizeInput(orderNumber),
                 product: sanitizeInput(product),
                 note: sanitizeInput(note)
