@@ -579,7 +579,6 @@ function renderUsers(users, orders = []) {
                 <th>Sipariş</th>
                 <th>Harcama</th>
                 <th>Kayıt</th>
-                <th>İşlem</th>
             </tr></thead>
             <tbody>${users.map(u => {
                 const date = u.createdAt ? new Date(u.createdAt.seconds ? u.createdAt.seconds * 1000 : u.createdAt).toLocaleDateString('tr-TR') : '-';
@@ -599,7 +598,6 @@ function renderUsers(users, orders = []) {
                     <td style="text-align:center;">${totalOrders}</td>
                     <td style="color:#ff0040;">₺${totalSpent}</td>
                     <td>${date}</td>
-                    <td><button class="btn btn-ghost btn-xs" onclick="toggleUserAdmin('${u.email}', ${!u.isAdmin})">${u.isAdmin ? 'Admin Kaldır' : 'Admin Yap'}</button></td>
                 </tr>`;
             }).join('')}</tbody>
         </table>
