@@ -50,6 +50,7 @@ function startAutoRefresh() {
             const id = active.id;
             if (id === 'secDashboard') loadAdminData();
             if (id === 'secOrders') loadSupportRequests();
+            if (id === 'secUsers') loadUsers();
         }
     }, 30000);
 }
@@ -545,7 +546,23 @@ async function updateConfirmation(id, status) {
     }
 }
 
-function renderUsers(users) {
+async function loadUsers() {
+    if (!window.firebaseReady || !window.db) { showMessage('Firebase bağlı değil!', 'error'); return; }
+    try {
+        const [usersSnap, ordersSnap] = await Promise.all([
+            window.db.collection('users').get(),
+            window.db.collection('support_requests').get()
+        ]);
+        const users = usersSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        const orders = ordersSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        renderUsers(users, orders);
+    } catch (e) {
+        console.error('Kullanıcı yükleme hatası:', e);
+        showMessage('Kullanıcılar yüklenirken hata: ' + e.message, 'error');
+    }
+}
+
+function renderUsers(users, orders = []) {
     const container = document.getElementById('usersList');
     if (!container) return;
     if (!users || users.length === 0) {
@@ -559,15 +576,28 @@ function renderUsers(users) {
                 <th>E-posta</th>
                 <th>İsim</th>
                 <th>Rol</th>
+                <th>Sipariş</th>
+                <th>Harcama</th>
                 <th>Kayıt</th>
                 <th>İşlem</th>
             </tr></thead>
             <tbody>${users.map(u => {
                 const date = u.createdAt ? new Date(u.createdAt.seconds ? u.createdAt.seconds * 1000 : u.createdAt).toLocaleDateString('tr-TR') : '-';
+                const userOrders = orders.filter(o => o.userEmail === u.email);
+                const totalOrders = userOrders.length;
+                let totalSpent = 0;
+                userOrders.forEach(o => {
+                    const pkg = o.package || '';
+                    if (pkg.includes('Ay') || pkg === 'month') totalSpent += 299;
+                    else if (pkg.includes('Hafta') || pkg === 'week') totalSpent += 149;
+                    else if (pkg.includes('Gün') || pkg === 'day') totalSpent += 49;
+                });
                 return `<tr>
-                    <td>${u.email || '-'}</td>
+                    <td style="color:#00ff41;">${u.email || '-'}</td>
                     <td>${u.displayName || '-'}</td>
                     <td><span class="badge ${u.isAdmin ? 'badge-green' : 'badge-blue'}">${u.isAdmin ? 'Admin' : 'Kullanıcı'}</span></td>
+                    <td style="text-align:center;">${totalOrders}</td>
+                    <td style="color:#ff0040;">₺${totalSpent}</td>
                     <td>${date}</td>
                     <td><button class="btn btn-ghost btn-xs" onclick="toggleUserAdmin('${u.email}', ${!u.isAdmin})">${u.isAdmin ? 'Admin Kaldır' : 'Admin Yap'}</button></td>
                 </tr>`;
