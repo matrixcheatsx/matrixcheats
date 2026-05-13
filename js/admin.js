@@ -405,6 +405,7 @@ function renderRequests(requests) {
                 <button class="btn btn-ghost btn-xs" onclick="updateRequestStatus('${req.id}', 'İnceleniyor')">⏳ İnceleniyor</button>
                 <button class="btn btn-primary btn-xs" onclick="updateRequestStatus('${req.id}', 'Tamamlandı')">✓ Tamamlandı</button>
                 <button class="btn btn-danger btn-xs" onclick="updateRequestStatus('${req.id}', 'İptal')">✕ İptal</button>
+                <button class="btn btn-danger btn-xs" onclick="deleteRequest('${req.id}')" style="border-color:#ff0040;color:#ff0040;">🗑️ Sil</button>
             </div>
         </div>`;
     }).join('');
@@ -421,6 +422,18 @@ async function updateRequestStatus(id, status) {
     } catch (e) {
         showMessage('Hata: ' + e.message, 'error');
     }
+}
+
+function deleteRequest(id) {
+    if (!confirm('Bu sipariş talebini kalıcı olarak silmek istediğinize emin misiniz?')) return;
+    if (!window.firebaseReady || !window.db) { showMessage('Firebase bağlı değil!', 'error'); return; }
+    window.db.collection('support_requests').doc(id).delete()
+        .then(() => {
+            showMessage('Sipariş talebi silindi!', 'success');
+            loadSupportRequests();
+            loadAdminData();
+        })
+        .catch(e => showMessage('Hata: ' + e.message, 'error'));
 }
 
 async function loadSupportRequests() {
