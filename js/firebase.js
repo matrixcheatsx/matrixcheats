@@ -348,24 +348,23 @@ async function updateSupportStatus(requestId, status) {
 }
 
 async function createOrderConfirmation(data) {
-    if (!firebaseReady || !db) return { success: false, error: 'Firebase not connected!' };
-    if (!auth || !auth.currentUser) return { success: false, error: 'Oturum bulunamadı, lütfen tekrar giriş yapın!' };
+    console.log('Sipariş onayı API\'ye gönderiliyor:', data);
     try {
-        const docId = 'MC-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).substr(2, 6).toUpperCase();
-        const writeData = {
-            ...data,
-            status: 'Onay Bekliyor',
-            createdAt: new Date()
-        };
-        console.log('Sipariş onayı kaydediliyor, ID:', docId, writeData);
-        const ref = db.collection(CONFIRM_COLLECTION).doc(docId);
-        await ref.set(writeData);
-        const verify = await ref.get();
-        console.log('Doğrulama - doküman mevcut:', verify.exists, verify.data());
-        return { success: true, id: docId };
+        const r = await fetch('/api/confirm-order', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        const result = await r.json();
+        console.log('API yanıtı:', result);
+        if (result.durum === 'basarili') {
+            return { success: true, id: result.id };
+        } else {
+            return { success: false, error: result.mesaj || 'API hatası' };
+        }
     } catch (error) {
-        console.error('Sipariş onayı kaydetme hatası:', error);
-        return { success: false, error: error.message || 'Bilinmeyen hata' };
+        console.error('Sipariş onayı API hatası:', error);
+        return { success: false, error: error.message || 'Bağlantı hatası' };
     }
 }
 
