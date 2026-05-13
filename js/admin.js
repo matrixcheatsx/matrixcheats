@@ -49,7 +49,7 @@ function startAutoRefresh() {
         if (active) {
             const id = active.id;
             if (id === 'secDashboard') loadAdminData();
-            if (id === 'secOrders') loadConfirmations();
+            if (id === 'secOrders') loadSupportRequests();
         }
     }, 30000);
 }
@@ -77,24 +77,30 @@ async function loadAdminData() {
     }
 
     try {
-        const [confirmSnap, usersSnap] = await Promise.all([
-            window.db.collection(window.CONFIRM_COLLECTION || 'order_confirmations').get(),
+        const [supportSnap, usersSnap] = await Promise.all([
+            window.db.collection('support_requests').get(),
             window.db.collection('users').get()
         ]);
 
-        const confirmations = confirmSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        const requests = supportSnap.docs.map(d => ({ id: d.id, ...d.data() }));
         const users = usersSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-        const total = confirmations.length;
-        const pending = confirmations.filter(r => r.status === 'Onay Bekliyor' || r.status === 'İnceleniyor').length;
+        const total = requests.length;
+        const pending = requests.filter(r => r.status === 'Yeni' || r.status === 'İnceleniyor').length;
 
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        const todayOrders = confirmations.filter(r => {
+        const todayOrders = requests.filter(r => {
             const d = r.createdAt?.seconds ? new Date(r.createdAt.seconds * 1000) : new Date(r.createdAt);
             return d >= today;
         }).length;
 
-        let revenue = pending * 299;
+        let revenue = 0;
+        requests.forEach(r => {
+            const pkg = r.package || '';
+            if (pkg.includes('Ay') || pkg === 'month') revenue += 299;
+            else if (pkg.includes('Hafta') || pkg === 'week') revenue += 149;
+            else if (pkg.includes('Gün') || pkg === 'day') revenue += 49;
+        });
 
         document.getElementById('statOrders').textContent = total;
         document.getElementById('statPending').textContent = pending;
