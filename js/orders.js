@@ -79,23 +79,34 @@ async function renderOrders() {
         return `
             <div class="order-card">
                 <div class="order-header">
-                    <span class="order-id">${escapeHTML(orderNumber)}</span>
-                    <span style="color:#808080;font-size:0.8rem;">${orderDate}</span>
+                    <div class="order-header-left">
+                        <span class="order-id">${escapeHTML(orderNumber)}</span>
+                        <span class="order-date">${orderDate}</span>
+                    </div>
                     <span class="order-status status-completed">TESLİM EDİLDİ</span>
                 </div>
                 <div class="order-body">
-                    <div class="order-detail">
-                        <span class="order-detail-label">Ürün</span>
-                        <span class="order-detail-value">${escapeHTML(order.game || '-')} ${order.package ? '(' + escapeHTML(order.package) + ')' : ''}</span>
+                    <div class="order-body-grid">
+                        <div class="order-detail">
+                            <span class="order-detail-label">Ürün</span>
+                            <span class="order-detail-value">${escapeHTML(order.game || '-')} ${order.package ? '(' + escapeHTML(order.package) + ')' : ''}</span>
+                        </div>
+                        <div class="order-detail">
+                            <span class="order-detail-label">Paket</span>
+                            <span class="order-detail-value">${order.package ? escapeHTML(order.package) : '-'}</span>
+                        </div>
                     </div>
-                    <div class="order-detail">
+                    <div class="order-detail full">
                         <span class="order-detail-label">Lisans Anahtarı</span>
-                        <span class="order-detail-value" style="color:#00ffff;font-family:monospace;font-size:1.1rem;letter-spacing:2px;word-break:break-all;background:rgba(0,255,255,0.05);padding:6px 10px;border-radius:4px;border:1px solid rgba(0,255,255,0.2);">${escapeHTML(order.licenseKey)}</span>
+                        <div class="key-box">
+                            <span class="key-box-code">${escapeHTML(order.licenseKey)}</span>
+                            <button class="download-btn" onclick="navigator.clipboard.writeText('${escapeHTML(order.licenseKey)}').then(()=>showMessage('Kopyalandı!','success'))">📋 KOPYALA</button>
+                        </div>
                     </div>
                     ${downloadLink ? `
-                    <div class="order-detail" style="margin-top:8px;">
-                        <a href="${escapeHTML(downloadLink)}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;padding:10px 24px;background:linear-gradient(135deg,#00ff41,#00cc33);color:#050505;font-family:'Orbitron',sans-serif;font-weight:700;font-size:0.85rem;text-decoration:none;border-radius:6px;letter-spacing:1px;transition:all 0.3s ease;" onmouseover="this.style.boxShadow='0 0 20px rgba(0,255,65,0.5)';this.style.transform='translateY(-2px)'" onmouseout="this.style.boxShadow='none';this.style.transform='none'">⬇ HİLEYİ İNDİR</a>
-                    </div>` : ''}
+                    <a href="${escapeHTML(downloadLink)}" target="_blank" rel="noopener" class="download-btn" style="justify-content:center;width:100%;">
+                        ⬇ HİLEYİ İNDİR
+                    </a>` : ''}
                 </div>
             </div>
         `;

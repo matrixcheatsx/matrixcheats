@@ -1,15 +1,15 @@
 .orders-page {
     min-height: 100vh;
     padding: 120px 20px 50px;
-    max-width: 1000px;
+    max-width: 900px;
     margin: 0 auto;
 }
 
 .orders-header {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
-    margin-bottom: 30px;
+    margin-bottom: 40px;
     flex-wrap: wrap;
     gap: 20px;
 }
@@ -20,369 +20,25 @@
     color: #ff0040;
     text-shadow: 0 0 20px rgba(255,0,64,0.5);
     letter-spacing: 2px;
-}
-
-.track-order-box {
-    background: linear-gradient(180deg, rgba(255,0,64,0.1) 0%, rgba(10,10,10,0.9) 100%);
-    border: 2px solid #ff0040;
-    border-radius: 10px;
-    padding: 30px;
-    margin-bottom: 40px;
-}
-
-.track-order-box h2 {
-    font-family: 'Orbitron', sans-serif;
-    font-size: 1.1rem;
-    color: #00ff41;
-    margin-bottom: 20px;
     text-align: center;
-    letter-spacing: 1px;
-}
-
-.track-form {
-    display: flex;
-    gap: 15px;
-    max-width: 500px;
-    margin: 0 auto;
-}
-
-.track-input {
-    flex: 1;
-    padding: 15px;
-    background: #050505;
-    border: 1px solid #333;
-    color: #e0e0e0;
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 0.9rem;
-    border-radius: 5px;
-    transition: all 0.3s ease;
-}
-
-.track-input:focus {
-    outline: none;
-    border-color: #ff0040;
-    box-shadow: 0 0 15px rgba(255,0,64,0.3);
-}
-
-.track-btn {
-    padding: 15px 30px;
-    background: linear-gradient(135deg, #ff0040 0%, #b3002d 100%);
-    border: none;
-    color: #fff;
-    font-family: 'Orbitron', sans-serif;
-    font-weight: 700;
-    cursor: pointer;
-    border-radius: 5px;
-    transition: all 0.3s ease;
-    white-space: nowrap;
-}
-
-.track-btn:hover {
-    box-shadow: 0 0 25px rgba(255,0,64,0.5);
-    transform: translateY(-2px);
-}
-
-.order-list {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
-.order-card {
-    background: linear-gradient(180deg, rgba(20,20,20,0.9) 0%, rgba(10,10,10,0.95) 100%);
-    border: 1px solid #333;
-    border-radius: 10px;
-    overflow: hidden;
-    transition: all 0.3s ease;
-}
-
-.order-card:hover {
-    border-color: #ff0040;
-    box-shadow: 0 0 20px rgba(255,0,64,0.2);
-}
-
-.order-header {
-    background: linear-gradient(90deg, rgba(255,0,64,0.2) 0%, transparent 100%);
-    padding: 15px 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid #1a1a1a;
-}
-
-.order-id {
-    font-family: 'Orbitron', sans-serif;
-    font-size: 0.9rem;
-    color: #00ff41;
-    letter-spacing: 1px;
-}
-
-.order-status {
-    padding: 5px 15px;
-    border-radius: 20px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-.status-completed {
-    background: rgba(0,255,65,0.2);
-    color: #00ff41;
-}
-
-.status-pending {
-    background: rgba(255,193,7,0.2);
-    color: #ffc107;
-}
-
-.status-processing {
-    background: rgba(255,0,64,0.2);
-    color: #ff0040;
-}
-
-.order-body {
-    padding: 20px;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 20px;
-}
-
-.order-detail {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
-
-.order-detail-label {
-    font-size: 0.75rem;
-    color: #808080;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-.order-detail-value {
-    color: #e0e0e0;
-    font-size: 0.95rem;
-}
-
-.order-footer {
-    padding: 15px 20px;
-    border-top: 1px solid #1a1a1a;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.order-total {
-    font-family: 'Orbitron', sans-serif;
-    color: #ff0040;
-    font-size: 1.2rem;
-}
-
-.order-actions {
-    display: flex;
-    gap: 10px;
-}
-
-.order-btn {
-    padding: 8px 20px;
-    background: transparent;
-    border: 1px solid #ff0040;
-    color: #ff0040;
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 0.8rem;
-    cursor: pointer;
-    border-radius: 4px;
-    transition: all 0.3s ease;
-}
-
-.order-btn:hover {
-    background: #ff0040;
-    color: #fff;
-}
-
-.order-btn.primary {
-    background: #ff0040;
-    color: #fff;
-}
-
-.order-btn.primary:hover {
-    background: #cc0033;
-}
-
-.empty-orders {
-    text-align: center;
-    padding: 60px 20px;
-    color: #808080;
-}
-
-.empty-orders svg {
-    width: 80px;
-    height: 80px;
-    margin-bottom: 20px;
-    opacity: 0.5;
-}
-
-.empty-orders p {
-    font-size: 1.1rem;
-}
-
-.tracking-result {
-    display: none;
-    margin-top: 30px;
-    padding: 25px;
-    background: linear-gradient(180deg, rgba(0,255,65,0.1) 0%, rgba(10,10,10,0.9) 100%);
-    border: 1px solid #00ff41;
-    border-radius: 10px;
-}
-
-.tracking-result.active {
-    display: block;
-}
-
-.tracking-steps {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    margin-top: 20px;
-}
-
-.tracking-step {
-    display: flex;
-    gap: 15px;
-    align-items: flex-start;
-}
-
-.step-icon {
-    width: 30px;
-    height: 30px;
-    background: #00ff41;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #000;
-    font-weight: bold;
-    flex-shrink: 0;
-}
-
-.step-content h4 {
-    color: #00ff41;
-    font-family: 'Orbitron', sans-serif;
-    font-size: 0.9rem;
-    margin-bottom: 5px;
-}
-
-.step-content p {
-    color: #808080;
-    font-size: 0.85rem;
-}
-
-.tracking-info {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 15px;
-    margin-bottom: 25px;
-    padding: 20px;
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 8px;
-}
-
-.tracking-info .info-row {
-    display: flex;
-    justify-content: space-between;
-    padding: 8px 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.tracking-info .info-row span:first-child {
-    color: #808080;
-    font-size: 0.85rem;
-}
-
-.tracking-info .accent { color: #00ff41; font-family: 'Share Tech Mono', monospace; }
-.tracking-info .price { color: #ff0040; font-weight: bold; }
-.tracking-info .license-key { 
-    color: #00d4ff; 
-    font-family: 'Share Tech Mono', monospace; 
-    font-size: 0.8rem;
-    word-break: break-all;
-}
-
-.tracking-steps {
-    display: flex;
-    justify-content: space-between;
-    position: relative;
-    margin-top: 30px;
-}
-
-.tracking-steps::before {
-    content: '';
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    right: 20px;
-    height: 2px;
-    background: #1a1a1a;
-}
-
-.tracking-step {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    flex: 1;
-    position: relative;
-    z-index: 1;
-}
-
-.tracking-step .step-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: #1a1a1a;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #808080;
-    font-weight: bold;
-    border: 2px solid #1a1a1a;
-    margin-bottom: 10px;
-    transition: all 0.3s;
-}
-
-.tracking-step.completed .step-icon {
-    background: #00ff41;
-    color: #050505;
-    border-color: #00ff41;
-    box-shadow: 0 0 15px rgba(0, 255, 65, 0.5);
-}
-
-.tracking-step .step-content h4 {
-    font-size: 0.75rem;
-    color: #808080;
-    text-align: center;
-}
-
-.tracking-step.completed .step-content h4 {
-    color: #00ff41;
 }
 
 .order-filter {
     display: flex;
+    justify-content: center;
     gap: 10px;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
+    margin-bottom: 30px;
 }
 
 .order-filter select {
-    padding: 10px 15px;
-    background: #0a0a0a;
-    border: 1px solid #1a1a1a;
+    padding: 10px 20px;
+    background: rgba(0,0,0,0.6);
+    border: 1px solid #333;
     color: #e0e0e0;
     font-family: 'Share Tech Mono', monospace;
-    border-radius: 5px;
+    border-radius: 6px;
     cursor: pointer;
+    font-size: 0.85rem;
 }
 
 .order-filter select:focus {
@@ -390,31 +46,250 @@
     outline: none;
 }
 
+.order-list {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.order-card {
+    background: linear-gradient(180deg, rgba(15,15,20,0.95) 0%, rgba(8,8,12,0.98) 100%);
+    border: 1px solid rgba(0,255,65,0.15);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.order-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(0,255,65,0.4), transparent);
+}
+
+.order-card:hover {
+    border-color: rgba(0,255,65,0.4);
+    box-shadow: 0 0 30px rgba(0,255,65,0.08);
+    transform: translateY(-2px);
+}
+
+.order-header {
+    padding: 18px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.order-header-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.order-id {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.85rem;
+    color: #00ff41;
+    letter-spacing: 1px;
+    background: rgba(0,255,65,0.08);
+    padding: 4px 12px;
+    border-radius: 4px;
+    border: 1px solid rgba(0,255,65,0.2);
+}
+
+.order-date {
+    color: #606080;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.order-date::before {
+    content: '📅';
+    font-size: 0.75rem;
+    opacity: 0.6;
+}
+
+.order-status {
+    padding: 5px 16px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-family: 'Share Tech Mono', monospace;
+}
+
+.status-completed {
+    background: rgba(0,255,65,0.12);
+    color: #00ff41;
+    border: 1px solid rgba(0,255,65,0.3);
+    text-shadow: 0 0 8px rgba(0,255,65,0.3);
+}
+
+.order-body {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.order-body-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.order-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.order-detail.full {
+    grid-column: 1 / -1;
+}
+
+.order-detail-label {
+    font-size: 0.7rem;
+    color: #606080;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-weight: 600;
+}
+
+.order-detail-value {
+    color: #e0e0e0;
+    font-size: 0.95rem;
+}
+
+.key-box {
+    background: rgba(0,255,255,0.04);
+    border: 1px solid rgba(0,255,255,0.2);
+    border-radius: 8px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.key-box-code {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 1rem;
+    letter-spacing: 3px;
+    color: #00ffff;
+    word-break: break-all;
+    text-shadow: 0 0 8px rgba(0,255,255,0.2);
+}
+
+.download-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 32px;
+    background: linear-gradient(135deg, #00ff41 0%, #00cc33 100%);
+    color: #050505;
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 800;
+    font-size: 0.9rem;
+    text-decoration: none;
+    border-radius: 8px;
+    letter-spacing: 1.5px;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.download-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.download-btn:hover::before {
+    opacity: 1;
+}
+
+.download-btn:hover {
+    box-shadow: 0 0 30px rgba(0,255,65,0.4);
+    transform: translateY(-2px);
+}
+
+.download-btn:active {
+    transform: translateY(0);
+}
+
+.empty-orders {
+    text-align: center;
+    padding: 80px 20px;
+    color: #808080;
+}
+
+.empty-orders svg {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 24px;
+    opacity: 0.3;
+    stroke: #00ff41;
+}
+
+.empty-orders p {
+    font-size: 1.1rem;
+    line-height: 1.6;
+}
+
 @media (max-width: 768px) {
     .orders-page {
         padding: 100px 15px 30px;
     }
-    
+
     .orders-header h1 {
-        font-size: 1.5rem;
+        font-size: 1.4rem;
     }
-    
-    .track-form {
-        flex-direction: column;
-    }
-    
+
     .order-header {
         flex-direction: column;
-        gap: 10px;
         align-items: flex-start;
+        padding: 14px 16px;
     }
-    
+
+    .order-header-left {
+        width: 100%;
+        justify-content: space-between;
+    }
+
     .order-body {
+        padding: 16px;
+    }
+
+    .order-body-grid {
         grid-template-columns: 1fr;
     }
-    
-    .order-footer {
+
+    .key-box {
         flex-direction: column;
-        gap: 15px;
+        align-items: stretch;
+    }
+
+    .download-btn {
+        justify-content: center;
+        padding: 12px 24px;
+        font-size: 0.8rem;
     }
 }
