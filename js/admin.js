@@ -401,13 +401,14 @@ function renderRequests(requests) {
                 <div class="order-card-field"><label>Müşteri</label><span>${req.userEmail || '-'}</span></div>
                 <div class="order-card-field"><label>Durum</label><span class="badge ${badgeClass}">${req.status || 'Yeni'}</span></div>
                 ${hasKey ? `<div class="order-card-field"><label>Lisans Anahtarı</label><span style="color:#00ffff;font-family:monospace;">${req.licenseKey}</span></div>` : ''}
+                ${req.downloadLink ? `<div class="order-card-field"><label>İndirme Linki</label><span><a href="${req.downloadLink}" target="_blank" style="color:#00d4ff;font-size:0.85rem;" rel="noopener">🔗 Link</a></span></div>` : ''}
             </div>
             ${req.note ? `<div style="padding:10px;background:rgba(0,0,0,0.3);border-radius:6px;margin-bottom:10px;"><span style="color:#808080;font-size:0.75rem;">Not:</span><p style="color:#c0c0d0;margin-top:4px;font-size:0.85rem;">${req.note}</p></div>` : ''}
             <div class="order-card-actions">
                 <button class="btn btn-ghost btn-xs" onclick="updateRequestStatus('${req.id}', 'İnceleniyor')">⏳ İnceleniyor</button>
                 <button class="btn btn-primary btn-xs" onclick="updateRequestStatus('${req.id}', 'Tamamlandı')">✓ Tamamlandı</button>
                 <button class="btn btn-danger btn-xs" onclick="updateRequestStatus('${req.id}', 'İptal')">✕ İptal</button>
-                ${!hasKey ? `<div style="display:flex;gap:6px;align-items:center;"><input type="text" id="keyInput-${req.id}" placeholder="Lisans anahtarı..." style="padding:6px 10px;background:rgba(0,30,0,0.3);border:1px solid #00ff41;color:#00ff41;font-family:inherit;font-size:0.8rem;border-radius:3px;min-width:160px;"><button class="btn btn-primary btn-xs" onclick="deliverKey('${req.id}')">🔑 Key Ver</button></div>` : `<span style="color:#00ffff;font-size:0.85rem;">✓ Anahtar teslim edildi</span>`}
+                ${!hasKey ? `<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;"><input type="text" id="keyInput-${req.id}" placeholder="Lisans anahtarı..." style="padding:6px 10px;background:rgba(0,30,0,0.3);border:1px solid #00ff41;color:#00ff41;font-family:inherit;font-size:0.8rem;border-radius:3px;min-width:160px;"><input type="text" id="linkInput-${req.id}" placeholder="İndirme linki..." style="padding:6px 10px;background:rgba(0,30,0,0.3);border:1px solid #00d4ff;color:#00d4ff;font-family:inherit;font-size:0.8rem;border-radius:3px;min-width:160px;"><button class="btn btn-primary btn-xs" onclick="deliverKey('${req.id}')">🔑 Key Ver</button></div>` : `<span style="color:#00ffff;font-size:0.85rem;">✓ Anahtar teslim edildi</span>`}
                 <button class="btn btn-danger btn-xs" onclick="deleteRequest('${req.id}')" style="border-color:#ff0040;color:#ff0040;">🗑️ Sil</button>
             </div>
         </div>`;
@@ -441,11 +442,14 @@ function deleteRequest(id) {
 
 function deliverKey(id) {
     const key = document.getElementById('keyInput-' + id)?.value.trim();
+    const link = document.getElementById('linkInput-' + id)?.value.trim();
     if (!key) { showMessage('Lisans anahtarı girin!', 'error'); return; }
     if (!window.firebaseReady || !window.db) { showMessage('Firebase bağlı değil!', 'error'); return; }
-    window.db.collection('support_requests').doc(id).update({ licenseKey: key, status: 'Tamamlandı' })
+    const updateData = { licenseKey: key, status: 'Tamamlandı' };
+    if (link) updateData.downloadLink = link;
+    window.db.collection('support_requests').doc(id).update(updateData)
         .then(() => {
-            showMessage('Lisans anahtarı teslim edildi!', 'success');
+            showMessage(link ? 'Lisans anahtarı ve indirme linki teslim edildi!' : 'Lisans anahtarı teslim edildi!', 'success');
             loadSupportRequests();
             loadAdminData();
         })
