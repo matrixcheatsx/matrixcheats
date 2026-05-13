@@ -825,7 +825,7 @@ section {
     font-size: 1.5rem;
     color: #ff0040;
     text-shadow: 0 0 10px #ff0040, 0 0 20px #ff0040;
-    animation: glitchMove 0.8s infinite;
+    animation: glitchMove 2s infinite;
     position: relative;
 }
 
@@ -838,20 +838,20 @@ section {
     height: 100%;
     color: #00ff41;
     opacity: 0;
-    animation: glitchOverlay 0.5s infinite;
+    animation: glitchOverlay 0.3s infinite;
 }
 
 @keyframes glitchMove {
     0%, 100% { transform: translate(0); opacity: 1; }
-    20% { transform: translate(-3px, 2px); opacity: 0.7; }
-    40% { transform: translate(3px, -2px); opacity: 0.85; }
-    60% { transform: translate(-2px, 1px); opacity: 0.75; }
-    80% { transform: translate(2px, -1px); opacity: 0.9; }
+    25% { transform: translate(-2px, 2px); opacity: 0.8; }
+    50% { transform: translate(2px, -2px); opacity: 0.9; }
+    75% { transform: translate(-2px, -2px); opacity: 0.7; }
 }
 
 @keyframes glitchOverlay {
-    0%, 92%, 94%, 100% { opacity: 0; }
-    93% { opacity: 0.9; transform: translate(-10px, 0); clip-path: inset(15% 0 60% 0); }
+    0%, 96%, 96.5%, 97.5%, 98%, 99%, 99.5%, 100% { opacity: 0; }
+    1%, 2%, 3.5%, 4.5%, 6%, 7% { opacity: 0.9; transform: translate(-10px, 0); clip-path: inset(15% 0 60% 0); }
+    96.25% { opacity: 0.9; transform: translate(8px, 0); clip-path: inset(50% 0 15% 0); }
 }
 
 .scan-line {
