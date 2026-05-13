@@ -80,6 +80,7 @@ async function renderOrders() {
             <div class="order-card">
                 <div class="order-header">
                     <span class="order-id">${escapeHTML(orderNumber)}</span>
+                    <span style="color:#808080;font-size:0.8rem;">${orderDate}</span>
                     <span class="order-status status-completed">TESLİM EDİLDİ</span>
                 </div>
                 <div class="order-body">
@@ -95,10 +96,6 @@ async function renderOrders() {
                     <div class="order-detail" style="margin-top:8px;">
                         <a href="${escapeHTML(downloadLink)}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;padding:10px 24px;background:linear-gradient(135deg,#00ff41,#00cc33);color:#050505;font-family:'Orbitron',sans-serif;font-weight:700;font-size:0.85rem;text-decoration:none;border-radius:6px;letter-spacing:1px;transition:all 0.3s ease;" onmouseover="this.style.boxShadow='0 0 20px rgba(0,255,65,0.5)';this.style.transform='translateY(-2px)'" onmouseout="this.style.boxShadow='none';this.style.transform='none'">⬇ HİLEYİ İNDİR</a>
                     </div>` : ''}
-                    <div class="order-detail">
-                        <span class="order-detail-label">Sipariş Tarihi</span>
-                        <span class="order-detail-value">${orderDate}</span>
-                    </div>
                 </div>
             </div>
         `;
