@@ -352,13 +352,16 @@ async function createOrderConfirmation(data) {
     if (!auth || !auth.currentUser) return { success: false, error: 'Oturum bulunamadı, lütfen tekrar giriş yapın!' };
     try {
         const docId = 'MC-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).substr(2, 6).toUpperCase();
-        console.log('Sipariş onayı kaydediliyor, ID:', docId, data);
-        await db.collection(CONFIRM_COLLECTION).doc(docId).set({
+        const writeData = {
             ...data,
             status: 'Onay Bekliyor',
             createdAt: new Date()
-        });
-        console.log('Sipariş onayı kaydedildi:', docId);
+        };
+        console.log('Sipariş onayı kaydediliyor, ID:', docId, writeData);
+        const ref = db.collection(CONFIRM_COLLECTION).doc(docId);
+        await ref.set(writeData);
+        const verify = await ref.get();
+        console.log('Doğrulama - doküman mevcut:', verify.exists, verify.data());
         return { success: true, id: docId };
     } catch (error) {
         console.error('Sipariş onayı kaydetme hatası:', error);
@@ -370,6 +373,8 @@ async function getOrderConfirmations() {
     if (!firebaseReady || !db) return [];
     try {
         const snapshot = await db.collection(CONFIRM_COLLECTION).get();
+        console.log('Toplam doküman sayısı:', snapshot.size);
+        snapshot.docs.forEach(d => console.log('Doküman ID:', d.id));
         const docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         docs.sort((a, b) => {
             const da = a.createdAt?.seconds ? a.createdAt.seconds * 1000 : new Date(a.createdAt || 0).getTime();
