@@ -74,9 +74,6 @@ body {
     line-height: 1.6;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
-    overflow-scrolling: touch;
-    -webkit-text-size-adjust: 100%;
-    text-size-adjust: 100%;
 }
 
 #matrixCanvas {
@@ -2251,8 +2248,8 @@ input:-webkit-autofill:focus {
 
 /* ===== iOS SAFARI FIXES ===== */
 @supports (-webkit-touch-callout: none) {
-    .hero { min-height: -webkit-fill-available; }
-    body { min-height: -webkit-fill-available; }
+    .hero { min-height: 100vh; min-height: -webkit-fill-available; }
+    body { min-height: 100vh; }
     input, textarea, select { font-size: 16px; }
     .header, .modal { padding-top: max(var(--safe-t), 0px); }
 }

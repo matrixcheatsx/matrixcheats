@@ -14,6 +14,22 @@ function waitForFirebase(retries = 20) {
 }
 
 async function initAdmin() {
+    if (!window.isAdmin || !window.isAdmin()) {
+        const ready = await waitForFirebase();
+        if (ready && auth && auth.currentUser && typeof ADMIN_EMAILS !== 'undefined') {
+            const isAdminByEmail = ADMIN_EMAILS.includes(auth.currentUser.email.toLowerCase());
+            if (!isAdminByEmail) {
+                window.location.href = '../index.html';
+                return;
+            }
+            const user = { ...auth.currentUser, isAdmin: true };
+            localStorage.setItem('matrixUser', JSON.stringify(user));
+        } else {
+            window.location.href = '../index.html';
+            return;
+        }
+    }
+
     const ready = await waitForFirebase();
     if (!ready) console.warn('Firebase not available, using local data only');
 

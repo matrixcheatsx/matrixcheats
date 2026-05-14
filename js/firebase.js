@@ -13,6 +13,7 @@ let auth = null;
 let firebaseReady = false;
 
 const ADMIN_EMAILS = ['admin@matrixcheats.com', 'yusuf@matrixcheats.com', 'ysufrakann@gmail.com'];
+window.ADMIN_EMAILS = ADMIN_EMAILS;
 
 if (typeof firebase !== 'undefined') {
     try {
@@ -70,35 +71,85 @@ async function logoutUser() {
     location.reload();
 }
 
+let currentUserPromise = null;
+let authUnsubscribe = null;
+
+function initAuthListener() {
+    if (!firebaseReady || !auth || authUnsubscribe) return;
+    authUnsubscribe = auth.onAuthStateChanged(async (user) => {
+        if (user) {
+            try {
+                const userDoc = await db.collection(USERS_COLLECTION).doc(user.uid).get();
+                const userData = userDoc.exists ? userDoc.data() : null;
+                const isAdminByEmail = ADMIN_EMAILS.includes(user.email.toLowerCase());
+                const fullUser = { 
+                    ...user, 
+                    ...userData,
+                    isAdmin: (userData && userData.isAdmin) || isAdminByEmail
+                };
+                localStorage.setItem('matrixUser', JSON.stringify(fullUser));
+                currentUserPromise = Promise.resolve(fullUser);
+            } catch (e) {
+                console.log('getCurrentUser error:', e);
+                const isAdminByEmail = ADMIN_EMAILS.includes(user.email.toLowerCase());
+                const fullUser = { ...user, isAdmin: isAdminByEmail };
+                localStorage.setItem('matrixUser', JSON.stringify(fullUser));
+                currentUserPromise = Promise.resolve(fullUser);
+            }
+        } else {
+            localStorage.removeItem('matrixUser');
+            currentUserPromise = Promise.resolve(null);
+        }
+    });
+}
+
 async function getCurrentUser() {
     if (!firebaseReady || !auth) return null;
-    return new Promise((resolve) => {
-        auth.onAuthStateChanged(async (user) => {
-            if (user) {
-                try {
-                    const userDoc = await db.collection(USERS_COLLECTION).doc(user.uid).get();
-                    const userData = userDoc.exists ? userDoc.data() : null;
-                    const isAdminByEmail = ADMIN_EMAILS.includes(user.email.toLowerCase());
-                    const fullUser = { 
-                        ...user, 
-                        ...userData,
-                        isAdmin: (userData && userData.isAdmin) || isAdminByEmail
-                    };
-                    localStorage.setItem('matrixUser', JSON.stringify(fullUser));
-                    resolve(fullUser);
-                } catch (e) {
-                    console.log('getCurrentUser error:', e);
-                    const isAdminByEmail = ADMIN_EMAILS.includes(user.email.toLowerCase());
-                    const fullUser = { ...user, isAdmin: isAdminByEmail };
-                    localStorage.setItem('matrixUser', JSON.stringify(fullUser));
-                    resolve(fullUser);
-                }
-            } else {
-                localStorage.removeItem('matrixUser');
-                resolve(null);
+
+    const currentUser = auth.currentUser;
+    if (currentUser) {
+        try {
+            const userDoc = await db.collection(USERS_COLLECTION).doc(currentUser.uid).get();
+            const userData = userDoc.exists ? userDoc.data() : null;
+            const isAdminByEmail = ADMIN_EMAILS.includes(currentUser.email.toLowerCase());
+            const fullUser = { 
+                ...currentUser, 
+                ...userData,
+                isAdmin: (userData && userData.isAdmin) || isAdminByEmail
+            };
+            localStorage.setItem('matrixUser', JSON.stringify(fullUser));
+            return fullUser;
+        } catch (e) {
+            const isAdminByEmail = ADMIN_EMAILS.includes(currentUser.email.toLowerCase());
+            const fullUser = { ...currentUser, isAdmin: isAdminByEmail };
+            localStorage.setItem('matrixUser', JSON.stringify(fullUser));
+            return fullUser;
+        }
+    }
+
+    if (currentUserPromise) return currentUserPromise;
+    if (!authUnsubscribe) initAuthListener();
+    const stored = localStorage.getItem('matrixUser');
+    if (stored) {
+        try {
+            const u = JSON.parse(stored);
+            if (u.email) {
+                currentUserPromise = Promise.resolve(u);
+                return currentUserPromise;
             }
-        });
+        } catch {}
+    }
+    currentUserPromise = new Promise((resolve) => {
+        const check = () => {
+            if (currentUserPromise) {
+                currentUserPromise.then(resolve);
+            } else {
+                setTimeout(check, 100);
+            }
+        };
+        check();
     });
+    return currentUserPromise;
 }
 
 async function createOrder(orderData) {
@@ -409,5 +460,22 @@ window.updateSupportStatus = updateSupportStatus;
 window.createOrderConfirmation = createOrderConfirmation;
 window.getOrderConfirmations = getOrderConfirmations;
 window.updateConfirmationStatus = updateConfirmationStatus;
+const CONTACT_COLLECTION = 'contact_messages';
+
+async function createContactMessage(data) {
+    if (!firebaseReady || !db) return { success: false, error: 'Firebase not connected!' };
+    try {
+        await db.collection(CONTACT_COLLECTION).add({
+            ...data,
+            createdAt: new Date()
+        });
+        return { success: true };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+window.createContactMessage = createContactMessage;
+window.CONTACT_COLLECTION = CONTACT_COLLECTION;
 window.SUPPORT_COLLECTION = SUPPORT_COLLECTION;
 window.CONFIRM_COLLECTION = CONFIRM_COLLECTION;

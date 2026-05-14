@@ -19,7 +19,7 @@ module.exports = async (req, res) => {
     }
 
     const siparisId = 'MC-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).substr(2, 6).toUpperCase();
-    const siteUrl = 'https://matrixcheats-theta.vercel.app';
+    const siteUrl = process.env.SITE_URL || `https://${req.headers['x-forwarded-host'] || req.headers.host}`;
     const callbackUrl = `${siteUrl}/api/shopier/callback`;
     const apiKey = process.env.OSB_KULLANICI_ADI;
     const apiSecret = process.env.OSB_SIFRE;

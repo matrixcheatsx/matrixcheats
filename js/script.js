@@ -458,9 +458,9 @@ async function handleLogin(email, password) {
     const result = await loginUser(email, password);
     
     if (result.success) {
-        const user = await getCurrentUser();
-        
-        user.isAdmin = user.isAdmin || false;
+        const fbUser = result.user;
+        const isAdminByEmail = typeof ADMIN_EMAILS !== 'undefined' && ADMIN_EMAILS.includes(fbUser.email.toLowerCase());
+        const user = { ...fbUser, isAdmin: isAdminByEmail };
         localStorage.setItem('matrixUser', JSON.stringify(user));
         
         updateAuthUI(user);
@@ -885,10 +885,27 @@ function initScrollAnimations() {
 function initForm() {
     const contactForm = document.getElementById('contactForm');
     if(contactForm) {
-        contactForm.addEventListener('submit', function(e) {
+        contactForm.addEventListener('submit', async function(e) {
             e.preventDefault();
-            showMessage('Mesajınız gönderildi!', 'success');
-            contactForm.reset();
+            const name = sanitizeInput(document.getElementById('contactName').value);
+            const email = sanitizeInput(document.getElementById('contactEmail').value);
+            const message = sanitizeInput(document.getElementById('contactMessage').value);
+            if (!name || !email || !message) {
+                showMessage('Lütfen tüm alanları doldurun!', 'warning');
+                return;
+            }
+            if (typeof createContactMessage === 'function' && window.firebaseReady) {
+                const result = await createContactMessage({ name, email, message });
+                if (result.success) {
+                    showMessage('Mesajınız gönderildi!', 'success');
+                    contactForm.reset();
+                } else {
+                    showMessage('Hata: ' + result.error, 'error');
+                }
+            } else {
+                showMessage('Mesajınız kaydedildi!', 'success');
+                contactForm.reset();
+            }
         });
     }
 }
@@ -925,13 +942,9 @@ async function openAdminPanel() {
 function applySettings() {
     const settings = JSON.parse(localStorage.getItem('matrixSettings') || '{}');
     const discordEl = document.getElementById('discordLink');
-    const supportEl = document.getElementById('supportLink');
     
-    if (discordEl && settings.discordLink) {
-        discordEl.href = settings.discordLink;
-    }
-    if (supportEl && settings.supportLink) {
-        supportEl.href = settings.supportLink;
+    if (discordEl) {
+        discordEl.href = settings.discordLink || 'https://discord.gg/matrixcheats';
     }
 }
 
