@@ -65,7 +65,7 @@ function startAutoRefresh() {
         if (active) {
             const id = active.id;
             if (id === 'secDashboard') loadAdminData();
-            if (id === 'secOrders') loadSupportRequests();
+            if (id === 'secOrders') { loadSupportRequests(); loadCheckoutOrders(); }
             if (id === 'secUsers') loadUsers();
         }
     }, 30000);
@@ -112,11 +112,10 @@ async function loadAdminData() {
         }).length;
 
         let revenue = 0;
-        requests.forEach(r => {
-            const pkg = r.package || '';
-            if (pkg.includes('Ay') || pkg === 'month') revenue += 299;
-            else if (pkg.includes('Hafta') || pkg === 'week') revenue += 149;
-            else if (pkg.includes('Gün') || pkg === 'day') revenue += 49;
+        const checkoutOrders = await getCheckoutOrders();
+        checkoutOrders.forEach(o => {
+            const fiyat = parseFloat(o.urunFiyat || o.urun_fiyat) || 0;
+            if (o.durum === 'teslim_edildi' || o.durum === 'odendi_key_bekliyor') revenue += fiyat;
         });
 
         document.getElementById('statOrders').textContent = total;
@@ -482,6 +481,94 @@ async function loadSupportRequests() {
         showMessage('Siparişler yüklenirken hata: ' + e.message, 'error');
     }
 }
+
+async function loadCheckoutOrders() {
+    if (typeof getCheckoutOrders !== 'function') return;
+    try {
+        const orders = await getCheckoutOrders();
+        renderCheckoutOrders(orders);
+    } catch (e) {
+        console.error('Checkout siparişleri yüklenirken hata:', e);
+    }
+}
+
+function renderCheckoutOrders(orders) {
+    const container = document.getElementById('checkoutOrdersList');
+    if (!container) return;
+
+    if (!orders || orders.length === 0) {
+        container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">💳</div><div class="empty-state-text">Henüz ödeme siparişi yok.</div></div>';
+        return;
+    }
+
+    container.innerHTML = orders.map(o => {
+        const durumText = {
+            'odeme_bekliyor': 'Ödeme Bekliyor',
+            'odendi_key_bekliyor': 'Ödendi - Key Bekliyor',
+            'teslim_edildi': 'Teslim Edildi'
+        }[o.durum] || o.durum;
+
+        const badgeClass = {
+            'odeme_bekliyor': 'badge-yellow',
+            'odendi_key_bekliyor': 'badge-blue',
+            'teslim_edildi': 'badge-green'
+        }[o.durum] || 'badge-red';
+
+        const date = o.createdAt ? new Date(o.createdAt.seconds ? o.createdAt.seconds * 1000 : o.createdAt).toLocaleDateString('tr-TR') : '-';
+        const time = o.createdAt ? new Date(o.createdAt.seconds ? o.createdAt.seconds * 1000 : o.createdAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) : '';
+
+        const islem = o.durum === 'odendi_key_bekliyor' ? `
+            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                <input type="text" class="form-input form-input-sm" id="coKey-${o.siparisId || o.id}" placeholder="Lisans anahtarı..." style="min-width:140px;">
+                <input type="text" class="form-input form-input-sm" id="coLink-${o.siparisId || o.id}" placeholder="İndirme linki..." style="min-width:140px;">
+                <button class="btn btn-primary btn-xs" onclick="deliverCheckoutOrder('${o.siparisId || o.id}')">Teslim Et</button>
+            </div>
+        ` : o.durum === 'teslim_edildi' ? `<span style="color:#00ffff;">✓ ${o.lisansAnahtari || o.lisans_anahtari || ''}</span>` : '-';
+
+        return `<div class="order-card">
+            <div class="order-card-top">
+                <span class="order-card-id" style="color:#00ff41;">${o.siparisId || o.id || '-'}</span>
+                <span class="order-card-date">${date} ${time}</span>
+            </div>
+            <div class="order-card-grid">
+                <div class="order-card-field"><label>Ürün</label><span>${o.urun_adi || o.urunAdi || '-'}</span></div>
+                <div class="order-card-field"><label>Tutar</label><span>₺${(parseFloat(o.urunFiyat || o.urun_fiyat) || 0).toFixed(2)}</span></div>
+                <div class="order-card-field"><label>Müşteri</label><span>${o.musteriEmail || o.musteri_email || '-'}</span></div>
+                <div class="order-card-field"><label>Durum</label><span class="badge ${badgeClass}">${durumText}</span></div>
+            </div>
+            <div class="order-card-actions">
+                ${islem}
+            </div>
+        </div>`;
+    }).join('');
+}
+
+async function deliverCheckoutOrder(siparisId) {
+    const keyInput = document.getElementById('coKey-' + siparisId);
+    const linkInput = document.getElementById('coLink-' + siparisId);
+    const anahtar = keyInput?.value.trim();
+    if (!anahtar) { showMessage('Lisans anahtarı girin!', 'error'); return; }
+
+    try {
+        const r = await fetch('/api/admin/deliver', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ siparis_id: siparisId, lisans_anahtari: anahtar })
+        });
+        const d = await r.json();
+        if (d.durum === 'basarili') {
+            showMessage('Lisans anahtarı teslim edildi!', 'success');
+            loadCheckoutOrders();
+            loadAdminData();
+        } else {
+            showMessage(d.mesaj || 'Hata', 'error');
+        }
+    } catch (e) {
+        showMessage('Sunucu hatası: ' + e.message, 'error');
+    }
+}
+
+async function loadConfirmations() {
 
 async function loadConfirmations() {
     if (typeof getOrderConfirmations !== 'function') { showMessage('Onay sistemi yüklenemedi! (getOrderConfirmations bulunamadı)', 'error'); return; }

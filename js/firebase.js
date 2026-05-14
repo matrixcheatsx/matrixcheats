@@ -374,8 +374,18 @@ async function createSupportRequest(supportData) {
     }
 }
 
+async function getCheckoutOrders() {
+    if (!firebaseReady || !db) return [];
+    try {
+        const snapshot = await db.collection('shopier_orders').orderBy('createdAt', 'desc').get();
+        return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    } catch (error) {
+        console.error('Checkout siparişleri yüklenirken hata:', error);
+        return [];
+    }
+}
+
 async function getSupportRequests() {
-        console.log('getSupportRequests çağrıldı');
     if (!firebaseReady || !db) return [];
     try {
         console.log('Firestore query yapılıyor');
@@ -455,6 +465,7 @@ window.loginWithGoogle = loginWithGoogle;
 window.resetPassword = resetPassword;
 window.updateUserPassword = updateUserPassword;
 window.createSupportRequest = createSupportRequest;
+window.getCheckoutOrders = getCheckoutOrders;
 window.getSupportRequests = getSupportRequests;
 window.updateSupportStatus = updateSupportStatus;
 window.createOrderConfirmation = createOrderConfirmation;
