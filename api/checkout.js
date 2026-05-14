@@ -1,5 +1,4 @@
-const crypto = require('crypto');
-const { setDocument, updateDocument, getDocument, queryDocuments, listDocuments, COLLECTION } = require('../lib/firebase');
+const { setDocument } = require('../lib/firebase');
 
 module.exports = async (req, res) => {
   if (req.method !== 'POST') {
@@ -19,16 +18,6 @@ module.exports = async (req, res) => {
     }
 
     const siparisId = 'MC-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).substr(2, 6).toUpperCase();
-    const siteUrl = process.env.SITE_URL || `https://${req.headers['x-forwarded-host'] || req.headers.host}`;
-    const callbackUrl = `${siteUrl}/api/shopier/callback`;
-    const apiKey = process.env.OSB_KULLANICI_ADI;
-    const apiSecret = process.env.OSB_SIFRE;
-    const randomNr = Math.floor(100000 + Math.random() * 899999).toString();
-    const totalValue = parseFloat(urun_fiyat).toFixed(2).toString();
-    const currency = '0';
-
-    const dataToHash = randomNr + siparisId + totalValue + currency;
-    const signature = crypto.createHmac('sha256', apiSecret).update(dataToHash).digest('base64');
 
     await setDocument(siparisId, {
       siparisId,
@@ -45,41 +34,7 @@ module.exports = async (req, res) => {
 
     res.json({
       durum: 'basarili',
-      siparis_id: siparisId,
-      callback_url: callbackUrl,
-      shopier_form: {
-        action: 'https://www.shopier.com/ShowProduct/api_pay4.php',
-        method: 'POST',
-        fields: {
-          API_key: apiKey,
-          platform_order_id: siparisId,
-          product_name: urun_adi,
-          product_type: '2',
-          buyer_name: musteri_adi || 'Musteri',
-          buyer_surname: musteri_soyadi || 'Musteri',
-          buyer_email: musteri_email,
-          buyer_phone: musteri_telefon || '5550000000',
-          buyer_account_age: '0',
-          buyer_id_nr: '0',
-          billing_address: 'Address',
-          billing_city: 'Istanbul',
-          billing_country: 'Turkey',
-          billing_postcode: '34000',
-          shipping_address: 'Address',
-          shipping_city: 'Istanbul',
-          shipping_country: 'Turkey',
-          shipping_postcode: '34000',
-          total_order_value: totalValue,
-          currency,
-          platform: '0',
-          is_in_frame: '0',
-          current_language: '0',
-          modul_version: '1.0.4',
-          random_nr: randomNr,
-          signature,
-          callback: callbackUrl
-        }
-      }
+      siparis_id: siparisId
     });
 
   } catch (error) {

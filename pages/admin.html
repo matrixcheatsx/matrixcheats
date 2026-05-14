@@ -34,8 +34,8 @@
             <button class="admin-nav-item" onclick="showSection('orders', this)">
                 <span class="nav-icon">📦</span> Siparişler
             </button>
-            <button class="admin-nav-item" onclick="showSection('shopier', this)">
-                <span class="nav-icon">💳</span> Shopier Siparişler
+            <button class="admin-nav-item" onclick="showSection('users', this)">
+                <span class="nav-icon">👥</span> Kullanıcılar
             </button>
             <button class="admin-nav-item" onclick="showSection('users', this)">
                 <span class="nav-icon">👥</span> Kullanıcılar
@@ -120,34 +120,6 @@
                 </div>
             </section>
 
-            <!-- SHOPIER ORDERS -->
-            <section class="admin-section" id="secShopier">
-                <div class="admin-card">
-                    <div class="admin-card-header">💳 Shopier Siparişleri</div>
-                    <div class="admin-card-body">
-                        <div id="shopierStats" class="admin-stats" style="margin-bottom:16px;"></div>
-                        <div id="shopierFilters" style="margin-bottom:16px;display:flex;gap:8px;flex-wrap:wrap;"></div>
-                        <div style="overflow-x:auto;">
-                            <table class="data-table" id="shopierTable">
-                                <thead>
-                                    <tr>
-                                        <th>Sipariş ID</th>
-                                        <th>Ürün</th>
-                                        <th>Tutar</th>
-                                        <th>Müşteri</th>
-                                        <th>E-posta</th>
-                                        <th>Tarih</th>
-                                        <th>Durum</th>
-                                        <th>İşlem</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="shopierOrdersBody"></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
             <!-- USERS -->
             <section class="admin-section" id="secUsers">
                 <div class="admin-card">
@@ -199,13 +171,12 @@
         document.getElementById('sec' + name.charAt(0).toUpperCase() + name.slice(1)).classList.add('active');
         if (btn) btn.classList.add('active');
 
-        const titles = { dashboard: 'Dashboard', products: 'Ürünler', orders: 'Siparişler', shopier: 'Shopier Siparişler', users: 'Kullanıcılar', settings: 'Ayarlar' };
+        const titles = { dashboard: 'Dashboard', products: 'Ürünler', orders: 'Siparişler', users: 'Kullanıcılar', settings: 'Ayarlar' };
         document.getElementById('pageTitle').textContent = titles[name] || name;
 
         if (name === 'dashboard') loadAdminData();
         if (name === 'orders') loadSupportRequests();
         if (name === 'users') loadUsers();
-        if (name === 'shopier') loadShopierOrders();
         if (name === 'settings') loadSettings();
 
         if (window.innerWidth <= 768) toggleSidebar();

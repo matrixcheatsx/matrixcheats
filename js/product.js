@@ -166,8 +166,6 @@ async function buyProduct() {
     const priceMap = { day: prices.day, week: prices.week, month: prices.month };
     const fiyat = priceMap[selectedPackage] || prices.month;
 
-    showMessage('Shopier\'a yönlendiriliyorsunuz...', 'info', 3000);
-
     try {
         const res = await fetch('/api/checkout', {
             method: 'POST',
@@ -191,25 +189,10 @@ async function buyProduct() {
             return;
         }
 
-        const sf = result.shopier_form;
-        const form = document.createElement('form');
-        form.action = sf.action;
-        form.method = sf.method;
-        form.style.display = 'none';
-
-        for (const [key, val] of Object.entries(sf.fields)) {
-            const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = key;
-            input.value = val;
-            form.appendChild(input);
-        }
-
-        document.body.appendChild(form);
-        form.submit();
+        showMessage('Sipariş oluşturuldu! Sipariş No: ' + result.siparis_id, 'success');
 
     } catch (e) {
-        console.error('Ödeme hatası:', e);
+        console.error('Sipariş hatası:', e);
         showMessage('Sunucuya bağlanılamadı!', 'error');
     }
 }
