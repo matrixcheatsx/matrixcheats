@@ -468,7 +468,7 @@ async function handleLogin(email, password) {
         showMessage('Giriş başarılı!', 'success');
         saveRememberMe();
     } else {
-        showMessage('Giriş başarısız: ' + result.error, 'error');
+        showMessage(result.error, 'error');
     }
     
     btn.textContent = 'GIRIS YAP';
@@ -541,7 +541,7 @@ async function handleRegister(email, password) {
         showMessage('Kayıt başarılı!', 'success');
         saveRememberMe();
     } else {
-        showMessage('Kayıt başarısız: ' + result.error, 'error');
+        showMessage(result.error, 'error');
     }
     
     btn.textContent = 'KAYIT OL';

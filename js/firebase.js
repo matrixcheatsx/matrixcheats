@@ -48,7 +48,20 @@ async function createUser(email, password, userData) {
         });
         return { success: true, user: userCredential.user };
     } catch (error) {
-        return { success: false, error: error.message };
+        const code = error.code || '';
+        if (code.includes('email-already-in-use')) {
+            return { success: false, error: 'Bu e-posta adresi zaten kayıtlı' };
+        }
+        if (code.includes('weak-password')) {
+            return { success: false, error: 'Şifre çok zayıf. En az 6 karakter olmalı' };
+        }
+        if (code.includes('invalid-email')) {
+            return { success: false, error: 'Geçersiz e-posta adresi' };
+        }
+        if (code.includes('operation-not-allowed')) {
+            return { success: false, error: 'E-posta/şifre kaydı şu anda kapalı' };
+        }
+        return { success: false, error: 'Kayıt olurken bir hata oluştu' };
     }
 }
 
@@ -60,7 +73,20 @@ async function loginUser(email, password) {
         const userCredential = await auth.signInWithEmailAndPassword(email, password);
         return { success: true, user: userCredential.user };
     } catch (error) {
-        return { success: false, error: error.message };
+        const code = error.code || '';
+        if (code.includes('user-not-found') || code.includes('wrong-password') || code.includes('invalid-credential')) {
+            return { success: false, error: 'Kullanıcı adı veya şifre hatalı' };
+        }
+        if (code.includes('too-many-requests')) {
+            return { success: false, error: 'Çok fazla hatalı giriş denemesi. Lütfen bir süre bekleyin.' };
+        }
+        if (code.includes('invalid-email')) {
+            return { success: false, error: 'Geçersiz e-posta adresi' };
+        }
+        if (code.includes('user-disabled')) {
+            return { success: false, error: 'Hesabınız devre dışı bırakılmış' };
+        }
+        return { success: false, error: 'Giriş yapılırken bir hata oluştu' };
     }
 }
 
