@@ -52,9 +52,6 @@ async function createUser(email, password, userData) {
         if (code.includes('email-already-in-use')) {
             return { success: false, error: 'Bu e-posta adresi zaten kayıtlı' };
         }
-        if (code.includes('weak-password')) {
-            return { success: false, error: 'Şifre çok zayıf. En az 6 karakter olmalı' };
-        }
         if (code.includes('invalid-email')) {
             return { success: false, error: 'Geçersiz e-posta adresi' };
         }

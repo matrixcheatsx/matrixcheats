@@ -475,39 +475,13 @@ async function handleLogin(email, password) {
     btn.disabled = false;
 }
 
-function validatePassword(password) {
-    const minLength = 8;
-    const hasUpper = /[A-Z]/.test(password);
-    const hasLower = /[a-z]/.test(password);
-    const hasNumber = /[0-9]/.test(password);
-    const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
-    
-    const errors = [];
-    if (password.length < minLength) errors.push(`${minLength}+ karakter`);
-    if (!hasUpper) errors.push('büyük harf');
-    if (!hasLower) errors.push('küçük harf');
-    if (!hasNumber) errors.push('rakam');
-    if (!hasSpecial) errors.push('özel karakter');
-    
-    if (errors.length > 0) {
-        return { valid: false, message: 'Şifre: ' + errors.join(', ') + ' içermeli' };
-    }
-    return { valid: true };
-}
-
-function sanitizeHTML(str) {
-    const temp = document.createElement('div');
-    temp.textContent = str;
-    return temp.innerHTML;
-}
-
 async function handleRegister(email, password) {
-    const passwordCheck = validatePassword(password);
-    if (!passwordCheck.valid) {
-        showMessage(passwordCheck.message, 'error');
+    const confirmPassword = document.getElementById('authPasswordConfirm')?.value;
+    if (password !== confirmPassword) {
+        showMessage('Şifreler eşleşmiyor', 'error');
         return;
     }
-    
+
     const btn = document.querySelector('#authForm button[type="submit"]');
     btn.textContent = 'Kayıt yapılıyor...';
     btn.disabled = true;
@@ -634,10 +608,16 @@ function switchAuthTab(tab) {
     document.getElementById('registerTab').classList.toggle('active', tab === 'register');
     document.getElementById('authSubmitBtn').textContent = tab === 'login' ? 'GİRİŞ YAP' : 'KAYIT OL';
     
-    // Show/hide forgot password based on tab
+    // Show/hide forgot password and confirm password based on tab
     const authOptions = document.getElementById('authOptions');
     if (authOptions) {
         authOptions.style.display = tab === 'login' ? 'flex' : 'none';
+    }
+    const confirmGroup = document.getElementById('passwordConfirmGroup');
+    if (confirmGroup) {
+        confirmGroup.style.display = tab === 'register' ? 'block' : 'none';
+        const input = document.getElementById('authPasswordConfirm');
+        if (input) input.required = tab === 'register';
     }
     
     // Reset forms
