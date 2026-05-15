@@ -569,8 +569,6 @@ async function deliverCheckoutOrder(siparisId) {
 }
 
 async function loadConfirmations() {
-
-async function loadConfirmations() {
     if (typeof getOrderConfirmations !== 'function') { showMessage('Onay sistemi yüklenemedi! (getOrderConfirmations bulunamadı)', 'error'); return; }
     if (!window.firebaseReady) { showMessage('Firebase bağlı değil!', 'error'); return; }
     try {
