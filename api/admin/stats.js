@@ -1,8 +1,20 @@
 const { listDocuments, COLLECTION } = require('../../lib/firebase');
 
+const ADMIN_API_KEY = process.env.ADMIN_API_KEY || '';
+
+function checkAdminAuth(req) {
+  const authHeader = req.headers['authorization'] || '';
+  const apiKey = authHeader.replace('Bearer ', '');
+  return apiKey === ADMIN_API_KEY;
+}
+
 module.exports = async (req, res) => {
   if (req.method !== 'GET') {
     return res.status(405).json({ durum: 'hata', mesaj: 'Sadece GET' });
+  }
+
+  if (!checkAdminAuth(req)) {
+    return res.status(401).json({ durum: 'hata', mesaj: 'Yetkisiz erişim' });
   }
 
   try {

@@ -363,17 +363,25 @@ function loadSettings() {
     const s = JSON.parse(localStorage.getItem('matrixSettings') || '{}');
     const pl = document.getElementById('paymentLink');
     const dl = document.getElementById('discordLinkInput');
+    const ak = document.getElementById('adminApiKeyInput');
     if (pl) pl.value = s.paymentLink || '';
     if (dl) dl.value = s.discordLink || '';
+    if (ak) ak.value = s.adminApiKey || '';
 }
 
 function saveSettings() {
     const s = {
         paymentLink: document.getElementById('paymentLink')?.value || '',
-        discordLink: document.getElementById('discordLinkInput')?.value || ''
+        discordLink: document.getElementById('discordLinkInput')?.value || '',
+        adminApiKey: document.getElementById('adminApiKeyInput')?.value || ''
     };
     localStorage.setItem('matrixSettings', JSON.stringify(s));
     showMessage('Ayarlar kaydedildi!', 'success');
+}
+
+function getAdminApiKey() {
+    const s = JSON.parse(localStorage.getItem('matrixSettings') || '{}');
+    return s.adminApiKey || '';
 }
 
 function renderRequests(requests) {
@@ -411,15 +419,15 @@ function renderRequests(requests) {
                 <span class="order-card-date">${date} ${time}</span>
             </div>
             <div class="order-card-grid">
-                <div class="order-card-field"><label>Oyun</label><span>${req.game || '-'}</span></div>
-                <div class="order-card-field"><label>Paket</label><span>${req.package || '-'}</span></div>
-                <div class="order-card-field"><label>Sipariş No</label><span style="color:#00ff41;">${req.orderNumber || '-'}</span></div>
-                <div class="order-card-field"><label>Müşteri</label><span>${req.userEmail || '-'}</span></div>
+                <div class="order-card-field"><label>Oyun</label><span>${escapeHtml(req.game) || '-'}</span></div>
+                <div class="order-card-field"><label>Paket</label><span>${escapeHtml(req.package) || '-'}</span></div>
+                <div class="order-card-field"><label>Sipariş No</label><span style="color:#00ff41;">${escapeHtml(req.orderNumber) || '-'}</span></div>
+                <div class="order-card-field"><label>Müşteri</label><span>${escapeHtml(req.userEmail) || '-'}</span></div>
                 <div class="order-card-field"><label>Durum</label><span class="badge ${badgeClass}">${req.status || 'Yeni'}</span></div>
-                ${hasKey ? `<div class="order-card-field"><label>Lisans Anahtarı</label><span style="color:#00ffff;font-family:monospace;">${req.licenseKey}</span></div>` : ''}
-                ${req.downloadLink ? `<div class="order-card-field"><label>İndirme Linki</label><span><a href="${req.downloadLink}" target="_blank" style="color:#00d4ff;font-size:0.85rem;" rel="noopener">🔗 Link</a></span></div>` : ''}
+                ${hasKey ? `<div class="order-card-field"><label>Lisans Anahtarı</label><span style="color:#00ffff;font-family:monospace;">${escapeHtml(req.licenseKey)}</span></div>` : ''}
+                ${req.downloadLink ? `<div class="order-card-field"><label>İndirme Linki</label><span><a href="${escapeHtml(req.downloadLink)}" target="_blank" style="color:#00d4ff;font-size:0.85rem;" rel="noopener">🔗 Link</a></span></div>` : ''}
             </div>
-            ${req.note ? `<div style="padding:10px;background:rgba(0,0,0,0.3);border-radius:6px;margin-bottom:10px;"><span style="color:#808080;font-size:0.75rem;">Not:</span><p style="color:#c0c0d0;margin-top:4px;font-size:0.85rem;">${req.note}</p></div>` : ''}
+            ${req.note ? `<div style="padding:10px;background:rgba(0,0,0,0.3);border-radius:6px;margin-bottom:10px;"><span style="color:#808080;font-size:0.75rem;">Not:</span><p style="color:#c0c0d0;margin-top:4px;font-size:0.85rem;">${escapeHtml(req.note)}</p></div>` : ''}
             <div class="order-card-actions">
                 <button class="btn btn-ghost btn-xs" onclick="updateRequestStatus('${req.id}', 'İnceleniyor')">⏳ İnceleniyor</button>
                 <button class="btn btn-primary btn-xs" onclick="updateRequestStatus('${req.id}', 'Tamamlandı')">✓ Tamamlandı</button>
@@ -531,9 +539,9 @@ function renderCheckoutOrders(orders) {
                 <span class="order-card-date">${date} ${time}</span>
             </div>
             <div class="order-card-grid">
-                <div class="order-card-field"><label>Ürün</label><span>${o.urun_adi || o.urunAdi || '-'}</span></div>
+                <div class="order-card-field"><label>Ürün</label><span>${escapeHtml(o.urun_adi || o.urunAdi) || '-'}</span></div>
                 <div class="order-card-field"><label>Tutar</label><span>₺${(parseFloat(o.urunFiyat || o.urun_fiyat) || 0).toFixed(2)}</span></div>
-                <div class="order-card-field"><label>Müşteri</label><span>${o.musteriEmail || o.musteri_email || '-'}</span></div>
+                <div class="order-card-field"><label>Müşteri</label><span>${escapeHtml(o.musteriEmail || o.musteri_email) || '-'}</span></div>
                 <div class="order-card-field"><label>Durum</label><span class="badge ${badgeClass}">${durumText}</span></div>
             </div>
             <div class="order-card-actions">
@@ -549,10 +557,11 @@ async function deliverCheckoutOrder(siparisId) {
     const anahtar = keyInput?.value.trim();
     if (!anahtar) { showMessage('Lisans anahtarı girin!', 'error'); return; }
 
+    const apiKey = getAdminApiKey();
     try {
         const r = await fetch('/api/admin/deliver', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', ...(apiKey ? { 'Authorization': 'Bearer ' + apiKey } : {}) },
             body: JSON.stringify({ siparis_id: siparisId, lisans_anahtari: anahtar })
         });
         const d = await r.json();
@@ -618,13 +627,13 @@ function renderConfirmations(confirmations) {
                 <span class="order-card-date">${date} ${time}</span>
             </div>
             <div class="order-card-grid">
-                <div class="order-card-field"><label>Sipariş No</label><span style="color:#00ff41;">${req.orderNumber || '-'}</span></div>
-                <div class="order-card-field"><label>Gmail</label><span style="color:#00ff41;">${req.gmail || '-'}</span></div>
-                <div class="order-card-field"><label>E-posta</label><span>${req.userEmail || '-'}</span></div>
-                <div class="order-card-field"><label>Ürün</label><span>${req.product || '-'}</span></div>
+                <div class="order-card-field"><label>Sipariş No</label><span style="color:#00ff41;">${escapeHtml(req.orderNumber) || '-'}</span></div>
+                <div class="order-card-field"><label>Gmail</label><span style="color:#00ff41;">${escapeHtml(req.gmail) || '-'}</span></div>
+                <div class="order-card-field"><label>E-posta</label><span>${escapeHtml(req.userEmail) || '-'}</span></div>
+                <div class="order-card-field"><label>Ürün</label><span>${escapeHtml(req.product) || '-'}</span></div>
                 <div class="order-card-field"><label>Durum</label><span class="badge ${badgeClass}">${req.status || 'Onay Bekliyor'}</span></div>
             </div>
-            ${req.note ? `<div style="padding:10px;background:rgba(0,0,0,0.3);border-radius:6px;margin-bottom:10px;"><span style="color:#808080;font-size:0.75rem;">Not:</span><p style="color:#c0c0d0;margin-top:4px;font-size:0.85rem;">${req.note}</p></div>` : ''}
+            ${req.note ? `<div style="padding:10px;background:rgba(0,0,0,0.3);border-radius:6px;margin-bottom:10px;"><span style="color:#808080;font-size:0.75rem;">Not:</span><p style="color:#c0c0d0;margin-top:4px;font-size:0.85rem;">${escapeHtml(req.note)}</p></div>` : ''}
             <div class="order-card-actions">
                 <button class="btn btn-ghost btn-xs" onclick="updateConfirmation('${req.id}', 'İnceleniyor')">⏳ İnceleniyor</button>
                 <button class="btn btn-primary btn-xs" onclick="updateConfirmation('${req.id}', 'Onaylandı')">✓ Onayla</button>
@@ -693,8 +702,8 @@ function renderUsers(users, orders = []) {
                     else if (pkg.includes('Gün') || pkg === 'day') totalSpent += 49;
                 });
                 return `<tr>
-                    <td style="color:#00ff41;">${u.email || '-'}</td>
-                    <td>${u.displayName || '-'}</td>
+                    <td style="color:#00ff41;">${escapeHtml(u.email) || '-'}</td>
+                    <td>${escapeHtml(u.displayName) || '-'}</td>
                     <td><span class="badge ${u.isAdmin ? 'badge-green' : 'badge-blue'}">${u.isAdmin ? 'Admin' : 'Kullanıcı'}</span></td>
                     <td style="text-align:center;">${totalOrders}</td>
                     <td style="color:#ff0040;">₺${totalSpent}</td>
@@ -717,6 +726,13 @@ async function toggleUserAdmin(email, makeAdmin) {
     } catch (e) {
         showMessage('Hata: ' + e.message, 'error');
     }
+}
+
+function escapeHtml(str) {
+    if (typeof str !== 'string') return '';
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
 }
 
 function showMessage(text, type) {

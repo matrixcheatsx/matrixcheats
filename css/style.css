@@ -1019,130 +1019,6 @@ section {
     box-shadow: 0 0 20px var(--primary-glow);
 }
 
-.pricing-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 30px;
-    max-width: 1100px;
-    margin: 0 auto;
-}
-
-.pricing-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    padding: 40px 30px;
-    text-align: center;
-    transition: all 0.3s ease;
-    position: relative;
-}
-
-.pricing-card:hover {
-    border-color: var(--primary);
-    transform: translateY(-5px);
-}
-
-.pricing-card.featured {
-    border-color: var(--primary);
-    transform: scale(1.05);
-    box-shadow: 0 0 30px rgba(0, 255, 65, 0.2);
-}
-
-.pricing-card.featured:hover {
-    transform: scale(1.05) translateY(-5px);
-}
-
-.featured-badge {
-    position: absolute;
-    top: -12px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--primary);
-    color: var(--bg-dark);
-    padding: 5px 20px;
-    font-family: 'Orbitron', sans-serif;
-    font-size: 0.75rem;
-    font-weight: 700;
-}
-
-.plan-name {
-    font-family: 'Orbitron', sans-serif;
-    font-size: 1.5rem;
-    font-weight: 700;
-    margin-bottom: 20px;
-    color: var(--text);
-}
-
-.plan-price {
-    margin-bottom: 30px;
-}
-
-.plan-price .currency {
-    font-size: 1.5rem;
-    color: var(--primary);
-}
-
-.plan-price .amount {
-    font-family: 'Orbitron', sans-serif;
-    font-size: 3rem;
-    font-weight: 700;
-    color: var(--primary);
-}
-
-.plan-price .period {
-    color: var(--text-muted);
-}
-
-.plan-features {
-    list-style: none;
-    text-align: left;
-    margin-bottom: 30px;
-}
-
-.plan-features li {
-    padding: 10px 0;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.plan-features li.disabled {
-    color: var(--text-muted);
-    opacity: 0.5;
-}
-
-.check {
-    color: var(--primary);
-}
-
-.cross {
-    color: #ff4141;
-}
-
-.btn-pricing {
-    width: 100%;
-    padding: 15px;
-    background: transparent;
-    border: 2px solid var(--primary);
-    color: var(--primary);
-    font-family: 'Orbitron', sans-serif;
-    font-size: 0.9rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.btn-pricing:hover {
-    background: var(--primary);
-    color: var(--bg-dark);
-    box-shadow: 0 0 20px var(--primary-glow);
-}
-
-.btn-pricing-featured {
-    background: var(--primary);
-    color: var(--bg-dark);
-}
-
 .about {
     display: flex;
     gap: 50px;
@@ -1813,21 +1689,21 @@ section {
     transform: scale(1);
 }
 
-.product-card, .about-feature, .contact-item, .pricing-card {
+.product-card, .about-feature, .contact-item {
     opacity: 0;
     transform: translateY(30px);
     transition: opacity 0.5s ease, transform 0.5s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
-.product-card.visible, .about-feature.visible, .contact-item.visible, .pricing-card.visible {
+.product-card.visible, .about-feature.visible, .contact-item.visible {
     opacity: 1;
     transform: translateY(0);
 }
 
-.product-card:nth-child(2), .pricing-card:nth-child(2) { transition-delay: 0.1s; }
-.product-card:nth-child(3), .pricing-card:nth-child(3) { transition-delay: 0.2s; }
-.product-card:nth-child(4), .pricing-card:nth-child(4) { transition-delay: 0.3s; }
-.product-card:nth-child(5), .pricing-card:nth-child(5) { transition-delay: 0.4s; }
-.product-card:nth-child(6), .pricing-card:nth-child(6) { transition-delay: 0.5s; }
+.product-card:nth-child(2) { transition-delay: 0.1s; }
+.product-card:nth-child(3) { transition-delay: 0.2s; }
+.product-card:nth-child(4) { transition-delay: 0.3s; }
+.product-card:nth-child(5) { transition-delay: 0.4s; }
+.product-card:nth-child(6) { transition-delay: 0.5s; }
 
 /* Glitch text effect */
 @keyframes glitchText {
@@ -1914,11 +1790,11 @@ section::before {
 }
 
 /* Button glow enhancement */
-.btn-primary-lg, .btn-submit, .btn-auth, .btn-product, .btn-pricing {
+.btn-primary-lg, .btn-submit, .btn-auth, .btn-product {
     position: relative;
     overflow: hidden;
 }
-.btn-primary-lg::after, .btn-submit::after, .btn-auth::after, .btn-product::after, .btn-pricing::after {
+.btn-primary-lg::after, .btn-submit::after, .btn-auth::after, .btn-product::after {
     content: '';
     position: absolute;
     top: -50%;
@@ -1930,7 +1806,7 @@ section::before {
     transition: opacity 0.3s ease;
     pointer-events: none;
 }
-.btn-primary-lg:hover::after, .btn-submit:hover::after, .btn-auth:hover::after, .btn-product:hover::after, .btn-pricing:hover::after {
+.btn-primary-lg:hover::after, .btn-submit:hover::after, .btn-auth:hover::after, .btn-product:hover::after {
     opacity: 1;
 }
 
@@ -2056,7 +1932,7 @@ input:-webkit-autofill:focus {
         transition-duration: 0.01ms !important;
     }
     .fade-in, .fade-in-up, .fade-in-left, .fade-in-right, .scale-in,
-    .product-card, .about-feature, .contact-item, .pricing-card {
+    .product-card, .about-feature, .contact-item {
         opacity: 1;
         transform: none;
     }
@@ -2148,10 +2024,6 @@ input:-webkit-autofill:focus {
     .product-price { font-size: 1.5rem; }
     .products-grid { grid-template-columns: 1fr; gap: 20px; }
 
-    .pricing-card { padding: 25px 20px; }
-    .pricing-card.featured { transform: none; }
-    .pricing-grid { grid-template-columns: 1fr; }
-
     .about-features { flex-direction: column; gap: 15px; }
     .about-text { font-size: 0.95rem; }
     .code-content { font-size: 0.75rem; padding: 15px; }
@@ -2198,9 +2070,6 @@ input:-webkit-autofill:focus {
     .product-title { font-size: 1rem; }
     .product-desc { font-size: 0.85rem; }
     .product-price { font-size: 1.3rem; }
-    .pricing-card { padding: 20px 16px; }
-    .plan-name { font-size: 1.2rem; }
-    .plan-price .amount { font-size: 2.2rem; }
     .auth-modal-frame { padding: 20px 16px; }
     .auth-tab { padding: 8px 12px; font-size: 0.75rem; }
     .btn-auth { padding: 14px; font-size: 0.9rem; }
@@ -2224,10 +2093,10 @@ input:-webkit-autofill:focus {
 /* ===== DOKUNMATIK CIHAZLAR ===== */
 @media (hover: none) and (pointer: coarse) {
     .btn-hero:hover, .btn-primary:hover, .btn-glitch:hover,
-    .product-card:hover, .pricing-card:hover, .nav-link:hover {
+    .product-card:hover, .nav-link:hover {
         transform: none;
     }
-    .product-card:active, .pricing-card:active, .btn-hero:active {
+    .product-card:active, .btn-hero:active {
         transform: scale(0.98);
     }
     .header-social:hover { background: transparent; color: #5865F2; box-shadow: none; }

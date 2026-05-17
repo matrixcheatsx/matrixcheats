@@ -93,23 +93,6 @@ function showConfirm(title, message, onConfirm, onCancel) {
     };
 }
 
-function sanitizeInput(str) {
-    if (typeof str !== 'string') return '';
-    return str.replace(/[<>'"&]/g, '');
-}
-
-function validateImageUrl(url) {
-    if (!url || typeof url !== 'string') return '';
-    try {
-        const trimmed = url.trim();
-        if (trimmed === '') return '';
-        const parsed = new URL(trimmed);
-        return ['http:', 'https:'].includes(parsed.protocol) ? trimmed : '';
-    } catch {
-        return '';
-    }
-}
-
 let products = [];
 
 async function loadProductsFromStorage() {

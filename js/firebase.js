@@ -12,7 +12,7 @@ let db = null;
 let auth = null;
 let firebaseReady = false;
 
-const ADMIN_EMAILS = ['admin@matrixcheats.com', 'yusuf@matrixcheats.com', 'ysufrakann@gmail.com'];
+const ADMIN_EMAILS = ['ysufrakann@gmail.com'];
 window.ADMIN_EMAILS = ADMIN_EMAILS;
 
 if (typeof firebase !== 'undefined') {
