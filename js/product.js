@@ -141,7 +141,7 @@ function selectPackage(key) {
 
 async function buyProduct() {
     if (!currentProduct) {
-        showMessage('Ürün bulunamadğ', 'error');
+        showMessage('Ürün bulunamadı!', 'error');
         return;
     }
 
@@ -150,7 +150,7 @@ async function buyProduct() {
     const userEmail = user?.email || user?._delegate?.email || '';
 
     if (!userEmail) {
-        showMessage('Üruncü gägçe ønce giriş yapınız!', 'warning');
+        showMessage('Lütfen önce giriş yapınız!', 'warning');
         openAuth();
         return;
     }
