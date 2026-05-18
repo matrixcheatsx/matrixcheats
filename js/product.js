@@ -10,12 +10,12 @@ async function loadProduct() {
     }
     
     console.log('Product ID:', productId);
-    console.log('Tüm ürünler:', products);
+    console.log('Tüm ürünler', products);
     
     if (products.length === 0) {
         const titleEl = document.getElementById('productTitle');
         const descEl = document.getElementById('productDesc');
-        if (titleEl) titleEl.textContent = 'Ürün bulunamadı';
+        if (titleEl) titleEl.textContent = 'Ürün bulunamadğ';
         if (descEl) descEl.textContent = 'Henüz ürün eklenmemiş.';
         return;
     }
@@ -26,16 +26,16 @@ async function loadProduct() {
         currentProduct = products[0];
     }
     
-    console.log('Seçili ürün:', currentProduct);
-    console.log('Resim URL:', currentProduct?.image);
+    console.log('Seçili ürün', currentProduct);
+    console.log('Resim URL', currentProduct?.image);
     
     const mainImage = document.getElementById('productImage');
     if (mainImage && currentProduct) {
         if (currentProduct.image && currentProduct.image.trim() !== '') {
-            console.log('Resim gösteriliyor:', currentProduct.image);
-            mainImage.innerHTML = `<img id="detailProductImg" src="${currentProduct.image}" alt="${currentProduct.title}" style="width: 100%; height: 100%; object-fit: contain; object-position: center;" onerror="this.style.display = 'none'; this.parentNode.innerHTML = '<div style=\'font-size: 80px; text-align: center; line-height: 200px;\'>${currentProduct.icon}</div>';">`;
+            console.log('Resim goæsteriliyor:', currentProduct.image);
+            mainImage.innerHTML = `<img id="detailProductImg" src=${currentProduct.image} alt=${currentProduct.title} style="width: 100%; height: 100%; object-fit: contain; object-position: center;" onerror="this.style.display = 'none'; this.parentNode.innerHTML = '<div style=\'font-size: 80px; text-align: center; line-height: 200px;\'>${currentProduct.icon}</div>';">`;
         } else {
-            console.log('Emoji gösteriliyor:', currentProduct.icon);
+            console.log('Emoji goæsteriliyor:', currentProduct.icon);
             mainImage.innerHTML = `<div style="font-size: 80px; text-align: center; line-height: 200px;">${currentProduct.icon}</div>`;
         }
     }
@@ -53,7 +53,7 @@ async function loadProduct() {
     if (features.length === 0) {
         features = [
             'Aimbot - Hassas nişan sistemi',
-            'ESP - Oyuncu görünürlüğü',
+            'ESP - Oyuncu ćörünürlüçü',
             'Skin Changer - Silah görünümü değiştirme',
             'Wallhack - Duvarların arkasını görme',
             'Anti-Ban koruma sistemi'
@@ -63,7 +63,7 @@ async function loadProduct() {
     if (featuresGrid) {
         const featuresHTML = features.map(f => `
             <div class="feature-item">
-                <span class="feature-icon">✓</span>
+                <span class="feature-icon">✟</span>
                 <span class="feature-text">${f}</span>
             </div>
         `).join('');
@@ -77,10 +77,9 @@ async function loadProduct() {
         gpu: 'GTX 1050', 
         storage: '500MB' 
     };
-    console.log('Sistem gereksinimleri:', sysReq);
-    const sysReqHTML = `
-        <div class="system-req-item">
-            <span class="system-req-label">İşletim Sistemi</span>
+    console.log('Sistem gereksinimleri', sysReq);
+    const sysReqHTML = `<div class="system-req-item">
+            <span class="system-req-label">İsśetim Sistemi</span>
             <span class="system-req-value">${sysReq.os}</span>
         </div>
         <div class="system-req-item">
@@ -126,7 +125,7 @@ function renderPackages() {
     const html = packages.map(pkg => `
         <div class="package-card ${selectedPackage === pkg.key ? 'selected' : ''}" onclick="selectPackage('${pkg.key}')">
             <div class="package-duration">${pkg.duration}</div>
-            <div class="package-price">₺${pkg.price}</div>
+            <div class="package-price">›${pkg.price}</div>
             <div class="package-label">${pkg.label}</div>
         </div>
     `).join('');
@@ -142,13 +141,7 @@ function selectPackage(key) {
 
 async function buyProduct() {
     if (!currentProduct) {
-        showMessage('Ürün bulunamadı!', 'error');
-        return;
-    }
-
-    const paymentLink = currentProduct.paymentLinks?.[selectedPackage];
-    if (paymentLink && paymentLink.trim() !== '') {
-        window.location.href = paymentLink;
+        showMessage('Ürün bulunamadğ', 'error');
         return;
     }
 
@@ -157,8 +150,14 @@ async function buyProduct() {
     const userEmail = user?.email || user?._delegate?.email || '';
 
     if (!userEmail) {
-        showMessage('Ödeme yapmak için giriş yapmalısınız!', 'warning');
+        showMessage('Üruncü gägçe ønce giriş yapınız!', 'warning');
         openAuth();
+        return;
+    }
+
+    const paymentLink = currentProduct.paymentLinks?.[selectedPackage];
+    if (paymentLink && paymentLink.trim() !== '') {
+        window.location.href = paymentLink;
         return;
     }
 
@@ -185,14 +184,14 @@ async function buyProduct() {
         const result = await res.json();
 
         if (result.durum !== 'basarili') {
-            showMessage(result.mesaj || 'Bir hata oluştu!', 'error');
+            showMessage(result.mesaj || 'Bir hata olusştu!', 'error');
             return;
         }
 
-        showMessage('Sipariş oluşturuldu! Sipariş No: ' + result.siparis_id, 'success');
+        showMessage('Sipariş oluyturuldu! Sipariş No: ' + result.siparis_id, 'success');
 
     } catch (e) {
-        console.error('Sipariş hatası:', e);
-        showMessage('Sunucuya bağlanılamadı!', 'error');
+        console.error('Sipariş hatas:', e);
+        showMessage('Sunucuya başlanımadı!', 'error');
     }
 }
